@@ -1,0 +1,134 @@
+datasource db {
+    provider    = "sqlite"
+    url         = "file:./dev.db"
+}
+
+generator client {
+    provider    = "prisma-client-js"
+}
+
+model User {
+    id                  Int                     @id @default(autoincrement())
+    utorid              String                  @unique
+    name                String?
+    password            String?
+    email               String
+    birthday            DateTime?
+    role                String
+    points              Int                     @default(0)
+    createdAt           DateTime                @default(now())
+    lastLogin           DateTime?
+    verified            Boolean                 @default(false)
+    suspicious          Boolean?
+    avatarUrl           String                  @default("")
+    createdTransactions Transaction[]
+    purchases           TransactionPurchase[]
+    adjustments         TransactionAdjustment[]
+    redemptions         TransactionRedemption[] @relation("Redeem")
+    redemptionsMade     TransactionRedemption[] @relation("ToRedeem")
+    transferers         TransactionTransfer[]   @relation("Transfer")
+    events              TransactionEvent[]
+    organizedEvents     Event[]                 @relation("EventOrganizers")
+    guestEvents         Event[]                 @relation("EventGuests")
+}
+
+model Transaction {
+    id                  Int                     @id @default(autoincrement())
+    type                String
+    remark              String                  @default("")
+    createdBy           String
+    creator             User                    @relation(fields: [createdBy], references: [utorid])
+    adjustments         TransactionAdjustment[] @relation("Adjustment")
+    infoPurchase        TransactionPurchase?
+    infoAdjustment      TransactionAdjustment?
+    infoRedemption      TransactionRedemption?
+    infoTransfer        TransactionTransfer?
+    infoEvent           TransactionEvent?
+}
+model TransactionPurchase {
+    id              Int         @id
+    transaction     Transaction @relation(fields: [id], references: [id])
+
+    spent           Float
+    earned          Int
+    suspicious      Boolean     @default(false)
+    utorid          String
+    user            User        @relation(fields: [utorid], references: [utorid])
+    promotionIds    Promotion[] @relation("PurchasePromotions")
+}
+model TransactionAdjustment {
+    id              Int         @id
+    transaction     Transaction @relation(fields: [id], references: [id])
+
+    amount          Int
+    suspicious      Boolean     @default(false)
+    utorid          String
+    user            User        @relation(fields: [utorid], references: [utorid])
+    relatedId       Int     // ID of a related transaction
+    related         Transaction @relation(fields: [relatedId], references: [id], name: "Adjustment")
+    promotionIds    Promotion[] @relation("AdjustmentPromotions")
+}
+model TransactionRedemption {
+    id              Int         @id
+    transaction     Transaction @relation(fields: [id], references: [id])
+
+    amount          Int
+    utorid          String
+    user            User        @relation(fields: [utorid], references: [utorid], name: "Redeem")
+    relatedId       Int?     // ID of processing cashier
+    cashier         User?       @relation(fields: [relatedId], references: [id], name: "ToRedeem")
+}
+model TransactionTransfer {
+    id              Int         @id
+    transaction     Transaction @relation(fields: [id], references: [id])
+
+    sent            Int
+    relatedId       Int         
+    relatedUser     User        @relation(fields: [relatedId], references: [id], name: "Transfer")
+}
+model TransactionEvent {
+    id              Int         @id
+    transaction     Transaction @relation(fields: [id], references: [id])
+    
+    awarded         Int
+    recipient       String
+    relatedId       Int     // ID of event
+    user            User        @relation(fields: [recipient], references: [utorid])
+    event           Event       @relation(fields: [relatedId], references: [id])
+}
+
+model Event {
+    id              Int         @id @default(autoincrement())
+    name            String
+    description     String
+    location        String
+    startTime       DateTime
+    endTime         DateTime
+    capacity        Int?
+    pointsRemain    Int
+    pointsAwarded   Int         @default(0)
+    published       Boolean     @default(false)
+    organizers      User[]      @relation("EventOrganizers")
+    guests          User[]      @relation("EventGuests")
+    transactions    TransactionEvent[]
+}
+
+model Promotion {
+    id              Int             @id @default(autoincrement())
+    name            String
+    description     String
+    type            String
+    startTime       DateTime
+    endTime         DateTime
+    minSpending     Int?
+    rate            Float?
+    points          Int?
+    purchases       TransactionPurchase[]   @relation("PurchasePromotions")
+    adjustments     TransactionAdjustment[] @relation("AdjustmentPromotions")
+}
+
+model Passtoken {
+    id      Int         @id @default(autoincrement())
+    utorid  String      @unique
+    expiry  DateTime
+}
