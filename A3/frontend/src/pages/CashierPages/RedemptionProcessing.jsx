@@ -1,4 +1,5 @@
-//can process customer redemptions
+//Process customer redemption
+//Enter transaction id to process
 
 
 

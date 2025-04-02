@@ -1,5 +1,6 @@
-//can see published events
-//can rsvp/unrsvp to events
+//View published events, filter, with pages/inifinite scroll
+//Filter for name, location, started, ended, showFull, page , limit
+//Functionality: can rsvp/unrsvp to events
 
 
 

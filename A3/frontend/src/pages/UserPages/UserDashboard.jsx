@@ -1,6 +1,6 @@
-//see point balance, transactions, events, promotions
-//can navigate to events, promotions, transactions, profile, logout, other interfaces
-//other: qr code, redemption request
+//View: point balance, transactions, events, promotions
+//Navigate to: events, promotions, transactions, profile, logout, other interfaces
+//Other: qr code, redemption request
 
 
 

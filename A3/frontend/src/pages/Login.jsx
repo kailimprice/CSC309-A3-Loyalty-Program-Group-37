@@ -1,5 +1,5 @@
-//login with email and password
-//authentication functionality needed
+//Login with email and password
+//Authentication functionality needed
 
 
 

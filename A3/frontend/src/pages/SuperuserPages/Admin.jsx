@@ -1,5 +1,5 @@
-//can see all users?
-//can promote/demote users
+//View all users?
+//Functionality: can promote/demote users
 
 
 

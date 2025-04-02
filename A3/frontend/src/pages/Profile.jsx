@@ -1,5 +1,5 @@
-//need to be able to view/edit logged in user info
-//need to be able to reset password
+//View/edit: name, email, birthday, avatar
+//Functionality: ability to reset password
 
 
 

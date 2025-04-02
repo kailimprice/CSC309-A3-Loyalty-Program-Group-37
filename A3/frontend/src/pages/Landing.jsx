@@ -1,4 +1,4 @@
-//entry page with login button
+//Entry page with login button
 
 
 

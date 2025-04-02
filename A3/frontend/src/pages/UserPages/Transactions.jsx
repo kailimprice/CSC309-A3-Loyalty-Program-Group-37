@@ -1,4 +1,5 @@
-//can see transaction history, filter, with pages/infinite scrolling
+//View: transaction history with pages/infinite scroll
+//Other: redemption request creation, points transfer
 
 
 
