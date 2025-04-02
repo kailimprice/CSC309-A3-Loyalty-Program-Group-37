@@ -10,7 +10,6 @@ function App() {
   return (
     <BrowserRouter>
       <CssBaseline />
-      <Navbar />
       <Routes>
         <Route path='/' element={<Layout />} />
           <Route index element={<Landing />} />
