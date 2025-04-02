@@ -1,4 +1,5 @@
-
+//can see all users?
+//can promote/demote users
 
 
 

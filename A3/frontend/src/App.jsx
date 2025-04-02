@@ -27,6 +27,9 @@ import NotFound from './pages/NotFound';
 
 import './App.css'
 
+//Layout wrapper with navbar & footer over everything
+//Default route landing page -> login -> role dashboards -> routes organized by role
+
 function App() {
 
   return (

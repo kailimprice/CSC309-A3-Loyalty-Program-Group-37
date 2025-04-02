@@ -1,4 +1,5 @@
-
+//can see published events
+//can rsvp/unrsvp to events
 
 
 
