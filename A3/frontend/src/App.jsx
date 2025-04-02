@@ -3,6 +3,28 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import {CssBaseline} from '@mui/material';
 
+import Landing from './pages/Landing';
+import Login from './pages/Login';
+import UserDashboard from './pages/UserPages/UserDashboard';
+import Transactions from './pages/UserPages/Transactions';
+import Events from './pages/UserPages/Events';
+import Promotions from './pages/UserPages/Promotions';
+import CashierDashboard from './pages/CashierPages/CashierDashboard';
+import RedemptionProcessing from './pages/CashierPages/RedemptionProcessing';
+import TransactionCreation from './pages/CashierPages/TransactionCreation';
+import UserCreation from './pages/CashierPages/UserCreation';
+import ManagerDashboard from './pages/ManagerPages/ManagerDashboard';
+import AllEvents from './pages/ManagerPages/AllEvents';
+import AllTransactions from './pages/ManagerPages/AllTransactions';
+import AllPromotions from './pages/ManagerPages/AllPromotions';
+import AllUsers from './pages/ManagerPages/AllUsers';
+import SuperuserDashboard from '/pages/SuperUserPages/SuperUserDashboard'
+import Admin from './pages/SuperUserPages/Admin';
+import OrganizerDashboard from './pages/OrganizerPages/OrganizerDashboard';
+import EventManagement from './pages/OrganizerPages/EventManagement';
+import Profile from './pages/Profile';
+import NotFound from './pages/NotFound';
+
 import './App.css'
 
 function App() {
@@ -31,6 +53,7 @@ function App() {
             <Route path='all-events' element={<AllEvents />} />
             <Route path='all-promotions' element={<AllPromotions />} />
             <Route path='all-transactions' element={<AllTransactions />} />
+            <Route path='all-users' element={<AllUsers />} />
           </Route>
 
           <Route path='/superuser' element={<SuperuserDashboard />}>
