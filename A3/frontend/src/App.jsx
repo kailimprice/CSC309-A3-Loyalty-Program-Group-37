@@ -1,34 +1,51 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+
+import {CssBaseline} from '@mui/material';
+
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <BrowserRouter>
+      <CssBaseline />
+      <Navbar />
+      <Routes>
+        <Route path='/' element={<Layout />} />
+          <Route index element={<Landing />} />
+          <Route path='/login' element={<Login />} />
+
+          <Route path='/user' element={<UserDashboard />}>
+            <Route path='events' element={<Events />} />
+            <Route path='promotions' element={<Promotions />} />
+            <Route path='transactions' element={<Transactions />} />
+          </Route>
+
+          <Route path='/cashier' element={<CashierDashboard />}>
+            <Route path='transaction-creation' element={<TransactionCreation />} />
+            <Route path='redemption-processing' element={<RedemptionProcessing />} />
+            <Route path='user-creation' element={<UserCreation />} />
+          </Route>
+
+          <Route path='/manager' element={<ManagerDashboard />}>
+            <Route path='all-events' element={<AllEvents />} />
+            <Route path='all-promotions' element={<AllPromotions />} />
+            <Route path='all-transactions' element={<AllTransactions />} />
+          </Route>
+
+          <Route path='/superuser' element={<SuperuserDashboard />}>
+            <Route path='admin' element={<Admin />} />
+          </Route>
+
+          <Route path='/organizer' element={<OrganizerDashboard />}>
+            <Route path='event-management' element={<EventManagement />} />
+          </Route>
+
+          <Route path='profile' element={<Profile />} />
+          <Route path='*' element={<NotFound />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 
