@@ -1,8 +1,10 @@
+//navbar and footer
+
 import { Link, Outlet } from "react-router-dom";
 
 const Layout = () => {
+    //add navbar
     return <>
-        <Navbar />
         <main>
             <Outlet />
         </main>
