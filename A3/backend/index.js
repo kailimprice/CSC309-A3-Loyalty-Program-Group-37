@@ -25,7 +25,6 @@ app.use(express.json());
 
 // ADD YOUR WORK HERE
 const cors = require('cors');
-const app = express();
 
 // Set up cors to allow requests from your React frontend
 app.use(cors({

@@ -40,36 +40,36 @@ function App() {
       <Routes>
         <Route path='/' element={<Layout />}>
           <Route index element={<Landing />} />
-          <Route path='login' element={<Login />} />
+          <Route path='/login' element={<Login />} />
 
-          <Route path='user' element={<UserDashboard />}>
-            <Route path='events' element={<Events />} />
-            <Route path='promotions' element={<Promotions />} />
-            <Route path='transactions' element={<Transactions />} />
+          <Route path='/user' element={<UserDashboard />}>
+            <Route path='/events' element={<Events />} />
+            <Route path='/promotions' element={<Promotions />} />
+            <Route path='/transactions' element={<Transactions />} />
           </Route>
 
-          <Route path='cashier' element={<CashierDashboard />}>
-            <Route path='transaction-creation' element={<TransactionCreation />} />
-            <Route path='redemption-processing' element={<RedemptionProcessing />} />
-            <Route path='user-creation' element={<UserCreation />} />
+          <Route path='/cashier' element={<CashierDashboard />}>
+            <Route path='/transaction-creation' element={<TransactionCreation />} />
+            <Route path='/redemption-processing' element={<RedemptionProcessing />} />
+            <Route path='/user-creation' element={<UserCreation />} />
           </Route>
 
-          <Route path='manager' element={<ManagerDashboard />}>
-            <Route path='all-events' element={<AllEvents />} />
-            <Route path='all-promotions' element={<AllPromotions />} />
-            <Route path='all-transactions' element={<AllTransactions />} />
-            <Route path='all-users' element={<AllUsers />} />
+          <Route path='/manager' element={<ManagerDashboard />}>
+            <Route path='/all-events' element={<AllEvents />} />
+            <Route path='/all-promotions' element={<AllPromotions />} />
+            <Route path='/all-transactions' element={<AllTransactions />} />
+            <Route path='/all-users' element={<AllUsers />} />
           </Route>
 
-          <Route path='superuser' element={<SuperuserDashboard />}>
-            <Route path='admin' element={<Admin />} />
+          <Route path='/superuser' element={<SuperuserDashboard />}>
+            <Route path='/admin' element={<Admin />} />
           </Route>
 
-          <Route path='organizer' element={<OrganizerDashboard />}>
-            <Route path='event-management' element={<EventManagement />} />
+          <Route path='/organizer' element={<OrganizerDashboard />}>
+            <Route path='/event-management' element={<EventManagement />} />
           </Route>
 
-          <Route path='profile' element={<Profile />} />
+          <Route path='/profile' element={<Profile />} />
           <Route path='*' element={<NotFound />} />
         </Route>
       </Routes>
