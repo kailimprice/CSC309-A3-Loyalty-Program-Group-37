@@ -2,9 +2,7 @@
 //Navigate to: events, promotions, transactions, profile, logout, other interfaces
 //Other: qr code, redemption request
 
-
-
-export default function UserDashboard() {
+export default function Dashboard() {
     return <>
     
     </>

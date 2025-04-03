@@ -1,0 +1,26 @@
+section {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+#block-text {
+    display: flex;
+    justify-content: center;
+    text-wrap: nowrap;
+}
+#block-img {
+    max-width: calc(100% - 600px);
+}
+img {
+    max-height: 80vh;
+    width: 100%;
+}
+@media (max-aspect-ratio: 1.25) {
+    section {
+        flex-direction: column;
+    }
+    #block-img {
+        max-width: 400px;
+    }
+}

@@ -1,0 +1,10 @@
+#root {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    height: 100vh;
+}
+footer {
+    background-color: black;
+    padding: 10px;
+    text-align: center;
+}
