@@ -16,8 +16,8 @@ import "./Landing.css";
 export default function Landing() {
     return <section>
         <div id='block-text'>
-            <Typography level="h1" sx={{fontSize: '48px', fontWeight: 'normal'}} >
-                Do you love <b>Money</b>?<br />
+            <Typography level="h1" sx={{fontSize: '56px', fontWeight: 'normal'}} >
+                Do you love <b>money</b>?<br />
                 We love <b>money</b> too.<br />
                 Get stuff from CSSU.<br />
                 Get points.<br />

@@ -16,7 +16,7 @@ img {
     max-height: 80vh;
     width: 100%;
 }
-@media (max-aspect-ratio: 1.25) {
+@media (max-aspect-ratio: 1.4) {
     section {
         flex-direction: column;
     }
