@@ -18,9 +18,12 @@ img {
 }
 @media (max-aspect-ratio: 1.4) {
     section {
-        flex-direction: column;
+        flex-direction: column-reverse;
+    }
+    h1 {
+        text-align: center;
     }
     #block-img {
-        max-width: 400px;
+        max-width: 500px;
     }
 }

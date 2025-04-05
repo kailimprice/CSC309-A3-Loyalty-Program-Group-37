@@ -27,12 +27,7 @@ app.use(express.json());
 const cors = require('cors');
 
 // Set up cors to allow requests from your React frontend
-app.use(cors({
-  origin: 'http://localhost:3000',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
-}));
+app.use(cors({origin: 'http://localhost:5173'}));
 
 
 const {PrismaClient} = require('@prisma/client');
