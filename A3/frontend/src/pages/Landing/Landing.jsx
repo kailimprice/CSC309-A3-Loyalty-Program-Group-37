@@ -11,24 +11,21 @@
 
 import Typography from '@mui/joy/Typography';
 import landing_splash from "../../assets/landing_splash.jpg";
+import logo from "../../assets/logo.png";
 import "./Landing.css";
 import {useState} from "react";
 import {useNavigate} from "react-router-dom";
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import {Visibility, VisibilityOff} from '@mui/icons-material';
 import {Paper, Box, Button, TextField, Dialog, DialogActions, TextareaAutosize,
-        FormControl, IconButton, InputLabel, Input, InputAdornment,
+        FormControl, IconButton, InputLabel, Input, InputAdornment, FormHelperText,
         DialogContent, DialogContentText, DialogTitle, Tooltip} from '@mui/material'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 
-function DialogGeneric({title, children, submitTitle, isOpen, setOpen, submitFunc, width}) {
-    const [error, setError] = useState('');
-    const closeDialog = () => {
-        setOpen(false);
-        setError('');
-    };
-    return <Dialog open={isOpen} onClose={closeDialog}
+function DialogGeneric({title, children, submitTitle, name, currDialog,
+                        currError, setCurrError, closeDialog, submitFunc, width}) {
+    return <Dialog open={currDialog == name} onClose={closeDialog}
                     slotProps={{paper: {component: 'form',
                                         style: {width: width ? `${width}px` : '400px'},
                                         onSubmit: (event) => {
@@ -37,19 +34,20 @@ function DialogGeneric({title, children, submitTitle, isOpen, setOpen, submitFun
                                             const formJson = Object.fromEntries(formData.entries());
                                             submitFunc(formJson).then(x => {
                                                 if (x)
-                                                    setError(x);
-                                                else
-                                                    closeDialog();
+                                                    setCurrError(x);
                                             });
                                         }}}}>
+        <Box sx={{display: 'flex', justifyContent: 'center', marginTop: '20px', marginBottom: '-5px'}}>
+            <img src={logo} alt='CSSU Logo' id='logo'/>
+        </Box>
         <DialogTitle sx={{fontWeight: 'bold', fontSize: '32px', textAlign: 'center', marginBottom: '-10px'}}>
             {title}
         </DialogTitle>
         
         <DialogContent>
-            {error && 
+            {currError && 
             <Box sx={{backgroundColor: '#ffe4e1', borderRadius: '4px', padding: '10px', marginTop: '10px', marginBottom: '10px'}}>
-                <DialogContentText sx={{color: 'red'}}>{error}</DialogContentText>                   
+                <DialogContentText sx={{color: 'red'}}>{currError}</DialogContentText>                   
             </Box>}
             {children}
         </DialogContent>
@@ -79,25 +77,33 @@ function Copyable({children}) {
     </Paper>
 }
 
-async function fetchServer(path, details, errors) {
-    const response = await fetch(`${BACKEND_URL}/${path}`, details);
-    if (!response.ok) {
-        for (let error in errors) {
-            if (response.status == error)
-                return [null, errors[error]];
-        }
-        const responseJson = await response.json();
-        return [null, `Error ${response.status}: ${responseJson['error']}`];
-    }
-    return [response, false];
+function validatePassword(password) {
+    if (password == '')
+        return false;
+    if (password.length < 8 || password.length > 20)
+        return 'Password must be 8-20 characters long';
+    if (!/[a-z]/.test(password))
+        return 'Password must contain a lower-case letter';
+    if (!/[A-Z]/.test(password))
+        return 'Password must contain an upper-case letter';
+    if (!/\d/.test(password))
+        return 'Password must contain a digit';
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password))
+        return 'Password must contain a special character';
+    return false;
 }
 
-function InputPassword({id, name, label}) {
+function InputPassword({id, name, label, errorChecking}) {
+    const [password, setPassword] = useState('');
     const [visible, setVisible] = useState(false);
+    const error = errorChecking ? validatePassword(password) : false;
     const toggleVisible = () => setVisible(!visible);
+
     return <FormControl variant="standard" fullWidth sx={{margin: '10px 0px'}}>
-        <InputLabel htmlFor={id} autoFocus required>{label}</InputLabel>
+        <InputLabel htmlFor={id} autoFocus required error={error}>{label}</InputLabel>
         <Input id={id} name={name} label={label} autoFocus required margin="dense"
+                error={error}
+                onChange={(event) => setPassword(event.target.value)}
                 type={visible ? 'text' : 'password'}
                 endAdornment={
                     <InputAdornment position="end">
@@ -108,83 +114,89 @@ function InputPassword({id, name, label}) {
                             {visible ? <VisibilityOff /> : <Visibility />}
                         </IconButton>
                     </InputAdornment>}/>
+        {error && <FormHelperText error>{error}</FormHelperText>}
     </FormControl>
-    
+    // Regular password box
     // <TextField autoFocus required fullWidth margin="dense" variant="standard"
     // id="password" name="password" label="Password" type="password"/>
     // return <TextField autoFocus required fullWidth margin="dense" variant="standard"
     //                 id={id} name={name} label={label} type="password"/>
 }
 
+
+async function fetchServer(path, details, errors) {
+    const response = await fetch(`${BACKEND_URL}/${path}`, details);
+    if (!response.ok) {
+        if (errors && errors[response.status])
+            return [null, errors[response.status]];
+        const responseJson = await response.json();
+        return [null, `Error ${response.status}: ${responseJson['error']}`];
+    }
+    return [response, false];
+}
+
+
 function DialogLanding() {
-    const [openSignIn, setOpenSignIn] = useState(false);
-    const [openForgetPassword, setOpenForgetPassword] = useState(false);
-    const [openCode, setOpenCode] = useState(false);
-    const [openResetPassword, setOpenResetPassword] = useState(false);
+    const [currDialog, setCurrDialog] = useState(null);
+    const [currError, setCurrError] = useState(undefined);
+    // Show password error checking after 1st sign-in attempt
+    const [attempted, setAttempted] = useState(false);
+
+    const closeDialog = () => {
+        setCurrDialog(null);
+        setCurrError(undefined);
+        setAttempted(false);
+    }
+    const changeDialog = (name) => {
+        setCurrDialog(name);
+        setCurrError(undefined);
+        setAttempted(false);
+    }
     const [token, setToken] = useState({});
 
-    // TODO errors must be cleared when switching pop-ups
-
-    const toggleForgetPassword = () => {
-        setOpenSignIn(false);
-        setOpenForgetPassword(true);
-        setOpenCode(false);
-        setOpenResetPassword(false);
-    };
-    const toggleLogIn = () => {
-        setOpenSignIn(true);
-        setOpenForgetPassword(false);
-        setOpenCode(false);
-        setOpenResetPassword(false);
-    }
-    const toggleResetPassword = async () => {
-        setOpenSignIn(false);
-        setOpenForgetPassword(false);
-        setOpenCode(false);
-        setOpenResetPassword(true);
-    }
     const resetPasswordRequest = async (json) => {
         const [response, e1] = await fetchServer('auth/resets', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(json)
-        }, {404: 'The given UTORid is not in our database.'});
+        });
         if (e1) return e1;
         const responseJson = await response.json();
         responseJson['expiresAt'] = (new Date(responseJson['expiresAt'])).toLocaleTimeString();
         setToken(responseJson);
-
-        setOpenSignIn(false);
-        setOpenForgetPassword(false);
-        setOpenCode(true);
+        changeDialog('confirmationCode');
     }
-    const resetPassword = async (json) => {
-        // TODO client-side password requirement checking 
+    const resetPassword = async (json) => { 
         const {token, ...j} = json;
-        const [_response, e1] = await fetchServer(`auth/resets/${token}`, {
+        const e1 = validatePassword(json['password']);
+        if (e1)
+            return;
+        const [_response, e2] = await fetchServer(`auth/resets/${token}`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(j)
-        }, {404: 'Invalid confirmation code.',
-            410: 'The confirmation code has expired.'});
-        if (e1) return e1;
+        });
+        if (e2) return e2;
         return await logIn(j);
     };
     const navigate = useNavigate();
     const logIn = async (json) => {
-        const [response, e1] = await fetchServer(`auth/tokens`, {
+        const e1 = validatePassword(json['password']);
+        if (e1)
+            return setAttempted(true);
+        const [response, e2] = await fetchServer(`auth/tokens`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(json)
-        }, {404: 'Invalid username/password combination.'});
-        if (e1) return e1;
+        });
+        if (e2) return e2;
         const responseJson = await response.json();
         localStorage.setItem('token', responseJson.token);
         navigate('dashboard');
     }
 
     return <>
-        <Button variant="outlined" onClick={toggleLogIn}>
+        <Button variant="outlined" onClick={() => changeDialog('signIn')}>
             Sign In
         </Button>
 
@@ -193,15 +205,15 @@ function DialogLanding() {
             children={<>
                 <TextField autoFocus required fullWidth margin="dense" variant="standard"
                             id="utorid" name="utorid" label="UTORid" type="text"/>
-                <InputPassword id='password' name='password' label='Password'/>
-                <Typography variant="body2" color="primary" onClick={toggleForgetPassword} 
+                <InputPassword id='password' name='password' label='Password' errorChecking={attempted}/>
+                <Typography variant="body2" color="primary" onClick={() => changeDialog('resetPasswordRequest')} 
                             sx={{cursor: 'pointer', textAlign: 'right'}}>
                     Forgot password?
                 </Typography>
             </>}
+            name="signIn"
             submitTitle='Sign In'
-            isOpen={openSignIn}
-            setOpen={setOpenSignIn}
+            currDialog={currDialog} currError={currError} setCurrError={setCurrError} closeDialog={closeDialog}
             submitFunc={logIn}
         />
 
@@ -214,9 +226,9 @@ function DialogLanding() {
                 <TextField autoFocus required fullWidth margin="dense" variant="standard"
                             id="utorid" name="utorid" label="UTORid" type="utorid"/>
             </>}
+            name='resetPasswordRequest'
             submitTitle='Submit'
-            isOpen={openForgetPassword}
-            setOpen={setOpenForgetPassword}
+            currDialog={currDialog} currError={currError} setCurrError={setCurrError} closeDialog={closeDialog}
             submitFunc={resetPasswordRequest}
         />
 
@@ -231,10 +243,10 @@ function DialogLanding() {
                     It will expire in 1 hour at {token['expiresAt']}. Enter it to reset your password.
                 </Typography>
             </>}
+            name='confirmationCode'
             submitTitle='Reset Password'
-            isOpen={openCode}
-            setOpen={setOpenCode}
-            submitFunc={toggleResetPassword}
+            currDialog={currDialog} currError={currError} setCurrError={setCurrError} closeDialog={closeDialog}
+            submitFunc={async () => changeDialog('resetPassword')}
         />
 
         <DialogGeneric
@@ -245,11 +257,11 @@ function DialogLanding() {
                             id="token" name="token" label="Confirmation Code" type="text"/>
                 <TextField autoFocus required fullWidth margin="dense" variant="standard"
                             id="utorid" name="utorid" label="UTORid" type="text"/>
-                <InputPassword id='password' name='password' label='New Password'/>
+                <InputPassword id='password' name='password' label='New Password' errorChecking/>
             </>}
+            name='resetPassword'
             submitTitle='Sign In'
-            isOpen={openResetPassword}
-            setOpen={setOpenResetPassword}
+            currDialog={currDialog} currError={currError} setCurrError={setCurrError} closeDialog={closeDialog}
             submitFunc={resetPassword}
         />
     </>
@@ -268,7 +280,7 @@ export default function Landing() {
             </Typography>
         </div>
         <div id='block-img'>
-            <img src={landing_splash} alt='Splash image'/>
+            <img src={landing_splash} alt='Splash image' id='splash'/>
         </div>
     </section>
     <DialogLanding/></>

@@ -12,7 +12,11 @@ section {
 #block-img {
     max-width: calc(100% - 600px);
 }
-img {
+#logo {
+    width: 80px;
+    filter: invert(1);
+}
+#splash {
     max-height: 80vh;
     width: 100%;
 }
