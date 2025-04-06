@@ -102,14 +102,21 @@ function permLevel(levelNeeded) {
             return res.status(403).json({'error': `utorid not found`});
         }
         req.user = user;
-        if (hasPerms(user.role, levelNeeded))
+        if (hasPerms(user.role, levelNeeded)) {
+            // View page with different role
+            const role = req.body['viewAsRole'];
+            if (!role)
+                return next();
+            if (!hasPerms(role, levelNeeded))
+                return res.status(403).json({'error': `bad viewing permission level ${role}`});
+            req.user.role = role;
             return next();
+        }
 
         console.log(`403, role=${user.role}, need=${levelNeeded}`);
         return res.status(403).json({'error': `role=${user.role}, need=${levelNeeded}`});
     }
 }
-
 
 /*******************************************************************************
 Helper, Basic
