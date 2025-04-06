@@ -269,19 +269,29 @@ function DialogLanding() {
 
 
 export default function Landing() {
-    return <><section>
-        <div id='block-text'>
-            <Typography level="h1" sx={{fontSize: '56px', fontWeight: 'normal'}} >
-                Do you love <b>money</b>?<br />
-                We love <b>money</b> too.<br />
-                Get stuff from CSSU.<br />
-                Get points.<br />
-                Get <b>money</b>.
+    return <>
+        <header style={{ padding: '20px', backgroundColor: '#000000' }}>
+            <Typography level='title-lg' sx={{fontSize: '56px', fontWeight: 'bold', color: 'white'}}>CSSU</Typography>
+        </header>
+        <section>
+            <div id='block-text'>
+                <Typography level="h1" sx={{fontSize: '56px', fontWeight: 'normal'}} >
+                    Do you love <b>money</b>?<br />
+                    We love <b>money</b> too.<br />
+                    Get stuff from CSSU.<br />
+                    Get points.<br />
+                    Get <b>money</b>.
+                </Typography>
+            </div>
+            <div id='block-img'>
+                <img src={landing_splash} alt='Splash image' id='splash' />
+            </div>
+        </section>
+        <DialogLanding/>
+        <footer>
+            <Typography level="body-md" sx={{color: 'white'}}>
+                &copy;CSC309, Winter 2025, Bahen Center for Information Technology.
             </Typography>
-        </div>
-        <div id='block-img'>
-            <img src={landing_splash} alt='Splash image' id='splash'/>
-        </div>
-    </section>
-    <DialogLanding/></>
+        </footer>
+    </>
 }
