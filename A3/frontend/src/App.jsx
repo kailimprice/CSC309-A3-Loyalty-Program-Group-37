@@ -38,10 +38,12 @@ function App() {
         <Route path='/' element={<Layout />}>
           <Route index element={<Landing />} />
           {routes.map(([path, component]) => {
+            return (
             <>
                 <Route key={path} path={path} element={component}/>
                 <Route key={`${path}/:role`} path={`${path}/:role`} element={component}/>
             </>
+            );
           })}
           <Route path='*' element={<NotFound />} />
         </Route>
