@@ -21,7 +21,9 @@ const Layout = () => {
             <main>
                 <Box display='flex' height='100%' flexDirection='row' >
                     <Sidebar role={role} />
-                    <Outlet />
+                    <Box width='100%'>
+                        <Outlet />
+                    </Box>
                 </Box>
             </main>
             <footer>
