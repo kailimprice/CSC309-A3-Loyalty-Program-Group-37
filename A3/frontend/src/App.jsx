@@ -39,9 +39,10 @@ function App() {
         <Route index element={<Landing />} />
         <Route path='/' element={<Layout />}>
           {routes.map(([path, component]) => {
-            <>
+            return <>
               <Route key={path} path={path} element={component}/>
-              <Route key={`${path}/:role`} path={`${path}/:role`} element={component}/>
+              {/* TODO probably remove :role, replace it with a state that is passed down */}
+              {/* <Route key={`${path}/:role`} path={`${path}/:role`} element={component}/> */}
             </>
           })}
           <Route path='*' element={<NotFound />} />
