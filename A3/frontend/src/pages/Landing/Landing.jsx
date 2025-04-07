@@ -21,6 +21,7 @@ import {Paper, Box, Button, TextField, Dialog, DialogActions, TextareaAutosize,
         FormControl, IconButton, InputLabel, Input, InputAdornment, FormHelperText,
         DialogContent, DialogContentText, DialogTitle, Tooltip} from '@mui/material';
 import {fetchServer} from "../../utils/utils";
+import { useUserContext } from '../../contexts/UserContext';
 
 
 function DialogGeneric({title, children, submitTitle, name, currDialog,
@@ -132,6 +133,9 @@ function DialogLanding() {
     // Show password error checking after 1st sign-in attempt
     const [attempted, setAttempted] = useState(false);
 
+    // load user context in 
+    const { user, setUserDetails } = useUserContext();
+
     const closeDialog = () => {
         setCurrDialog(null);
         setCurrError(undefined);
@@ -179,7 +183,8 @@ function DialogLanding() {
         // Authenticate and store token
         const [response, e2] = await fetchServer(`auth/tokens`, {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            // https://stackoverflow.com/questions/44747874/when-using-mode-no-cors-for-a-request-browser-isn-t-adding-request-header-i-ve
+            headers: new Headers({'Content-Type': 'application/json'}),
             body: JSON.stringify(json)
         });
         if (e2) return e2;
@@ -187,10 +192,15 @@ function DialogLanding() {
         localStorage.setItem('token', responseJson.token);
 
         // Fetch user information
-        const [userInfo, e3] = await fetchServer('users/me', {method: 'GET'});
+        const [userInfo, e3] = await fetchServer('users/me', {
+            method: 'GET',
+            headers: new Headers({'Authorization': responseJson.token})
+        });
         if (e3) return e3;
-        responseJson = await response.json();
-        localStorage.setItem('user', userInfo);
+        responseJson = await userInfo.json();
+        localStorage.setItem('user', responseJson);
+
+        setUserDetails(responseJson)
 
         navigate('dashboard');
     }
