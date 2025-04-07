@@ -21,7 +21,7 @@ const Layout = () => {
             <main>
                 <Box display='flex' height='100%' flexDirection='row' >
                     <Sidebar role={role} />
-                    <Box width='100%'>
+                    <Box width='100%' sx={{margin: '16px'}}>
                         <Outlet />
                     </Box>
                 </Box>
