@@ -19,9 +19,9 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import {Visibility, VisibilityOff} from '@mui/icons-material';
 import {Paper, Box, Button, TextField, Dialog, DialogActions, TextareaAutosize,
         FormControl, IconButton, InputLabel, Input, InputAdornment, FormHelperText,
-        DialogContent, DialogContentText, DialogTitle, Tooltip} from '@mui/material'
+        DialogContent, DialogContentText, DialogTitle, Tooltip} from '@mui/material';
+import {fetchServer} from "../../utils/utils";
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 
 function DialogGeneric({title, children, submitTitle, name, currDialog,
                         currError, setCurrError, closeDialog, submitFunc, width}) {
@@ -124,16 +124,6 @@ function InputPassword({id, name, label, errorChecking}) {
 }
 
 
-async function fetchServer(path, details, errors) {
-    const response = await fetch(`${BACKEND_URL}/${path}`, details);
-    if (!response.ok) {
-        if (errors && errors[response.status])
-            return [null, errors[response.status]];
-        const responseJson = await response.json();
-        return [null, `Error ${response.status}: ${responseJson['error']}`];
-    }
-    return [response, false];
-}
 
 
 function DialogLanding() {
