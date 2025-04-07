@@ -280,8 +280,11 @@ function DialogLanding() {
 
 export default function Landing() {
     return <>
-        <header style={{ padding: '20px', backgroundColor: '#000000' }}>
-            <Typography level='title-lg' sx={{fontSize: '56px', fontWeight: 'bold', color: 'white'}}>CSSU</Typography>
+        <header style={{ height: '10vh', padding: '20px', backgroundColor: '#000000' }}>
+            <Box sx={{display: 'flex', alignItems: 'center', height: '100%', gap: '15px', paddingLeft: '2vh'}}>
+                <Box component='img' src={logo} alt='CSSU logo' sx={{width: 'auto', height: '100%'}} />
+                <Typography level='title-lg' sx={{fontSize: '6vh', fontWeight: 'bold', color: 'white'}}> CSSU</Typography>
+            </Box>
         </header>
         <section>
             <div id='block-text'>
