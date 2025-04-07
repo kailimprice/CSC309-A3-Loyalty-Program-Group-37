@@ -39,9 +39,10 @@ function App() {
         <Route index element={<Landing />} />
         <Route path='/' element={<Layout />}>
           {routes.map(([path, component]) => {
-            return (
+            <>
+              <Route key={path} path={path} element={component}/>
               <Route key={`${path}/:role`} path={`${path}/:role`} element={component}/>
-            );
+            </>
           })}
           <Route path='*' element={<NotFound />} />
         </Route>
@@ -51,14 +52,3 @@ function App() {
 }
 
 export default App
-
-/* 
-              <>
-                <Route key={path} path={path} element={component}/>
-              </>
-
-Took out /dashboard, /events, etc routes assuming we are only navigating by /XXX/:role
-Feel free to put back in if I am wrong
-
-Added sidebar layout wrapper
-*/

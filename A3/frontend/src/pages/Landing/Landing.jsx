@@ -181,17 +181,27 @@ function DialogLanding() {
     };
     const navigate = useNavigate();
     const logIn = async (json) => {
+        // Validate password
         const e1 = validatePassword(json['password']);
         if (e1)
             return setAttempted(true);
+        
+        // Authenticate and store token
         const [response, e2] = await fetchServer(`auth/tokens`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(json)
         });
         if (e2) return e2;
-        const responseJson = await response.json();
+        let responseJson = await response.json();
         localStorage.setItem('token', responseJson.token);
+
+        // Fetch user information
+        const [userInfo, e3] = await fetchServer('users/me', {method: 'GET'});
+        if (e3) return e3;
+        responseJson = await response.json();
+        localStorage.setItem('user', userInfo);
+
         navigate('dashboard');
     }
 
