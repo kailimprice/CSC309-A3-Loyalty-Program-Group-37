@@ -3,6 +3,7 @@
 
 
 const Navbar = () => {
+    //dynamically adjust navbar according to role
     return <>
     
     </>
