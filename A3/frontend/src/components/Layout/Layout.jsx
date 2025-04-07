@@ -9,14 +9,15 @@ import Footer from '../Footer/Footer'
 import "./Layout.css"
 
 const Layout = () => {
-    const { role } = useParams();
-    //add navbar
+    const role = 'regular';
+    //const { role } = useParams(); or however else
+    //add navbar to navbar file
     return (
         
         <Box display='flex' flexDirection='column' height='100vh'>
-            <Navbar />
+            <Navbar role={role} />
             <Box display='flex' flexGrow={1}>
-                <Sidebar />
+                <Sidebar role={role} />
                 <Box component='main' flexGrow={1} padding = '16px'>
                     <Outlet />
                 </Box>

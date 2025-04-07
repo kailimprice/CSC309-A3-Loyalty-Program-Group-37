@@ -10,7 +10,8 @@ import {Paper, Box, Button, TextField, Dialog, DialogActions, TextareaAutosize,
     FormControl, IconButton, InputLabel, Input, InputAdornment, FormHelperText,
     DialogContent, DialogContentText, DialogTitle, NativeSelect} from '@mui/material'
 
-export default function Sidebar() {
+export default function Sidebar(role) {
+    //use role to access menu items
     let menuItems;//add dynamic menu items
     return (
         <Box component='aside' width='20%' flexDirection='column' justifyContent='space-between' backgroundColor='#d9d9d9' padding='16px'>

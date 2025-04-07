@@ -2,7 +2,7 @@
 
 
 
-const Navbar = () => {
+const Navbar = (role) => {
     //dynamically adjust navbar according to role
     return <>
     
