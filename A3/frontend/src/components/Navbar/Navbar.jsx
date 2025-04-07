@@ -11,14 +11,19 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
-import AdbIcon from '@mui/icons-material/Adb';
 import { Link } from 'react-router-dom';
+import { useUserContext } from '../../contexts/UserContext';
+import logo from "../../assets/logo.png";
 
 const pages = ['Dashboard', 'Transactions', 'Events', 'Promotions', 'Users'];
-const settings = ['Profile', 'Logout'];
+const settings = ['QR', 'Profile', 'Logout'];
 
 // inspired by https://mui.com/material-ui/react-app-bar/?srsltid=AfmBOooWDrbMd6d-96DUha-sfChITDwLyi6DOf277qa1ipbjZ_KmvPP9#app-bar-with-responsive-menu
 const Navbar = (role) => {
+    
+    // retrieve user from context
+    const { user } = useUserContext();
+    
     // TODO: dynamically adjust navbar according to role
     const [anchorElNav, setAnchorElNav] = useState(null);
     const [anchorElUser, setAnchorElUser] = useState(null);
@@ -43,7 +48,7 @@ const Navbar = (role) => {
         <AppBar position="static" sx={{ bgcolor: "black" }}>
         <Container maxWidth="xl">
             <Toolbar disableGutters>
-            <Avatar sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} alt="Remy Sharp" src="cssu.png" />
+            <Avatar sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} alt="Avatar" src={logo} />
             <Typography
                 variant="h6"
                 noWrap
@@ -99,7 +104,6 @@ const Navbar = (role) => {
                 </Menu>
             </Box>
             {/* this next section is for regular displays */}
-            <AdbIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
             <Typography
                 variant="h5"
                 noWrap
@@ -151,14 +155,14 @@ const Navbar = (role) => {
                         fontWeight: 700
                     }}
                 >
-                    TODO: User
+                    {user.name}
                 </Typography>
             </Box>
             {/* profile picture settings */}
             <Box sx={{  flexGrow: 0 }}>
                 <Tooltip title="SETTINGS">
                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                    <Avatar alt="User" src="user.png" />
+                    <Avatar alt="User" src={user.avatarUrl} />
                 </IconButton>
                 </Tooltip>
                 <Menu

@@ -12,6 +12,7 @@ import Dashboard from './pages/Dashboard/Dashboard.jsx'
 import Landing from './pages/Landing/Landing.jsx'
 import NotFound from './pages/NotFound/NotFound.jsx'
 import Layout from './components/Layout/Layout.jsx'
+import { UserProvider } from './contexts/UserContext.jsx';
 
 import {CssBaseline} from '@mui/material';
 import './App.css'
@@ -33,22 +34,24 @@ const routes = [
 
 function App() {
   return (
-  <BrowserRouter>
-      <CssBaseline />
-      <Routes>
-        <Route index element={<Landing />} />
-        <Route path='/' element={<Layout />}>
-          {routes.map(([path, component]) => {
-            return <>
-              <Route key={path} path={path} element={component}/>
-              {/* TODO probably remove :role, replace it with a state that is passed down */}
-              {/* <Route key={`${path}/:role`} path={`${path}/:role`} element={component}/> */}
-            </>
-          })}
-          <Route path='*' element={<NotFound />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <UserProvider>
+      <BrowserRouter>
+        <CssBaseline />
+        <Routes>
+          <Route index element={<Landing />} />
+          <Route path='/' element={<Layout />}>
+            {routes.map(([path, component]) => {
+              return <>
+                <Route key={path} path={path} element={component}/>
+                {/* TODO probably remove :role, replace it with a state that is passed down */}
+                {/* <Route key={`${path}/:role`} path={`${path}/:role`} element={component}/> */}
+              </>
+            })}
+            <Route path='*' element={<NotFound />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </UserProvider>
   );
 }
 
