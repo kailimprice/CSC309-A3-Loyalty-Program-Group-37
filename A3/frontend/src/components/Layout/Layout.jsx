@@ -12,18 +12,22 @@ const Layout = () => {
     const role = 'regular';
     //const { role } = useParams(); or however else
     //add navbar to navbar file
+    // following t10 for reference here
     return (
-        
-        <Box display='flex' flexDirection='column' height='100vh'>
-            <Navbar role={role} />
-            <Box display='flex' flexGrow={1}>
-                <Sidebar role={role} />
-                <Box component='main' flexGrow={1} padding = '16px'>
+        <>
+            <header>
+                <Navbar role={role} />
+            </header>
+            <main>
+                <Box display='flex' height='100%' flexDirection='row' >
+                    <Sidebar role={role} />
                     <Outlet />
                 </Box>
-            </Box>
-            <Footer />
-        </Box>
+            </main>
+            <footer>
+                <Footer />
+            </footer>
+        </>
     )
 
 }
