@@ -134,7 +134,7 @@ function DialogLanding() {
     const [attempted, setAttempted] = useState(false);
 
     // load user context in 
-    const { user, setUserDetails } = useUserContext();
+    const { user, setUserDetails, setTokenDetails } = useUserContext();
 
     const closeDialog = () => {
         setCurrDialog(null);
@@ -183,22 +183,21 @@ function DialogLanding() {
         // Authenticate and store token
         const [response, e2] = await fetchServer(`auth/tokens`, {
             method: 'POST',
-            // https://stackoverflow.com/questions/44747874/when-using-mode-no-cors-for-a-request-browser-isn-t-adding-request-header-i-ve
             headers: new Headers({'Content-Type': 'application/json'}),
             body: JSON.stringify(json)
         });
         if (e2) return e2;
         let responseJson = await response.json();
-        localStorage.setItem('token', responseJson.token);
+
+        setTokenDetails(responseJson.token);
 
         // Fetch user information
         const [userInfo, e3] = await fetchServer('users/me', {
             method: 'GET',
-            headers: new Headers({'Authorization': responseJson.token})
+            headers: new Headers({'Authorization': `Bearer ${responseJson.token}`}),
         });
         if (e3) return e3;
         responseJson = await userInfo.json();
-        localStorage.setItem('user', responseJson);
 
         setUserDetails(responseJson)
 
