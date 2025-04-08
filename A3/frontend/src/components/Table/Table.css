@@ -13,6 +13,16 @@ td:not(:first-child), th:not(:first-child) {
 }
 tbody tr {
     text-align: left;
+    transition: 0.1s;
+}
+tbody tr:hover {
+    background-color: rgb(245, 245, 245);
+}
+.row-active {
+    background-color: rgb(237, 244, 251);
+}
+.row-active:hover {
+    background-color: rgb(227, 238, 250);
 }
 tbody tr:not(:last-child) {
     border-bottom: 1px solid rgb(222, 222, 222);
@@ -21,6 +31,5 @@ tr td:first-child {
     width: 42px;
 }
 thead tr {
-    background-color: rgb(240, 240, 240);
     border-bottom: 1px solid rgb(222, 222, 222);
 }

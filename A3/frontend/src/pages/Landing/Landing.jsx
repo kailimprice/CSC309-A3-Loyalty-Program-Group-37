@@ -54,7 +54,7 @@ function DialogGeneric({title, children, submitTitle, name, currDialog,
         </DialogContent>
 
         <DialogActions>
-            <Button sx={{width: 'calc(100% - 30px)', margin: 'auto', marginBottom: '15px'}}
+            <Button sx={{width: 'calc(100% - 30px)', margin: 'auto', marginBottom: '15px', textTransform: 'none'}}
                     type="submit" variant='contained'>{submitTitle}</Button>
         </DialogActions>
     </Dialog>;

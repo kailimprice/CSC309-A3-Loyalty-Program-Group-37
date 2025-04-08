@@ -4,6 +4,14 @@ import Checkbox from '@mui/material/Checkbox';
 import './Table.css'
 
 export default function Table({columns, data, selections, setSelections}) {
+    // Selection
+    const toggleRow = (id) => () => {
+        setSelections((x) => x.includes(id) ? x.filter(y => y != id) : [...x, id])
+    };
+    const toggleAll = () => {
+        setSelections(selections.length != data.length ? data.map(x => x.id) : []);
+    }
+    
     // Text is left-aligned, numbers are right-aligned
     const alignment = columns.reduce((result, x) => {
         result[x] = typeof(data[0][x]) != 'number' ? 'left' : 'right';
@@ -19,7 +27,9 @@ export default function Table({columns, data, selections, setSelections}) {
         </th>
     });
     const header = <tr>
-        <th><Checkbox /></th>
+        <th><Checkbox indeterminate={selections.length > 0 && selections.length < data.length}
+                        checked={selections.length == data.length}
+                        onClick={toggleAll} readOnly/></th>
         {headerContent}
     </tr>
 
@@ -27,17 +37,23 @@ export default function Table({columns, data, selections, setSelections}) {
     const navigate = useNavigate();
     const rows = [];
     for (let i = 0; i < data.length; i++) {
-        const doubleClick = () => navigate(data[i].id);
-        const row = [<td key={`${i}.checkbox`} align='center'><Checkbox /></td>];
+        const id = data[i].id;
+        const active = selections.includes(id);
+        const firstCheckbox = <td key={`${i}.checkbox`} align='center'>
+            <Checkbox onClick={toggleRow(id)} checked={active} readOnly/>
+        </td>;
+
+        const row = [firstCheckbox];
         for (let name of columns) {
-            const cell = <td key={`${i}.${name}`} onDoubleClick={doubleClick}>
+            const cell = <td key={`${i}.${name}`} onDoubleClick={() => navigate(`/users/${id}`)}
+                                onClick={toggleRow(id)}>
                 <Typography variant='body1' sx={{color: 'rgb(80, 80, 80)', textAlign: alignment[name]}}>
                     {data[i][name]}
                 </Typography>
             </td>
             row.push(cell);
         }
-        rows.push(<tr key={i} onDoubleClick={doubleClick}>
+        rows.push(<tr key={i} className={active ? 'row-active' : ''}>
             {row}
         </tr>);
     }
