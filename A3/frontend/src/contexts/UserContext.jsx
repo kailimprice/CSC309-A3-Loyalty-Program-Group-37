@@ -18,7 +18,7 @@ export const UserProvider = ({ children }) => {
     // this will be implemented soon, for testing sake made a hardcode
     // const [user, setUser] = useState(null);
     const [user, setUser] = useState(
-        { id: 1, name: "Clive", utorid: "clive123", role: "superuser", avatarUrl: avatar }
+        { id: 1, utorid: "clive123", role: "cashier", avatarUrl: avatar }
     );
 
     const setUserDetails = (userDetails) => {

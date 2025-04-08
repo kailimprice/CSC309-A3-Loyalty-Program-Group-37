@@ -155,7 +155,8 @@ const Navbar = (role) => {
                         fontWeight: 700
                     }}
                 >
-                    {user.name}
+                    {/* if user's name isnt provided then use the utorid (required) */}
+                    {user.name || user.utorid}
                 </Typography>
             </Box>
             {/* profile picture settings */}
