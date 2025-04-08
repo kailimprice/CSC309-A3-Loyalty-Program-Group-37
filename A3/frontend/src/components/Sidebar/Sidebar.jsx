@@ -20,12 +20,16 @@ export default function Sidebar(role) {
     const { user } = useUserContext();
 
     return (
-        <Box component='aside' width='20%' flexDirection='column' justifyContent='space-between' backgroundColor='#d9d9d9' padding='16px'>
-            <Box display='flex-reverse'>
-                <Typography variant='subtitle1' align='right' sx={{color: 'black'}} >
-                    Point Balance
+        <Box component='aside' width='25%' flexDirection='column' justifyContent='space-between' backgroundColor='#d9d9d9' padding='16px'>
+            <Box display='flex' flexDirection='column' alignItems='flex-end' marginBottom='40px'>
+                <Typography variant='subtitle1' sx={{color: 'black'}} >
+                    Current Balance
                 </Typography>
-                <Typography variant='h1' align='right' sx={{fontSize: '60px', fontWeight: 'bold', color: 'black'}}>39480</Typography>
+                <Box display='flex' alignItems='flex-end'>
+                    <Typography variant='h1' sx={{fontSize: '4.5vw', maxWidth: '100%', fontWeight: 'bold', color: 'black'}}>
+                        {user.points}{/* Falls of left of screen when larger than 8 digits */}
+                    </Typography>
+                </Box>
             </Box>
             <Box>
                 {menuItems}
