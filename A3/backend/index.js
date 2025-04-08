@@ -459,6 +459,12 @@ app.get('/users', permLevel('manager'), async (req, res) => {
     const filter = {};
     const varTransforms = {name: null, role: null, verified: x => (x == 'true') ? true : false};
     objectAddLax(varTransforms, query, filter);
+
+    // // Ordering
+    // const e2 = checkCondition(res, (!query['orderBy']) == (!query['order']), 400, `orderBy=${orderBy}, order=${order}`);
+    // if (e2) return e2;
+    // const sortable = ['id', 'utorid', 'name', 'birthday', 'role', 'points', 'createdAt', 'lastLogin', 'verified', 'suspicious'];
+    // const e3 = checkCondition(res, !query['orderBy'] || ['id', 'utorid', 'verified', 'activated', ].includes(query['orderBy']))
     
     // Extra behaviour
     if (query['activated'] == 'true') {
@@ -467,8 +473,13 @@ app.get('/users', permLevel('manager'), async (req, res) => {
         filter['lastLogin'] = null;
     }
     
-    const [count, result, e3] = await findMany(prisma.user, filter, query, res);
-    if (e3) return e3;
+    let [count, result, e4] = await findMany(prisma.user, filter, query, res);
+    if (e4) {
+        filter['utorid'] = filter['name'];
+        delete filter['name'];
+        [count, result, e4] = await findMany(prisma.user, filter, query, res);
+        if (e4) return e4;
+    }
     return res.status(200).json({count: count, results: result});
 });
 app.post('/users', permLevel('cashier'), async (req, res) => {

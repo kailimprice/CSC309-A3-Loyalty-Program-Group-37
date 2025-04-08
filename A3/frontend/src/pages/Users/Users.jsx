@@ -10,60 +10,104 @@
 
 import Typography from '@mui/joy/Typography';
 import Table from '../../components/Table/Table.jsx'
-import {useState} from 'react'
+import {useState, useEffect} from 'react'
 import FilterListIcon from '@mui/icons-material/FilterList';
-import {Box, Button} from '@mui/material';
+import {Stack, Button} from '@mui/material';
 import DialogGeneral from '../../components/DialogGeneral/DialogGeneral.jsx';
+import {useUserContext} from '../../contexts/UserContext';
+import {fetchServer} from "../../utils/utils";
+import NotFound from "../NotFound/NotFound.jsx"
 
-const columns = ['id', 'firstName', 'lastName', 'age', 'fullName'];
-const rows = [
-    { id: 1, lastName: 'Snow', firstName: 'Jon', age: 35 },
-    { id: 2, lastName: 'Lannister', firstName: 'Cersei', age: 42 },
-    { id: 3, lastName: 'Lannister', firstName: 'Jaime', age: 45 },
-    { id: 4, lastName: 'Stark', firstName: 'Arya', age: 16 },
-    { id: 5, lastName: 'Targaryen', firstName: 'Daenerys', age: null },
-    { id: 6, lastName: 'Melisandre', firstName: null, age: 150 },
-    { id: 7, lastName: 'Clifford', firstName: 'Ferrara', age: 44 },
-    { id: 8, lastName: 'Frances', firstName: 'Rossini', age: 36 },
-    { id: 9, lastName: 'Roxie', firstName: 'Harvey', age: 65 },
-];
+const columns = {
+    id: ['ID', 'number'],
+    utorid: ['UTORid', 'string'],
+    birthday: ['Birthday', 'date'],
+    role: ['Role', ['Superuser', 'Manager', 'Cashier', 'Regular']],
+    points: ['Points', 'number'],
+    createdAt: ['Created', 'date'],
+    lastLogin: ['Last Login', 'date'],
+    verified: ['Verified', 'boolean'],
+    suspicious: ['Suspicious', 'boolean']
+};
+const resultsPerPage = 10;
+
+// const filterFields = {
+//     name: ['Name/UTORid', 'string', null],
+//     role: ['Role', 'multichoice', ['']],
+//     verified: ['Verified', 'boolean', null],
+//     activated: ['Activated', 'boolean', null],
+//     page: ['Page', 'integer', checkPage],
+//     limit: ['Page Size', 'integer'],
+// }
+function FilterBody({fields}) {
+    return <></>
+}
+
+
 
 export default function Users() {
     const [filter, setFilter] = useState(false);
-    const [selections, setSelections] = useState([]);
+    const [selection, setSelection] = useState(undefined);
+    const [data, setData] = useState([]);
+    const [page, setPage] = useState(0);
+    const [numPages, setNumPages] = useState(0);
+    const [pageSize, setPageSize] = useState(0);
+
+    // const {user} = useUserContext();
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (!token)
+            return;
+
+        fetchServer('users', {
+            method: 'GET',
+            headers: new Headers({'Authorization': `Bearer ${token}`})
+        })
+        .then(x => {
+            const [result, error] = x;
+            if (error) {
+                setPage(0);
+                setNumPages(0);
+                setData([]);
+                return Promise.reject(error);
+            }
+            return result.json();
+        })
+        .then(x => {
+            const {results, count} = x;
+            for (let i = 0; i < results.length; i++) {
+                results[i].role = results[i].role[0].toUpperCase() + results[i].role.slice(1);
+            }
+            setPage(1);
+            setNumPages(Math.ceil(count / resultsPerPage));
+            setData(results);
+        })
+        .catch(x => console.log(x));
+    }, []);
+
+    const token = localStorage.getItem('token');
+    if (!token)
+        return <NotFound/>
+
+    const buttons = <Stack direction='row' spacing={1} sx={{margin: '5px 0px'}}>
+        <Button sx={{textTransform: 'none'}} variant='outlined' size='small'
+                startIcon={<FilterListIcon/>} onClick={() => setFilter(true)}> 
+            Filter
+        </Button>
+    </Stack>
 
     return <>
-        <Typography variant='h3'>
+        <Typography variant='h3' sx={{marginBottom: '5px'}}>
             Transactions
         </Typography>
 
         <DialogGeneral title='Filter' submitTitle='Apply Filter' open={filter} setOpen={setFilter}
                         dialogStyle={{width: '400px'}}
                         submitFunc={async () => console.log('apply filter')}>
-            <h1>Hi!</h1>
+            <FilterBody fields={null} />
         </DialogGeneral>
         
-        <Box sx={{display: 'flex', gap: '5px', margin: '10px 0px'}}>
-            <Button sx={{textTransform: 'none'}} variant='outlined'
-                    startIcon={<FilterListIcon/>} onClick={() => setFilter(true)}> 
-                Filter
-            </Button>
-            
-            <Button sx={{textTransform: 'none'}} variant='outlined'
-                    disabled={selections.length == 0}>
-                Set Role
-            </Button>
-            
-            <Button sx={{textTransform: 'none'}} variant='outlined'
-                    disabled={selections.length == 0}>
-                Toggle Verified
-            </Button>
-            
-            <Button sx={{textTransform: 'none'}} variant='outlined'
-                    disabled={selections.length == 0}>
-                Toggle Suspicious
-            </Button>
-        </Box>
-        <Table columns={columns} data={rows} selections={selections} setSelections={setSelections}></Table>        
+        <Table columns={columns} data={data} selection={selection} setSelection={setSelection}
+                page={page} numPages={numPages} buttons={buttons}/>
     </>
 }
