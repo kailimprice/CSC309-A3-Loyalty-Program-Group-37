@@ -1,5 +1,6 @@
-import {useState} from 'react'
-import {Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from '@mui/material';
+import {useState, Fragment} from 'react'
+import {Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
+        Typography, TextField, RadioGroup, Radio, FormControlLabel} from '@mui/material';
 
 /**
  * General-purpose dialog box. In your code, add a state:
@@ -16,7 +17,7 @@ import {Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, Di
  * @param dialogStyle Optional object for styling the dialog box (e.g. {width: '400px', ...})
  * @returns Dialog box
  */
-export default function DialogGeneral({title, children, submitTitle, open, setOpen, submitFunc, dialogStyle}) {
+export function DialogGeneral({title, children, submitTitle, open, setOpen, submitFunc, dialogStyle}) {
     const [error, setError] = useState(undefined);
     return <Dialog open={open} onClose={() => setOpen(false)}
                     slotProps={{paper: {component: 'form',
@@ -49,4 +50,30 @@ export default function DialogGeneral({title, children, submitTitle, open, setOp
                     type="submit" variant='contained'>{submitTitle}</Button>
         </DialogActions>
     </Dialog>;
+}
+
+/**
+ * General-purpose builder for filter dialog box body
+ * @param fields Of the format {fieldName: [displayName, dataType]}
+ * dataType supports 'text' and 'boolean'
+ */
+export function FilterBody({fields}) {
+    const rows = [];
+    for (let name in fields) {
+        const [display, type] = fields[name];
+        rows.push(<Fragment key={display}>
+            <Typography key={display}>{display}</Typography>
+            {type == 'text' &&
+            <TextField fullWidth variant="outlined" margin='dense' slotProps={{htmlInput: {style: {padding: '5px 10px'}}}}
+                        id={name} name={name} type={type}/>}
+            {type == 'boolean' &&
+            <RadioGroup row sx={{justifyContent: 'center'}}>
+                <FormControlLabel name={name} value={false} control={<Radio/>} label="No"/>
+                <FormControlLabel name={name} value={true} control={<Radio/>} label="Yes"/>
+            </RadioGroup>}
+        </Fragment>);
+    }
+    return <Box style={{display: 'grid', gridTemplateColumns: 'auto auto', alignItems: 'center'}}>
+        {rows}
+    </Box>;
 }

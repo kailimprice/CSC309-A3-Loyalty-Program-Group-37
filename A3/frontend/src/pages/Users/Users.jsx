@@ -12,8 +12,8 @@ import Typography from '@mui/joy/Typography';
 import Table from '../../components/Table/Table.jsx'
 import {useState, useEffect} from 'react'
 import FilterListIcon from '@mui/icons-material/FilterList';
-import {Box, Stack, Button, TextField, Radio, RadioGroup, FormControlLabel} from '@mui/material';
-import DialogGeneral from '../../components/DialogGeneral/DialogGeneral.jsx';
+import {Stack, Button} from '@mui/material';
+import {DialogGeneral, FilterBody} from '../../components/DialogGeneral/DialogGeneral.jsx';
 import {useUserContext} from '../../contexts/UserContext';
 import {fetchServer} from "../../utils/utils";
 import NotFound from "../NotFound/NotFound.jsx"
@@ -133,26 +133,6 @@ export default function Users() {
         verified: ['Verified', 'boolean'],
         activated: ['Activated', 'boolean']
     };
-    function FilterBody({fields}) {
-        const rows = [];
-        for (let name in fields) {
-            const [display, type] = fields[name];
-            rows.push(<>
-                <Typography>{display}</Typography>
-                {type == 'text' &&
-                <TextField fullWidth variant="outlined" margin='dense' slotProps={{htmlInput: {style: {padding: '5px 10px'}}}}
-                            id={name} name={name} type={type}/>}
-                {type == 'boolean' &&
-                <RadioGroup row sx={{justifyContent: 'center'}}>
-                    <FormControlLabel name={name} value={false} control={<Radio/>} label="No"/>
-                    <FormControlLabel name={name} value={true} control={<Radio/>} label="Yes"/>
-                </RadioGroup>}
-            </>);
-        }
-        return <Box style={{display: 'grid', gridTemplateColumns: 'auto auto', alignItems: 'center'}}>
-            {rows}
-        </Box>;
-    }
     async function applyFilter(json) {
         for (let key in json) {
             if (json[key] == '')
