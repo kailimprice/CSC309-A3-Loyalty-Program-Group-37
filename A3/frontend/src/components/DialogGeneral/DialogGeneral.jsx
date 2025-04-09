@@ -64,8 +64,16 @@ export function FilterBody({fields}) {
         rows.push(<Fragment key={display}>
             <Typography key={display}>{display}</Typography>
             {type == 'text' &&
-            <TextField fullWidth variant="outlined" margin='dense' slotProps={{htmlInput: {style: {padding: '5px 10px'}}}}
-                        id={name} name={name} type={type}/>}
+                <TextField 
+                    fullWidth 
+                    variant="outlined" 
+                    margin='dense' 
+                    slotProps={{htmlInput: {style: {padding: '5px 10px'}}}}
+                    id={name} 
+                    name={name} 
+                    type={type}
+                />
+            }
             {type == 'boolean' &&
             <RadioGroup row sx={{justifyContent: 'center'}}>
                 <FormControlLabel name={name} value={false} control={<Radio/>} label="No"/>
@@ -73,8 +81,8 @@ export function FilterBody({fields}) {
             </RadioGroup>}
             {type == 'booleanPromotion' &&
                 <RadioGroup row sx={{justifyContent: 'center'}}>
-                    <FormControlLabel name={name} value={false} control={<Radio/>} label="Automatic"/>
-                    <FormControlLabel name={name} value={true} control={<Radio/>} label="One-time"/>
+                    <FormControlLabel name={name} value={'automatic'} control={<Radio/>} label="Automatic"/>
+                    <FormControlLabel name={name} value={'onetime'} control={<Radio/>} label="One-time"/>
                 </RadioGroup>
                 }
             {type == 'number' && 
@@ -85,7 +93,7 @@ export function FilterBody({fields}) {
                     id={name}
                     name={name}
                     type='number'
-              />
+                />
             }
             {type == 'dollar' && 
                 <TextField
