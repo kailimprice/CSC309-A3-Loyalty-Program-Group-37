@@ -762,17 +762,93 @@ app.get('/transactions', permLevel('manager'), async (req, res) => {
                      infoRedemption: {include: {cashier: {select: {utorid: true}}}},
                      infoTransfer: {include: {relatedUser: {select: {utorid: true}}}},
                      infoEvent: {include: {user: {select: {utorid: true, name: true}}}}};
-    const orderBy = {};
+    
     if (query['orderBy']) {
-        orderBy[query['orderBy']] = query['order'];
-        delete filter['orderBy'];
-        delete filter['order'];
+        let {orderBy, order, page, limit} = query;
+        const result = await prisma.transaction.findMany({where: filter, include: include});
+        const count = await prisma.transaction.count({where: filter});
+        postProcessGetTransaction(include, result);
+        sanitizeTransactions(result);
+
+        limit = parseInt(limit, 10);
+        page = parseInt(page, 10);    
+        const take = isNaN(limit) ? 10 : limit;
+        const skip = isNaN(page) ? 0 : take * (page - 1);
+        
+        const falsey = x => x == null || x == undefined || x == '' || (x.length && x.length == 0);
+        const r = result.sort((a, b) => {
+            if (falsey(a[orderBy]) && falsey(b[orderBy]))
+                return 0;
+            if (falsey(a[orderBy]))
+                return order == 'asc' ? -1 : 1;
+            if (falsey(b[orderBy]))
+                return order == 'asc' ? 1 : -1;
+            if (a[orderBy] < b[orderBy])
+                return order == 'asc' ? -1 : 1;
+            if (a[orderBy] > b[orderBy])
+                return order == 'asc' ? 1 : -1;
+            return 0;
+        }).slice(skip, skip + take);
+        return res.status(200).json({count: count, results: r});
     }
-    const [count, result, e3] = await findMany(prisma.transaction, filter, query, res, include, {}, orderBy);
+    const [count, result, e3] = await findMany(prisma.transaction, filter, query, res, include, {});
     if (e3) return e3;
     postProcessGetTransaction(include, result);
+    sanitizeTransactions(result);
     return res.status(200).json({count: count, results: result});
 });
+
+function sanitizeTransactions(results) {
+    for (let i = 0; i < results.length; i++) {
+        const {type, createdBy, infoAdjustment, infoEvent, infoPurchase, infoRedemption, infoTransfer} = results[i];
+        results[i].type = type[0].toUpperCase() + type.slice(1);
+        
+        if (infoAdjustment) {
+            results[i].amount = infoRedemption.amount;
+            results[i].utorid = infoRedemption.utorid;
+            results[i].name = infoRedemption.user ? infoRedemption.user.name : null;
+            results[i].suspicious = infoAdjustment.suspicious;
+            results[i].processedBy = null;
+            results[i].transfer = null;
+            results[i].purchaser = null;
+            results[i].type = [results[i].type, infoAdjustment.relatedId];
+        } else if (infoEvent) {
+            results[i].amount = infoEvent.awarded;
+            results[i].utorid = infoEvent.recipient;
+            results[i].name = infoEvent.user ? infoEvent.user.name : null;
+            results[i].suspicious = null;
+            results[i].processedBy = null;
+            results[i].transfer = null;
+            results[i].purchaser = null;
+            results[i].type = [results[i].type, infoEvent.relatedId];
+        } else if (infoPurchase) {
+            results[i].amount = infoPurchase.spent;
+            results[i].utorid = infoPurchase.utorid;
+            results[i].name = infoPurchase.user ? infoPurchase.user.name : null;
+            results[i].suspicious = infoPurchase.suspicious;
+            results[i].processedBy = null;
+            results[i].purchaser = infoPurchase.utorid;
+            results[i].transfer = null;
+        } else if (infoRedemption) {
+            results[i].amount = infoRedemption.amount;
+            results[i].utorid = infoRedemption.utorid;
+            results[i].name = infoRedemption.user ? infoRedemption.user.name : null;
+            results[i].suspicious = null;
+            results[i].processedBy = infoRedemption.user ? infoRedemption.user.utorid : 'N/A';
+            results[i].purchaser = null;
+            results[i].transfer = null;
+        } else if (infoTransfer) {
+            results[i].amount = infoTransfer.sent;
+            results[i].utorid = null;
+            results[i].name = null;
+            results[i].suspicious = null;
+            results[i].processed = null;
+            results[i].purchaser = null;
+            const t = infoTransfer.relatedUser.utorid == createdBy ? 'From: ' : 'Sent: ';
+            results[i].transfer = `${t}${infoTransfer.relatedUser.utorid}`;
+        }
+    }
+}
 
 app.get('/transactions/:transactionId', permLevel('manager'), async (req, res) => {
     const [transactionId, e1] = getParamIndex('transactionId', req, res);
@@ -793,7 +869,7 @@ app.get('/transactions/:transactionId', permLevel('manager'), async (req, res) =
 });
 
 app.get('/users/me/transactions', permLevel('regular'), async (req, res) => {
-    const variables = ['promotionId', 'type', 'relatedId', 'amount', 'operator', 'page', 'limit'];
+    const variables = ['promotionId', 'type', 'relatedId', 'amount', 'operator', 'page', 'limit', 'orderBy', 'order'];
     const [query, e1] = queryAllow(variables, req, res);
     if (e1) return e1;
     const e2 = checkCondition(res, req.user.verified, 403, `user=${req.utorid} is not verified`);
@@ -816,9 +892,39 @@ app.get('/users/me/transactions', permLevel('regular'), async (req, res) => {
                      infoRedemption: {include: {cashier: {select: {utorid: true}}}},
                      infoTransfer: {include: {relatedUser: {select: {utorid: true}}}},
                      infoEvent: {include: {user: {select: {utorid: true, name: true}}}}};
+    if (query['orderBy']) {
+        let {orderBy, order, page, limit} = query;
+        const result = await prisma.transaction.findMany({where: filter, include: include});
+        const count = await prisma.transaction.count({where: filter});
+        postProcessGetTransaction(include, result);
+        sanitizeTransactions(result);
+
+        limit = parseInt(limit, 10);
+        page = parseInt(page, 10);    
+        const take = isNaN(limit) ? 10 : limit;
+        const skip = isNaN(page) ? 0 : take * (page - 1);
+        
+        const falsey = x => x == null || x == undefined || x == '' || (x.length && x.length == 0);
+        const r = result.sort((a, b) => {
+            if (falsey(a[orderBy]) && falsey(b[orderBy]))
+                return 0;
+            if (falsey(a[orderBy]))
+                return order == 'asc' ? -1 : 1;
+            if (falsey(b[orderBy]))
+                return order == 'asc' ? 1 : -1;
+            if (a[orderBy] < b[orderBy])
+                return order == 'asc' ? -1 : 1;
+            if (a[orderBy] > b[orderBy])
+                return order == 'asc' ? 1 : -1;
+            return 0;
+        }).slice(skip, skip + take);
+        return res.status(200).json({count: count, results: r});
+    }
+                     
     const [count, result, e3] = await findMany(prisma.transaction, filter, query, res, include);
     if (e3) return e3;
     postProcessGetTransaction(include, result);
+    sanitizeTransactions(result);
     return res.status(200).json({count: count, results: result});
 });
 
