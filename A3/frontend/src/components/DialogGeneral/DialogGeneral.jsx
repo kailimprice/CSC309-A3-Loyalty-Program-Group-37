@@ -71,6 +71,46 @@ export function FilterBody({fields}) {
                 <FormControlLabel name={name} value={false} control={<Radio/>} label="No"/>
                 <FormControlLabel name={name} value={true} control={<Radio/>} label="Yes"/>
             </RadioGroup>}
+            {type == 'number' && 
+                <TextField
+                    fullWidth
+                    variant='outlined'
+                    margin='dense'
+                    id={name}
+                    name={name}
+                    type='number'
+              />
+            }
+            {type == 'dollar' && 
+                <TextField
+                    fullWidth
+                    variant="outlined"
+                    margin="dense"
+                    id={name}
+                    name={name}
+                    type="number"
+                />
+            }
+            {type == 'ids' && 
+                <TextField
+                    fullWidth
+                    variant="outlined"
+                    margin="dense"
+                    id={name}
+                    name={name}
+                    placeholder="1,2,3 etc"
+                />
+            }
+            {type == 'time' && 
+                <TextField
+                    fullWidth
+                    variant="outlined"
+                    margin="dense"
+                    id={name}
+                    name={name}
+                    type="datetime-local"
+                />
+            }
         </Fragment>);
     }
     return <Box style={{display: 'grid', gridTemplateColumns: 'auto auto', alignItems: 'center'}}>

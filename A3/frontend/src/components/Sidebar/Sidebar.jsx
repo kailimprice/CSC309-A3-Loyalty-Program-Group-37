@@ -14,6 +14,7 @@ import { useUserContext } from '../../contexts/UserContext';
 import { hasPerms, PERMISSION_LEVELS } from "../../utils/utils";
 import { useLocation } from "react-router-dom";
 import {DialogGeneral, FilterBody} from '../../components/DialogGeneral/DialogGeneral.jsx';
+import {useState, useEffect} from 'react'
 
 const sidebarButtons ={
     regular: [
@@ -44,6 +45,51 @@ const sidebarButtons ={
     ]
 }
 
+const sidebarDialogFields = {
+    redemption: {
+        /* type */
+        amount: ['Amount', 'number'],
+        remark: ['Remark', 'text']  /* optional */
+    },
+    transfer: {
+        userId: ['User ID', 'number'], /* from url? */
+        /* type */
+        amount: ['Amount', 'number'],
+        remark: ['Remark', 'text'] /* optional */
+    },
+    purchase: {
+        utorid: ['UTORid', 'text'],
+        /* type */
+        spent: ['Amount Spent', 'dollar'],
+        promotionIds: ['Promotion Ids', 'ids'], /* optional */
+        remark: ['Remark', 'text']  /* optional */
+    },
+    event: {
+        name: ['Name', 'text'],
+        description: ['Description', 'text'],
+        location: ['Location', 'text'],
+        startTime: ['Start Time', 'time'],
+        endTime: ['End Time', 'time'],
+        capacity: ['Capacity', 'number'], /* optional */
+        points: ['Points', 'number'],
+    },
+    promotion: {
+        name: ['Name', 'text'],
+        description: ['Description', 'text'],
+        type: ['Type', 'boolean'], /* automatic or one time */
+        startTime: ['Start Time', 'time'],
+        endTime: ['End Time', 'time'],
+        minSpending: ['Minimum Spend', 'number'], /* optional */
+        rate: ['Rate', 'number'], /* optional */
+        points: ['Points', 'number'] /* optional */
+    },
+    user: {
+        utorid: ['UTORid', 'text'],
+        name: ['Name', 'text'],
+        email: ['Email', 'text'],
+    }
+}
+
 
 function getViewablePermissions(user, url) {
     let viewable = PERMISSION_LEVELS.slice(1).filter(x => hasPerms(user.role, x));
@@ -64,7 +110,7 @@ export default function Sidebar() {
     const location = useLocation();
     const viewablePermissions = getViewablePermissions(user, location.pathname);
     const buttonItems = sidebarButtons[viewAs];
-  
+    const [openDialogButton, setOpenDialogButton] = useState(null);
 
     async function handleSubmit() {
         //todo
@@ -92,7 +138,15 @@ export default function Sidebar() {
                 })}
             </Box>
 
-            
+            <DialogGeneral 
+                title={`Create ${openDialogButton}`} 
+                submitTitle='Create' 
+                open={!!openDialogButton} 
+                setOpen={() => setOpenDialogButton(null)}
+                dialogStyle={{width: '400px'}}
+                submitFunc={() => handleSubmit()}>
+                <FilterBody fields={sidebarDialogFields[openDialogButton]}/>
+            </DialogGeneral>
 
             <Stack direction='row' sx={{justifyContent: 'flex-end', gap: '10px'}}>
                 <Typography variant='subtitle2' sx={{fontStyle: 'italics', display: 'block'}}>
