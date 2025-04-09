@@ -28,7 +28,7 @@ export default function User() {
     const [suspicious, setSuspicious] = useState(false);
     const [role, setRole] = useState("");
     // error tracking
-    const [error, setError] = useState("");
+    const [error, setError] = useState("You do not have permission to edit this user.");
 
 
     // get user details for given id
@@ -159,7 +159,7 @@ export default function User() {
     // grid setup inspired by https://mui.com/material-ui/react-grid/
     return <>
           <h1>Edit User Information</h1>
-          <Grid container spacing={2} padding={3}>
+          <Grid container spacing={2} padding={3} alignItems={'center'}>
             {/* display error message if one*/}
             {error && (
                   <Grid size={12}>
@@ -167,7 +167,7 @@ export default function User() {
                       <Alert severity="error">{error}</Alert>
                   </Grid>
             )}
-
+            
             {/* if editing own profile */}
             {id === user.id ? (
                     <>
@@ -284,17 +284,21 @@ export default function User() {
                     </>
                 ) : null}
 
-                {/* submit */}
-                <Grid size={12}>
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        sx={{ backgroundColor: "#4467C4" }}
-                        onClick={handleSubmit}
-                    >
-                        Submit
-                    </Button>
-                </Grid>
+                {!error && (
+                  <>
+                  {/* submit */}
+                  <Grid size={12}>
+                      <Button
+                          variant="contained"
+                          color="primary"
+                          sx={{ backgroundColor: "#4467C4" }}
+                          onClick={handleSubmit}
+                      >
+                          Submit
+                      </Button>
+                  </Grid>
+                  </>
+              )}
           </Grid> 
     </>
   }
