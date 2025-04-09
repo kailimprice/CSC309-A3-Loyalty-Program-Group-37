@@ -2,8 +2,6 @@
 //View/edit: name, email, birthday, avatar
 //Functionality: ability to reset password
 
-import Typography from '@mui/joy/Typography';
-import Table from '../../components/Table/Table.jsx'
 import { TextField, Button, Grid, NativeSelect, Checkbox } from '@mui/material';
 import { useState, useEffect } from 'react'
 import { useUserContext } from '../../contexts/UserContext.jsx';
@@ -14,7 +12,7 @@ import { fetchServer } from '../../utils/utils.jsx';
 import { useParams } from 'react-router-dom';
 import { FormControl } from '@mui/joy';
 import dayjs from 'dayjs';
-import { useDateField } from '@mui/x-date-pickers/DateField/useDateField.js';
+import { Alert } from '@mui/material'; 
 
 export default function User() {
 
@@ -29,6 +27,8 @@ export default function User() {
     const [verified, setVerified] = useState(false);
     const [suspicious, setSuspicious] = useState(false);
     const [role, setRole] = useState("");
+    // error tracking
+    const [error, setError] = useState("");
 
 
     // get user details for given id
@@ -45,6 +45,7 @@ export default function User() {
             })
           })
           if (error) {
+            setError("Error fetching user details:", error);
             console.error("Error fetching user details:", error);
             return;
           }
@@ -72,6 +73,7 @@ export default function User() {
               })
             })
             if (error) {
+              setError("Error fetching user profile details:", error);
               console.error("Error fetching user profile details:", error);
               return;
             }
@@ -111,11 +113,13 @@ export default function User() {
             body: JSON.stringify(updateDetails)
           })
           if (error) {
+            setError("Error patching curent user details:", error);
             console.error("Error patching curent user details:", error);
             return;
-          }
+          } 
 
           setUserDetails(updateDetails);
+          setError(""); 
       }
 
       if (user.role === "manager" || user.role === "superuser") {
@@ -138,6 +142,7 @@ export default function User() {
             body: JSON.stringify(updateDetails)
           })
           if (error) {
+            setError("Error  patching user details:", error);
             console.error("Error patching user details:", error);
             return;
           }
@@ -145,22 +150,32 @@ export default function User() {
           if (id === user.id){
             setUserDetails(updateDetails);
           }
+
+          setError(""); 
       }
     };
     
     // layout inspired by prev project https://github.com/emily-su-dev/Sinker/blob/main/src/app/components/InfoBox.tsx
     // grid setup inspired by https://mui.com/material-ui/react-grid/
     return <>
-          <h1>Edit Information</h1>
-          <Grid container spacing={2} padding={4}>
+          <h1>Edit User Information</h1>
+          <Grid container spacing={2} padding={3}>
+            {/* display error message if one*/}
+            {error && (
+                  <Grid size={12}>
+                      {/* alerts: https://mui.com/material-ui/react-alert/?srsltid=AfmBOoou_o4_8K8hszRKhrNwGHIQi0AiFRewwf3tT0chGeQsevtOFnp2 */}
+                      <Alert severity="error">{error}</Alert>
+                  </Grid>
+            )}
+
             {/* if editing own profile */}
             {id === user.id ? (
                     <>
                         {/* edit name */}
-                        <Grid size={4}>
+                        <Grid size={{ xs: 5, sm: 5, md: 3 }}>
                             <p>Name</p>
                         </Grid>
-                        <Grid size={8}>
+                        <Grid size={{ xs: 7, sm: 7, md: 9 }}>
                             <TextField
                                 fullWidth
                                 variant="outlined"
@@ -170,10 +185,10 @@ export default function User() {
                         </Grid>
 
                         {/* edit avatar */}
-                        <Grid size={4}>
+                        <Grid size={{ xs: 5, sm: 5, md: 3 }}>
                             <p>Avatar URL</p>
                         </Grid>
-                        <Grid size={8}>
+                        <Grid size={{ xs: 7, sm: 7, md: 9 }}>
                             <TextField
                                 fullWidth
                                 variant="outlined"
@@ -183,10 +198,10 @@ export default function User() {
                         </Grid>
 
                         {/* edit birthday */}
-                        <Grid size={4}>
+                        <Grid size={{ xs: 5, sm: 5, md: 3 }}>
                             <p>Birthday</p>
                         </Grid>
-                        <Grid size={8}>
+                        <Grid size={{ xs: 7, sm: 7, md: 9 }}>
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
                             <DatePicker
                                 value={birthday || null}
@@ -202,10 +217,10 @@ export default function User() {
                  {(id === user.id) || (user.role === "manager" || user.role === "superuser") ? (
                     <>
                         {/* edit email */}
-                        <Grid size={4}>
+                        <Grid size={{ xs: 5, sm: 5, md: 3 }}>
                             <p>Email</p>
                         </Grid>
-                        <Grid size={8}>
+                        <Grid size={{ xs: 7, sm: 7, md: 9 }}>
                             <TextField
                                 fullWidth
                                 variant="outlined"
@@ -221,10 +236,10 @@ export default function User() {
                 {(user.role === "manager" || user.role === "superuser") ? (
                     <>
                         {/* edit verified */}
-                        <Grid size={4}>
+                        <Grid size={{ xs: 5, sm: 5, md: 3 }}>
                             <p>Verified</p>
                         </Grid>
-                        <Grid size={8}>
+                        <Grid size={{ xs: 7, sm: 7, md: 9 }}>
                             <Checkbox
                                 checked={verified}
                                 onChange={(e) => setVerified(e.target.checked)}
@@ -232,10 +247,10 @@ export default function User() {
                         </Grid>
 
                         {/* edit suspicious */}
-                        <Grid size={4}>
+                        <Grid size={{ xs: 5, sm: 5, md: 3 }}>
                             <p>Suspicious</p>
                         </Grid>
-                        <Grid size={8}>
+                        <Grid size={{ xs: 7, sm: 7, md: 9 }}>
                             <Checkbox
                                 checked={suspicious}
                                 onChange={(e) => setSuspicious(e.target.checked)}
@@ -243,10 +258,10 @@ export default function User() {
                         </Grid>
 
                         {/* edit role */}
-                        <Grid size={4}>
+                        <Grid size={{ xs: 5, sm: 5, md: 3 }}>
                             <p>Role</p>
                         </Grid>
-                        <Grid size={8}>
+                        <Grid size={{ xs: 7, sm: 7, md: 9 }}>
                           <FormControl fullWidth>
                               <NativeSelect
                                   // start off with the lowest role
