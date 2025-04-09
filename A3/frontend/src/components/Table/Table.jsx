@@ -4,6 +4,7 @@ import {Stack} from '@mui/material';
 import Typography from '@mui/joy/Typography';
 import ButtonDirection from '../Button/ButtonDirection';
 import ButtonTag from '../Button/ButtonTag';
+import Tag from '../Button/Tag';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import './Table.css'
 
@@ -108,6 +109,10 @@ export default function Table({columns, data, page, numPages, buttons}) {
                                         id={data[i].id}
                                         options={settable.includes(value) ? settable : []}
                                         changeFunc={changeFunc}/>
+            } else if (Array.isArray(format)) {
+                cellContent = <Tag value={value}
+                                    type={`tag-${value.toLowerCase()}`}
+                                    options={format}/>
             } else if (format == 'boolean' && editable) {
                 cellContent = <ButtonTag value={value == true ? 'Yes' : value == false ? 'No' : null}
                                         id={data[i].id}
