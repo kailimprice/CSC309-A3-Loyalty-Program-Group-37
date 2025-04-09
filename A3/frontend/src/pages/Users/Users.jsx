@@ -26,7 +26,7 @@ export default function Users() {
     const [data, setData] = useState([]);
     const [page, setPage] = useState(0);
     const [numPages, setNumPages] = useState(0);
-    const {viewAs} = useUserContext();
+    const {viewAs, updateDisplay} = useUserContext();
     const [searchParams, setSearchParams] = useSearchParams();
     const token = localStorage.getItem('token');
     const location = useLocation();
@@ -62,7 +62,7 @@ export default function Users() {
         if (!token)
             return;
         getUsers(token);
-    }, [location.search]);
+    }, [location.search, updateDisplay]);
     if (!token)
         return <NotFound/>
     
