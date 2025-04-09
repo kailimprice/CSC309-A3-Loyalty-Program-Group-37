@@ -38,7 +38,7 @@ const Navbar = () => {
     // QR code display
     const [qrOpen, setQrOpen] = useState(false);
     const closeQr = () => setQrOpen(false);
-    const DialogQR = <Dialog open={qrOpen} onClose={closeQr} onClick={closeQr} className='dialog-qr'>
+    const DialogQR = <Dialog open={qrOpen} onClose={closeQr} className='dialog-qr'>
         <Box sx={{padding: '45px'}}>
             <QRCode value={{id: user.id, utorid: user.utorid}} size='large' />
         </Box>
