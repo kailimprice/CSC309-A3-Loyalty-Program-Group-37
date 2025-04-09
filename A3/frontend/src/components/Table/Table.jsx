@@ -17,7 +17,8 @@ function parseDate(string) {
     return `${year}/${month}/${day}`;
 }
 
-export default function Table({columns, data, selection, setSelection, page, numPages, buttons}) {
+export default function Table({columns, data, page, numPages, buttons}) {
+    const [selection, setSelection] = useState(undefined);
     const location = useLocation();
     const [sortBy, setSortBy] = useState(new URLSearchParams(location.search).get('orderBy'));
     const [sortDirection, setSortDirection] = useState(new URLSearchParams(location.search).get('order'));
@@ -134,12 +135,23 @@ export default function Table({columns, data, selection, setSelection, page, num
     }
 
     // Footer
+    function incrementPage(increment) {
+        return () => {
+            console.log(increment);
+            const p = new URLSearchParams(location.search);
+            let newPage = parseInt(searchParams.get('page'), 10);
+            if (isNaN(newPage))
+                newPage = 1;
+            p.set('page', newPage + increment);
+            setSearchParams(p);
+        };
+    }
     const footer = <tr>
         <td colSpan={Object.keys(columns).length}>
             <Stack direction='row' sx={{justifyContent: 'space-between'}}>
                 <Stack direction='row' spacing={1} sx={{justifyContent: 'flex-end', alignItems: 'center'}}>
-                    <ButtonDirection type='left' disabled={true} size='small'/>
-                    <ButtonDirection type='right' disabled={false} size='small'/>
+                    <ButtonDirection type='left' disabled={page <= 1} size='small' click={incrementPage(-1)}/>
+                    <ButtonDirection type='right' disabled={page >= numPages} size='small' click={incrementPage(1)}/>
                     <Typography variant='body2' align='right' sx={{color: 'rgb(150, 150, 150)'}}>
                         Page {page} of {numPages}
                     </Typography>
@@ -151,15 +163,15 @@ export default function Table({columns, data, selection, setSelection, page, num
 
     return <div className='table-container'>
         <table>
+            <thead>
+                {footer}
+            </thead>
             <tbody>
                 {header}
             </tbody>
             <tfoot>
                 {rows}
             </tfoot>
-            <thead>
-                {footer}
-            </thead>
         </table>
     </div>
 }

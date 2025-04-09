@@ -23,11 +23,9 @@ const resultsPerPage = 10;
 
 export default function Users() {
     const [filterOpen, setFilterOpen] = useState(false);
-    const [selection, setSelection] = useState(undefined);
     const [data, setData] = useState([]);
     const [page, setPage] = useState(0);
     const [numPages, setNumPages] = useState(0);
-    const [pageSize, setPageSize] = useState(0);
     const {user} = useUserContext();
     const [searchParams, setSearchParams] = useSearchParams();
     const token = localStorage.getItem('token');
@@ -51,7 +49,12 @@ export default function Users() {
         for (let i = 0; i < results.length; i++) {
             results[i].role = results[i].role[0].toUpperCase() + results[i].role.slice(1);
         }
-        setPage(count > 0 ? 1 : 0);
+        if (count == 0)
+            setPage(0);
+        else if (!searchParams.get('page'))
+            setPage(1);
+        else
+            setPage(parseInt(searchParams.get('page'), 10));
         setNumPages(Math.ceil(count / resultsPerPage));
         setData(results);
     }
@@ -131,7 +134,7 @@ export default function Users() {
         name: ['Name', 'text'],
         role: ['Role', 'text'],
         verified: ['Verified', 'boolean'],
-        activated: ['Activated', 'boolean']
+        activated: ['Account Activated', 'boolean']
     };
     async function applyFilter(json) {
         for (let key in json) {
@@ -160,7 +163,6 @@ export default function Users() {
             <FilterBody fields={filterFields}/>
         </DialogGeneral>
         
-        <Table columns={columns} data={data} selection={selection} setSelection={setSelection}
-                page={page} numPages={numPages} buttons={buttons}/>
+        <Table columns={columns} data={data} page={page} numPages={numPages} buttons={buttons}/>
     </>
 }
