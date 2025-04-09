@@ -19,18 +19,6 @@ import {useSearchParams, useLocation} from 'react-router-dom';
 
 const resultsPerPage = 10;
 
-const columns = {
-    id: ['ID', 'number'],
-    type: ['Type', ['Adjustment', 'Event', 'Purchase', 'Redemption', 'Transfer']],
-    createdBy: ['Creator', 'string'],
-    amount: ['Points', 'number'],
-    suspicious: ['Suspicious', 'boolean', null, () => console.log('hi'), true],
-    processedBy: ['Processed', 'boolean'],
-    sender: ['Sender', 'string'],
-    recipient: ['Recipient', 'string'],
-    related: ['Related', 'string']
-};
-
 export default function Transactions() {
     const [filterOpen, setFilterOpen] = useState(false);
     const [data, setData] = useState([]);
@@ -42,7 +30,22 @@ export default function Transactions() {
     const location = useLocation();
     const baseUrl = hasPerms(viewAs, 'manager') ? 'transactions' : 'users/me/transactions';
 
-    // Fetch all users
+    const columns = {
+        id: ['ID', 'number'],
+        type: ['Type', 'link', ['Adjustment', 'Event', 'Purchase', 'Redemption', 'Transfer']],
+        createdBy: ['Creator', 'string'],
+        utorid: ['UTORid', 'string'],
+        name: ['Name', 'string'],
+        amount: ['Points', 'number'],
+        purchaser: ['Purchaser', 'string'],
+        transfer: ['Transferee', 'string'],
+        processedBy: ['Processor', 'string']
+    };
+    if (hasPerms(viewAs, 'manager')) {
+        columns.suspicious = ['Suspicious', 'boolean', null, () => console.log('hi'), true];
+    }
+
+    // Fetch all transactions
     async function getTransactions(token) {
         let params = location.search;
         let [response, error] = await fetchServer(`${baseUrl}${params}`, {
@@ -59,24 +62,52 @@ export default function Transactions() {
         const {results, count} = response;
         console.log(results);
         for (let i = 0; i < results.length; i++) {
-            const {type, infoAdjustment, infoEvent, infoPurchase, infoRedemption, infoTransfer} = results[i];
+            const {type, createdBy, infoAdjustment, infoEvent, infoPurchase, infoRedemption, infoTransfer} = results[i];
             results[i].type = type[0].toUpperCase() + type.slice(1);
             
             if (infoAdjustment) {
                 results[i].amount = infoRedemption.amount;
+                results[i].utorid = infoRedemption.utorid;
+                results[i].name = infoRedemption.user ? infoRedemption.user.name : null;
                 results[i].suspicious = infoAdjustment.suspicious;
+                results[i].processedBy = null;
+                results[i].transfer = null;
+                results[i].purchaser = null;
+                results[i].type = [results[i].type, infoAdjustment.relatedId];
             } else if (infoEvent) {
                 results[i].amount = infoEvent.awarded;
+                results[i].utorid = infoEvent.recipient;
+                results[i].name = infoEvent.user ? infoEvent.user.name : null;
                 results[i].suspicious = null;
+                results[i].processedBy = null;
+                results[i].transfer = null;
+                results[i].purchaser = null;
+                results[i].type = [results[i].type, infoEvent.relatedId];
             } else if (infoPurchase) {
                 results[i].amount = infoPurchase.spent;
+                results[i].utorid = infoPurchase.utorid;
+                results[i].name = infoPurchase.user ? infoPurchase.user.name : null;
                 results[i].suspicious = infoPurchase.suspicious;
+                results[i].processedBy = null;
+                results[i].purchaser = infoPurchase.utorid;
+                results[i].transfer = null;
             } else if (infoRedemption) {
                 results[i].amount = infoRedemption.amount;
+                results[i].utorid = infoRedemption.utorid;
+                results[i].name = infoRedemption.user ? infoRedemption.user.name : null;
                 results[i].suspicious = null;
+                results[i].processedBy = infoRedemption.user ? infoRedemption.user.utorid : 'N/A';
+                results[i].purchaser = null;
+                results[i].transfer = null;
             } else if (infoTransfer) {
                 results[i].amount = infoTransfer.sent;
+                results[i].utorid = null;
+                results[i].name = null;
                 results[i].suspicious = null;
+                results[i].processed = null;
+                results[i].purchaser = null;
+                const t = infoTransfer.relatedUser.utorid == createdBy ? 'From: ' : 'Sent: ';
+                results[i].transfer = `${t}${infoTransfer.relatedUser.utorid}`;
             }
 
         }
@@ -178,7 +209,7 @@ export default function Transactions() {
 
     return <>
         <Typography variant='h3' sx={{marginBottom: '5px'}}>
-            Users
+            Transactions
         </Typography>
 
         <DialogGeneral title='Filter' submitTitle='Apply' open={filterOpen} setOpen={setFilterOpen}

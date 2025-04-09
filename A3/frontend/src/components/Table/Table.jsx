@@ -123,6 +123,17 @@ export default function Table({columns, data, page, numPages, buttons}) {
                 cellContent = <Typography variant='body1' sx={{color: 'rgb(80, 80, 80)', textAlign: alignment[colName]}}>
                     {value == true ? 'Yes' : value == false ? 'No' : null}
                 </Typography>
+            } else if (format == 'link') {
+                if (Array.isArray(value)) {
+                    const display = `${value[0]} (ID# ${value[1]})`;
+                    const type = `tag-${value[0].toLowerCase()}-clickable`;
+                    const click = () => {
+                        navigate(`/${value[0].toLowerCase()}/${value[1]}`);
+                    };
+                    cellContent = <Tag value={display} type={type} options={format} click={click}/>;
+                } else {
+                    cellContent = <Tag value={value} type={`tag-${value.toLowerCase()}`} options={format}/>;
+                }
             } else {
                 cellContent = <Typography variant='body1' sx={{color: 'rgb(80, 80, 80)', textAlign: alignment[colName]}}>
                     {format == 'date' && parseDate(value)}
@@ -142,7 +153,6 @@ export default function Table({columns, data, page, numPages, buttons}) {
     // Footer
     function incrementPage(increment) {
         return () => {
-            console.log(increment);
             const p = new URLSearchParams(location.search);
             let newPage = parseInt(searchParams.get('page'), 10);
             if (isNaN(newPage))

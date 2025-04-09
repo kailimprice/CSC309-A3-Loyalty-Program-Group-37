@@ -1,8 +1,10 @@
 .tag {
     background-color: black;
-    padding: 2px 10px;
+    padding: 0px 10px;
     transition: 0.1s;
     cursor: pointer;
+    display: inline-block;
+    text-wrap: nowrap;
 }
 .tag:active {
     transition: 0s;
@@ -48,22 +50,27 @@
 .tag-add-text {     color: #e9ebff; }
 
 
-.tag-adjustment {        background-color: #4f3824; }
-.tag-adjustment:hover {  background-color: #75573C; }
-.tag-adjustment-text {   color: #ffd6b5; }
+.tag-adjustment, .tag-adjustment-clickable {                background-color: #4f3824; }
+.tag-adjustment-clickable:hover {    background-color: #75573C; }
+.tag-adjustment-clickable:active {                          background-color: #291C11; }
+.tag-adjustment-text, .tag-adjustment-clickable-text {      color: #ffd6b5; }
 
-.tag-event {          background-color: #d1603d; }
-.tag-event:hover {    background-color: #F07C58; }
-.tag-event-text {     color: rgb(255, 218, 203); }
+.tag-event, .tag-event-clickable {                  background-color: #d1603d; }
+.tag-event-clickable:hover {      background-color: #F07C58; }
+.tag-event-clickable:active {                       background-color: #CE5D3B; }
+.tag-event-text, .tag-event-clickable-text {        color: rgb(255, 218, 203); }
 
 .tag-purchase {          background-color: #ddb967; }
-.tag-purchase:hover {    background-color: #d0e37f; }
+/* .tag-purchase:hover {    background-color: #d0e37f; } */
+/* .tag-purchase:active {   background-color: #C3A153; } */
 .tag-purchase-text {     color: #fbffd8; }
 
 .tag-redemption {          background-color: #367bb4; }
-.tag-redemption:hover {    background-color: #45a2ff; }
+/* .tag-redemption:hover {    background-color: #45a2ff; } */
+/* .tag-redemption:active {   background-color: #23239e; } */
 .tag-redemption-text {     color: #e9ebff; }
 
 .tag-transfer {          background-color: #48284a; }
-.tag-transfer:hover {    background-color: #763C7A; }
+/* .tag-transfer:hover {    background-color: #763C7A; } */
+/* .tag-transfer:active {   background-color: #2F1431; } */
 .tag-transfer-text {     color: #F6CEF9; }
