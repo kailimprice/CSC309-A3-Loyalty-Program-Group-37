@@ -999,7 +999,8 @@ app.patch('/transactions/:transactionId/suspicious', permLevel('manager'), async
 Events
 *******************************************************************************/
 function isIso8601(str) {
-    return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+\+\d{2}:\d{2}/.test(str);
+    // now this allows ISO strings that dont include the time zone as well (not specified to be that way in A2)
+    return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+([Z]|[\+\-]\d{2}:\d{2})?$/.test(str);
 }
 function isCount(allowZero) {
     if (allowZero)
