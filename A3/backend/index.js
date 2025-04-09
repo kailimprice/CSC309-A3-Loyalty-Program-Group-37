@@ -755,7 +755,8 @@ app.get('/transactions/:transactionId', permLevel('manager'), async (req, res) =
     
     const include = {infoPurchase: {include: {promotionIds: true}},
                      infoAdjustment: {include: {promotionIds: true}},
-                     infoRedemption: {include: {promotionIds: true}}, infoTransfer: true, infoEvent: true};
+                     // this errored out because transactionRedemption doesnt have a promotionIds fields.
+                     infoRedemption: {include: {}}, infoTransfer: true, infoEvent: true};
     const [result, e2] = await findUnique(prisma.transaction, {id: transactionId}, res, include);
     if (e2) return e2;
     postProcessGetTransaction(include, result);
@@ -971,7 +972,8 @@ app.patch('/transactions/:transactionId/suspicious', permLevel('manager'), async
     if (e2) return e2;
     const include = {infoPurchase: {include: {promotionIds: true}},
                      infoAdjustment: {include: {promotionIds: true}},
-                     infoRedemption: {include: {promotionIds: true}}};
+                     // promotionsIds does not exist in redemption table
+                     infoRedemption: {include: {}}};
     let [transaction, e3] = await findUnique(prisma.transaction, {id: transactionId}, res, include);
     postProcessGetTransaction(include, transaction);
     if (e3) return e3;
