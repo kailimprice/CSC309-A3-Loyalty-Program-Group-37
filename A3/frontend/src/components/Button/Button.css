@@ -1,0 +1,40 @@
+.tag {
+    background-color: black;
+    padding: 2px 10px;
+    transition: 0.1s;
+    cursor: pointer;
+}
+.tag:active {
+    transition: 0s;
+}
+
+
+.tag-option {           background-color: white; user-select: none; }
+.tag-option:hover {     background-color: rgb(233, 233, 233); }
+.tag-option:active {    background-color: rgb(222, 222, 222); }
+
+
+.tag-boolean {          background-color: rgb(150, 150, 150); }
+.tag-boolean:hover {    background-color: rgb(180, 180, 180); }
+.tag-boolean:active {   background-color: rgb(120, 120, 120); }
+.tag-boolean-text {     color: rgb(244, 244, 244); }
+
+.tag-superuser {        background-color: #4f3824; }
+.tag-superuser:hover {  background-color: #75573C; }
+.tag-superuser:active { background-color: #291C11; }
+.tag-superuser-text {   color: #ffd6b5; }
+
+.tag-manager {          background-color: #d1603d; }
+.tag-manager:hover {    background-color: #F07C58; }
+.tag-manager:active {   background-color: #CE5D3B; }
+.tag-manager-text {     color: rgb(255, 218, 203); }
+
+.tag-cashier {          background-color: #ddb967; }
+.tag-cashier:hover {    background-color: #d0e37f; }
+.tag-cashier:active {   background-color: #C3A153; }
+.tag-cashier-text {     color: #fbffd8; }
+
+.tag-regular {          background-color: #367bb4; }
+.tag-regular:hover {    background-color: #45a2ff; }
+.tag-regular:active {   background-color: #23239e; }
+.tag-regular-text {     color: #e9ebff; }

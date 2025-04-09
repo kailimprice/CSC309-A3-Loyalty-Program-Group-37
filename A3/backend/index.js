@@ -451,13 +451,13 @@ app.post('/auth/resets/:resetToken', async (req, res) => {
 Get/Create Users
 *******************************************************************************/
 app.get('/users', permLevel('manager'), async (req, res) => {
-    const variables = ['name', 'role', 'verified', 'activated', 'page', 'limit'];
+    const variables = ['utorid', 'name', 'role', 'verified', 'activated', 'page', 'limit'];
     const [query, e1] = queryAllow(variables, req, res);
     if (e1) return e1;
 
     // Get filter
     const filter = {};
-    const varTransforms = {name: null, role: null, verified: x => (x == 'true') ? true : false};
+    const varTransforms = {utorid: null, name: null, role: null, verified: x => (x == 'true') ? true : false};
     objectAddLax(varTransforms, query, filter);
 
     // // Ordering
@@ -474,12 +474,7 @@ app.get('/users', permLevel('manager'), async (req, res) => {
     }
     
     let [count, result, e4] = await findMany(prisma.user, filter, query, res);
-    if (e4) {
-        filter['utorid'] = filter['name'];
-        delete filter['name'];
-        [count, result, e4] = await findMany(prisma.user, filter, query, res);
-        if (e4) return e4;
-    }
+    if (e4) return e4;
     return res.status(200).json({count: count, results: result});
 });
 app.post('/users', permLevel('cashier'), async (req, res) => {

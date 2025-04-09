@@ -2,6 +2,7 @@ import {useNavigate} from 'react-router-dom';
 import {Stack} from '@mui/material';
 import Typography from '@mui/joy/Typography';
 import ButtonDirection from '../Button/ButtonDirection';
+import ButtonTag from '../Button/ButtonTag';
 import './Table.css'
 
 function parseDate(string) {
@@ -16,8 +17,12 @@ function parseDate(string) {
 
 export default function Table({columns, data, selection, setSelection, page, numPages, buttons}) {
     // Selection
-    const toggleRow = (id) => () => {
-        setSelection((x) => x == id ? undefined : id);
+    function toggleRow(id) {
+        return (event) => {
+            if (!Array.from(event.target.classList).includes('no-select')) {
+                setSelection((x) => x == id ? undefined : id);
+            }
+        }
     };
     
     // Text is left-aligned, numbers are right-aligned
@@ -43,26 +48,39 @@ export default function Table({columns, data, selection, setSelection, page, num
 
     // Data
     const navigate = useNavigate();
+    function doubleClick(id) {
+        return (event) => {
+            if (!Array.from(event.target.classList).includes('no-select')) {
+                navigate(`/users/${id}`);
+            }
+        }
+    }
+
     const rows = [];
     for (let i = 0; i < data.length; i++) {
         const id = data[i].id;
         const active = selection == id;
 
         const row = [];
-        for (let name in columns) {
-            const format = columns[name][1];
+        for (let colName in columns) {
+            const format = columns[colName][1];
+            const settable = columns[colName].length > 2 ? columns[colName][2] : null;
+            const changeFunc = columns[colName].length > 3 ? columns[colName][3] : null;
 
-            const cell = <td key={`${i}.${name}`} onDoubleClick={() => navigate(`/users/${id}`)}
-                                onClick={toggleRow(id)}>
+            const cell = <td key={`${i}.${colName}`} onDoubleClick={doubleClick(id)} onClick={toggleRow(id)}>
                 {['string', 'number', 'date'].includes(format) &&
-                <Typography variant='body1' sx={{color: 'rgb(80, 80, 80)', textAlign: alignment[name]}}>
-                    {format == 'date' && parseDate(data[i][name])}
-                    {format != 'date' && data[i][name]}
+                <Typography variant='body1' sx={{color: 'rgb(80, 80, 80)', textAlign: alignment[colName]}}>
+                    {format == 'date' && parseDate(data[i][colName])}
+                    {format != 'date' && data[i][colName]}
                 </Typography>}
+                
                 {format == 'boolean' &&
-                'bool'}
+                <ButtonTag value={data[i][colName] == true ? 'Yes' : data[i][colName] == false ? 'No' : null} id={data[i].id}
+                            type='tag-boolean' options={['No', 'Yes']} changeFunc={changeFunc}/>}
+                
                 {Array.isArray(format) &&
-                'multichoice'}
+                <ButtonTag value={data[i][colName]} type={`tag-${data[i][colName].toLowerCase()}`} id={data[i].id}
+                            options={settable} changeFunc={changeFunc}/>}
             </td>
             row.push(cell);
         }
@@ -75,29 +93,29 @@ export default function Table({columns, data, selection, setSelection, page, num
     const footer = <tr>
         <td colSpan={Object.keys(columns).length}>
             <Stack direction='row' sx={{justifyContent: 'space-between'}}>
-                {buttons}
                 <Stack direction='row' spacing={1} sx={{justifyContent: 'flex-end', alignItems: 'center'}}>
+                    <ButtonDirection type='left' disabled={true} size='small'/>
+                    <ButtonDirection type='right' disabled={false} size='small'/>
                     <Typography variant='body2' align='right' sx={{color: 'rgb(150, 150, 150)'}}>
                         Page {page} of {numPages}
                     </Typography>
-                    <ButtonDirection type='left' disabled={true} size='small'/>
-                    <ButtonDirection type='right' disabled={false} size='small'/>
                 </Stack>
+                {buttons}
             </Stack>
         </td>
     </tr>;
 
     return <div className='table-container'>
         <table>
-            <thead>
-                {header}
-            </thead>
             <tbody>
-                {rows}
+                {header}
             </tbody>
             <tfoot>
-                {footer}
+                {rows}
             </tfoot>
+            <thead>
+                {footer}
+            </thead>
         </table>
     </div>
 }
