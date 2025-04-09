@@ -643,6 +643,8 @@ app.post('/users/me/transactions', permLevel('regular'), async (req, res) => {
     if (e4) return e4;
     const e5 = checkCondition(res, data2['amount'] <= req.user.points, 400, `Redeemed ${data2['amount']} exceeds balance ${req.user.points}`);
     if (e5) return e5;
+    const e6 = checkCondition(res, data2['amount'] > 0, 400, `Redeemed ${data2['amount']} <= 0`);
+    if (e6) return e6;
 
     // Create transaction
     const p1 = await prisma.transaction.create({data: data1});

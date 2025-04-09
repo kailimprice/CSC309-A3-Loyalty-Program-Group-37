@@ -20,7 +20,11 @@ import { Input } from '@mui/joy'
  */
 export function DialogGeneral({title, children, submitTitle, open, setOpen, submitFunc, dialogStyle}) {
     const [error, setError] = useState(undefined);
-    return <Dialog open={open} onClose={() => setOpen(false)}
+    const close = () => {
+        setOpen(false);
+        setError(undefined);
+    }
+    return <Dialog open={open} onClose={close}
                     slotProps={{paper: {component: 'form',
                                         style: dialogStyle ? dialogStyle : {},
                                         onSubmit: (event) => {
@@ -31,7 +35,7 @@ export function DialogGeneral({title, children, submitTitle, open, setOpen, subm
                                                 if (x)
                                                     setError(x);
                                                 else
-                                                    setOpen(false);
+                                                    close();
                                             });
                                         }}}}>
         <DialogTitle sx={{fontWeight: 'bold', fontSize: '32px', textAlign: 'center', marginBottom: '-10px'}}>
@@ -99,17 +103,6 @@ export function FilterBody({fields}) {
                     id={name}
                     name={name}
                     type='number'
-                    required={required}
-                />
-            }
-            {type == 'dollar' && 
-                <Input
-                    fullWidth
-                    variant="outlined"
-                    margin="dense"
-                    id={name}
-                    name={name}
-                    type="number"
                     required={required}
                 />
             }
