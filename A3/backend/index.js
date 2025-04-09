@@ -727,16 +727,41 @@ app.get('/transactions', permLevel('manager'), async (req, res) => {
     const [query, e1] = queryAllow(variables, req, res);
     if (e1) return e1;
     
-    const {type, operator, relatedId, amount} = query;
+    const {utorid, name, type, operator, relatedId, amount} = query;
     const filter = {};
-    objectAddLax(['utorid', 'name', 'createdBy', 'suspicious', 'promotionId', 'type'], query, filter, res);
+    objectAddLax(['createdBy', 'suspicious', 'promotionId', 'type'], query, filter, res);
     if (type != 'purchase' && relatedId)    filter['relatedId'] = relatedId;
     if (operator == 'lte')                  filter['amount'] = {lte: amount};
     else if (operator == 'gte')             filter['amount'] = {gte: amount};
 
-    const include = {infoPurchase: {include: {promotionIds: true}},
-                     infoAdjustment: {include: {promotionIds: true}},
-                     infoRedemption: true, infoTransfer: true, infoEvent: true};
+    if (utorid && name) {
+        filter[AND] = [
+            {OR: [{infoPurchase: {user: {utorid: utorid}}},
+                {infoAdjustment: {user: {utorid: utorid}}},
+                {infoRedemption: {user: {utorid: utorid}}},
+                {infoEvent: {user: {utorid: utorid}}}]},
+            {OR: [{infoPurchase: {user: {name: name}}},
+                {infoAdjustment: {user: {name: name}}},
+                {infoRedemption: {user: {name: name}}},
+                {infoEvent: {user: {name: name}}}]}
+        ];
+    } else if (utorid) {
+        filter[OR] = [{infoPurchase: {user: {utorid: utorid}}},
+                    {infoAdjustment: {user: {utorid: utorid}}},
+                    {infoRedemption: {user: {utorid: utorid}}},
+                    {infoEvent: {user: {utorid: utorid}}}];
+    } else if (name) {
+        filter[OR] = [{infoPurchase: {user: {name: name}}},
+                    {infoAdjustment: {user: {name: name}}},
+                    {infoRedemption: {user: {name: name}}},
+                    {infoEvent: {user: {name: name}}}];
+    }
+
+    const include = {infoPurchase: {include: {promotionIds: true, user: {select: {utorid: true, name: true}}}},
+                     infoAdjustment: {include: {promotionIds: true, user: {select: {utorid: true, name: true}}}},
+                     infoRedemption: {include: {cashier: {select: {utorid: true}}}},
+                     infoTransfer: {include: {relatedUser: {select: {utorid: true}}}},
+                     infoEvent: {include: {user: {select: {utorid: true, name: true}}}}};
     const orderBy = {};
     if (query['orderBy']) {
         orderBy[query['orderBy']] = query['order'];
@@ -753,9 +778,11 @@ app.get('/transactions/:transactionId', permLevel('manager'), async (req, res) =
     const [transactionId, e1] = getParamIndex('transactionId', req, res);
     if (e1) return e1;
     
-    const include = {infoPurchase: {include: {promotionIds: true}},
-                     infoAdjustment: {include: {promotionIds: true}},
-                     infoRedemption: {include: {promotionIds: true}}, infoTransfer: true, infoEvent: true};
+    const include = {infoPurchase: {include: {promotionIds: true, user: {select: {utorid: true, name: true}}}},
+                     infoAdjustment: {include: {promotionIds: true, user: {select: {utorid: true, name: true}}}},
+                     infoRedemption: {include: {cashier: {select: {utorid: true}}}},
+                     infoTransfer: {include: {relatedUser: {select: {utorid: true}}}},
+                     infoEvent: {include: {user: {select: {utorid: true, name: true}}}}};
     const [result, e2] = await findUnique(prisma.transaction, {id: transactionId}, res, include);
     if (e2) return e2;
     postProcessGetTransaction(include, result);
@@ -776,15 +803,19 @@ app.get('/users/me/transactions', permLevel('regular'), async (req, res) => {
     const filter = {OR: [{createdBy: req.utorid},
                         {infoPurchase: {user: {utorid: req.utorid}}},
                         {infoAdjustment: {user: {utorid: req.utorid}}},
-                        {infoRedemption: {user: {utorid: req.utorid}}}]};
+                        {infoRedemption: {user: {utorid: req.utorid}}},
+                        {infoEvent: {user: {utorid: req.utorid}}}
+                    ]};
     objectAddLax(['name', 'createdBy', 'suspicious', 'promotionId', 'type'], query, filter, res);
     if (type != 'purchase' && relatedId)    filter['relatedId'] = relatedId;
     if (operator == 'lte')                  filter['amount'] = {lte: amount};
     else if (operator == 'gte')             filter['amount'] = {gte: amount};
 
-    const include = {infoPurchase: {include: {promotionIds: true}},
-                     infoAdjustment: {include: {promotionIds: true}},
-                     infoRedemption: true, infoTransfer: true, infoEvent: true};
+    const include = {infoPurchase: {include: {promotionIds: true, user: {select: {utorid: true, name: true}}}},
+                     infoAdjustment: {include: {promotionIds: true, user: {select: {utorid: true, name: true}}}},
+                     infoRedemption: {include: {cashier: {select: {utorid: true}}}},
+                     infoTransfer: {include: {relatedUser: {select: {utorid: true}}}},
+                     infoEvent: {include: {user: {select: {utorid: true, name: true}}}}};
     const [count, result, e3] = await findMany(prisma.transaction, filter, query, res, include);
     if (e3) return e3;
     postProcessGetTransaction(include, result);
@@ -969,9 +1000,11 @@ app.patch('/transactions/:transactionId/suspicious', permLevel('manager'), async
 	if (e1) return e1;
     const [transactionId, e2] = getParamIndex('transactionId', req, res);
     if (e2) return e2;
-    const include = {infoPurchase: {include: {promotionIds: true}},
-                     infoAdjustment: {include: {promotionIds: true}},
-                     infoRedemption: {include: {promotionIds: true}}};
+    const include = {infoPurchase: {include: {promotionIds: true, user: {select: {utorid: true, name: true}}}},
+                     infoAdjustment: {include: {promotionIds: true, user: {select: {utorid: true, name: true}}}},
+                     infoRedemption: {include: {cashier: {select: {utorid: true}}}},
+                     infoTransfer: {include: {relatedUser: {select: {utorid: true}}}},
+                     infoEvent: {include: {user: {select: {utorid: true, name: true}}}}};
     let [transaction, e3] = await findUnique(prisma.transaction, {id: transactionId}, res, include);
     postProcessGetTransaction(include, transaction);
     if (e3) return e3;
