@@ -12,10 +12,15 @@
 .tag-option:hover {     background-color: rgb(233, 233, 233); }
 .tag-option:active {    background-color: rgb(222, 222, 222); }
 
-.tag-boolean {          background-color: rgb(150, 150, 150); }
-.tag-boolean:hover {    background-color: rgb(180, 180, 180); }
-.tag-boolean:active {   background-color: rgb(120, 120, 120); }
-.tag-boolean-text {     color: rgb(244, 244, 244); }
+.tag-boolean-true {          background-color: rgb(150, 150, 150); }
+.tag-boolean-true:hover {    background-color: rgb(180, 180, 180); }
+.tag-boolean-true:active {   background-color: rgb(120, 120, 120); }
+.tag-boolean-true-text {     color: rgb(244, 244, 244); }
+
+.tag-boolean-false {          background-color: rgb(100, 100, 100); }
+.tag-boolean-false:hover {    background-color: rgb(140, 140, 140); }
+.tag-boolean-false:active {   background-color: rgb(80, 80, 80); }
+.tag-boolean-false-text {     color: rgb(244, 244, 244); }
 
 .tag-superuser {        background-color: #4f3824; }
 .tag-superuser:hover {  background-color: #75573C; }
