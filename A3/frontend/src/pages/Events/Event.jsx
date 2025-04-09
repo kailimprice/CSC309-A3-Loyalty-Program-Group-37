@@ -15,10 +15,13 @@ import { Alert } from '@mui/material';
 import ButtonTag from '../../components/Button/ButtonTag.jsx';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import { useNavigate } from 'react-router-dom';
+
 
 export default function Event() {
 
 const { user, token } = useUserContext();
+const navigate = useNavigate();
 
 const id = parseInt(useParams().id, 10);
 
@@ -327,6 +330,7 @@ const handleDelete = async () => {
         }
 
         console.log(`Event deleted successfully.`);
+        navigate('/events');
     } catch (err) {
         setError(err);
         console.error("Error:", err);
