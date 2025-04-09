@@ -16,17 +16,21 @@ export default function ButtonTag({value, options, changeFunc, type, id}) {
             setAnchorEl(null);
         }
     }
-
-    // 2 options
-    if (options.length == 2) {
+    if (options == 'boolean') {
         return <span className={`no-select tag ${type}`} aria-describedby={buttonId} onClick={handleClick(id, value)} style={{borderRadius: '50px'}}>
             <Typography variant='body2' className={`no-select ${type}-text`} sx={{display: 'inline'}}>
                 {value}
             </Typography>
         </span>
     }
-    
-    // 3+ options
+
+    if (options.length == 0) {
+        return <span className={`no-select tag ${type}`} aria-describedby={buttonId} style={{borderRadius: '50px'}}>
+            <Typography variant='body2' className={`no-select ${type}-text`} sx={{display: 'inline'}}>
+                {value}
+            </Typography>
+        </span>
+    }
     return <>
         <span className={`no-select tag ${type}`} aria-describedby={buttonId} style={{borderRadius: open ? '0px' : '50px'}}
                 onClick={(event) => setAnchorEl(event.currentTarget)}>

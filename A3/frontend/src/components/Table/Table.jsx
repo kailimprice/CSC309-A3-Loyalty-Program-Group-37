@@ -106,13 +106,13 @@ export default function Table({columns, data, page, numPages, buttons}) {
                 cellContent = <ButtonTag value={value}
                                         type={`tag-${value.toLowerCase()}`}
                                         id={data[i].id}
-                                        options={settable}
+                                        options={settable.includes(value) ? settable : []}
                                         changeFunc={changeFunc}/>
             } else if (format == 'boolean' && editable) {
                 cellContent = <ButtonTag value={value == true ? 'Yes' : value == false ? 'No' : null}
                                         id={data[i].id}
-                                        type='tag-boolean'
-                                        options={['No', 'Yes']}
+                                        type={`tag-boolean-${value}`}
+                                        options={'boolean'}
                                         changeFunc={changeFunc}/>
             } else if (format == 'boolean') {
                 cellContent = <Typography variant='body1' sx={{color: 'rgb(80, 80, 80)', textAlign: alignment[colName]}}>

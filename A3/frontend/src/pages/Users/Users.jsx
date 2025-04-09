@@ -26,7 +26,7 @@ export default function Users() {
     const [data, setData] = useState([]);
     const [page, setPage] = useState(0);
     const [numPages, setNumPages] = useState(0);
-    const {user} = useUserContext();
+    const {viewAs} = useUserContext();
     const [searchParams, setSearchParams] = useSearchParams();
     const token = localStorage.getItem('token');
     const location = useLocation();
@@ -67,10 +67,10 @@ export default function Users() {
         return <NotFound/>
     
     // In-page changes
-    async function changeProperty(id, field, value, transform) {
+    async function changeProperty(id, key, value, transform) {
         transform = transform ? transform : x => x;
         const json = {};
-        json[field] = transform(value);
+        json[key] = transform(value);
 
         // Change server
         let [response, error] = await fetchServer(`users/${id}`, {
@@ -89,7 +89,16 @@ export default function Users() {
             const newData = Array.from(data);
             for (let i = 0; i < newData.length; i++) {
                 if (newData[i].id == id) {
-                    newData[i][field] = value;
+                    newData[i][key] = value;
+                    
+                    // Special case for role
+                    if (key == 'role') {
+                        if (value == 'Cashier') {
+                            newData[i].suspicious = false;
+                        } else {
+                            newData[i].suspicious = null;
+                        }
+                    }
                     break;
                 }
             }
@@ -114,7 +123,7 @@ export default function Users() {
 
     // Initialize editable columns based on user role
     const roles = ['Superuser', 'Manager', 'Cashier', 'Regular'];
-    const rolesSettable = user.role == 'superuser' ? roles : ['Cashier', 'Regular']; 
+    const rolesSettable = viewAs == 'superuser' ? roles : ['Cashier', 'Regular']; 
     const columns = {
         id: ['ID', 'number'],
         utorid: ['UTORid', 'string'],

@@ -605,6 +605,8 @@ app.patch('/users/:userId', permLevel('manager'), async (req, res) => {
         if (checkRoleChange(req.user.role, newRole)) {
             if (result.role == 'regular' && newRole == 'cashier' && !('suspicious' in data))
                 data['suspicious'] = false;
+            if (result.role == 'cashier' && newRole != 'cashier')
+                data['suspicious'] = null;
         } else {
             console.log(`403, role ${req.user.role} does not allow setting to ${newRole}`);
             return res.status(403).json({'error': `role ${req.user.role} does not allow setting to ${newRole}`})
