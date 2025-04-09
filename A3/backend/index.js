@@ -643,6 +643,8 @@ app.post('/users/me/transactions', permLevel('regular'), async (req, res) => {
     if (e4) return e4;
     const e5 = checkCondition(res, data2['amount'] <= req.user.points, 400, `Redeemed ${data2['amount']} exceeds balance ${req.user.points}`);
     if (e5) return e5;
+    const e6 = checkCondition(res, data2['amount'] > 0, 400, `Redeemed ${data2['amount']} <= 0`);
+    if (e6) return e6;
 
     // Create transaction
     const p1 = await prisma.transaction.create({data: data1});
@@ -999,7 +1001,7 @@ app.patch('/transactions/:transactionId/suspicious', permLevel('manager'), async
 Events
 *******************************************************************************/
 function isIso8601(str) {
-    return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+\+\d{2}:\d{2}/.test(str);
+    return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+/.test(str);
 }
 function isCount(allowZero) {
     if (allowZero)

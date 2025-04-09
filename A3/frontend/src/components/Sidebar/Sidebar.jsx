@@ -52,15 +52,15 @@ const sidebarDialogFields = {
         remark: ['Remark', 'text']  /* optional */
     },
     transfer: {
-        userId: ['Recipient ID', 'number'], /* from url? */
+        userId: ['Recipient ID', 'number', true], /* from url? */
         /* type */
         amount: ['Transfer Amount', 'number', true],
         remark: ['Remark', 'text'] /* optional */
     },
     purchase: {
-        utorid: ['UTORid', 'text', true],
+        utorid: ['Customer UTORid', 'text', true],
         /* type */
-        spent: ['Amount Spent', 'dollar', true],
+        spent: ['Money Spent', 'number', true],
         promotionIds: ['Promotion IDs', 'ids'], /* optional */
         remark: ['Remark', 'text']  /* optional */
     },
@@ -133,23 +133,46 @@ export default function Sidebar() {
         setOpenDialogButton(null);
     }
 
-    async function handleSubmit(json) {
-        console.log('json: ' + json)
-        let endpoint = endpoints[dialogTitle];
-        if (!dialogTitle || !endpoint)
-            return
+    function sanitizeJson(json) {
+        for (let key in json) {
+            if (json[key] == '')
+                delete json[key];
+        }
 
-        if (['redemption', 'transfer', 'purchase'].includes(dialogTitle)) {
+        for (let name of ['startTime', 'endTime']) {
+            if (name in json)
+                json[name] = (new Date(json[name])).toISOString();
+        }        
+        for (let name of ['points', 'spent', 'amount']) {
+            if (name in json)
+                json[name] = parseInt(json[name], 10);
+        }
+        if ('promotionIds' in json)
+            json['promotionIds'] = json['promotionIds']
+                                    .replace(/\s+/g, '')
+                                    .split(',')
+                                    .map(x => parseInt(x, 10))
+                                    .filter(x => !isNaN(x));
+    }
+
+    async function handleSubmit(json) {
+        console.log('raw json:', json);
+        let endpoint = endpoints[dialogTitle];
+        // What does this check?
+        // if (!dialogTitle || !endpoint)
+        //     return;
+
+        if (['redemption', 'transfer', 'purchase'].includes(dialogTitle))
             json.type = dialogTitle;
-        } else if (dialogTitle === 'transfer') {
+        if (dialogTitle === 'transfer') {
             endpoint = `users/${json.userId}/transactions`;
             delete json.userId;
         }
+        sanitizeJson(json);
+        console.log('clean json:', json);
 
         try {
             const token = localStorage.getItem('token');
-            console.log('token: ' + token)
-
             const response = await fetch(`http://localhost:3000/${endpoint}`, {
                 method: 'POST',
                 headers: {
@@ -158,16 +181,16 @@ export default function Sidebar() {
                 },
                 body: JSON.stringify(json),
             })
-            console.log('response: ' + response)
 
             if (!response.ok) {
                 const error = await response.json();
-                return error.error;
+                return `${response.status}: ${error.error}`;
             }
             return
         } catch(error) {
             return 'Creation failed.'
         }
+        // TODO reload the table!!!!
     }
 
     return (
