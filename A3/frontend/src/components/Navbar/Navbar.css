@@ -1,8 +1,9 @@
 .cssu-text {
     font-family: monospace !important;
     font-weight: 700 !important;
+    font-size: 1.25rem !important;
     letter-spacing: .3rem !important;
-    color: inherit;
+    color: white !important;
     text-decoration: none;
 }
 .nav-button:hover {
