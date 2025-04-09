@@ -13,3 +13,9 @@ aside {
 #mui-component-select-role {
     padding: 5px 32px 5px 10px;
 }
+.MuiInputBase-input {
+    padding: 5px 10px !important;
+}
+.sidebar-button:hover {
+    background-color: rgb(233, 233, 233);
+}
