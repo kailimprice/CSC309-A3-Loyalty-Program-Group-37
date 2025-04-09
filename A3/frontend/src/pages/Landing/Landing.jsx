@@ -128,7 +128,7 @@ function InputPassword({id, name, label, errorChecking}) {
 
 function DialogLanding({currDialog, setCurrDialog, currError, setCurrError,
                         attempted, setAttempted, changeDialog, closeDialog}) {
-    const {user, setUserDetails, setTokenDetails} = useUserContext();
+    const {setUserDetails, setTokenDetails, setViewAs} = useUserContext();
     const [token, setToken] = useState({});
 
     const resetPasswordRequest = async (json) => {
@@ -171,7 +171,6 @@ function DialogLanding({currDialog, setCurrDialog, currError, setCurrError,
         });
         if (e2) return e2;
         let responseJson = await response.json();
-
         setTokenDetails(responseJson.token);
 
         // Fetch user information
@@ -181,9 +180,8 @@ function DialogLanding({currDialog, setCurrDialog, currError, setCurrError,
         });
         if (e3) return e3;
         responseJson = await userInfo.json();
-
-        setUserDetails(responseJson)
-
+        setUserDetails(responseJson);
+        setViewAs(responseJson.role);
         navigate('dashboard');
     }
 

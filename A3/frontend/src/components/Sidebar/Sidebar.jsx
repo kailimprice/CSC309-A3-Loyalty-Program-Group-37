@@ -18,7 +18,7 @@ import { useLocation } from "react-router-dom";
 function getViewablePermissions(user, url) {
     let viewable = PERMISSION_LEVELS.slice(1).filter(x => hasPerms(user.role, x));
     // Add more special cases if necessary
-    if (url.startsWith('/users/') && url != `/users/${user.id}`) {
+    if (url.startsWith('/users') && url != `/users/${user.id}`) {
         viewable = viewable.filter(x => hasPerms(x, 'manager'));
     }
     return viewable;
@@ -31,8 +31,10 @@ export default function Sidebar(role) {
     // import user context
     const { user, viewAs, setViewAs } = useUserContext();
     const location = useLocation();
+    if (!user)
+        return;
     const viewablePermissions = getViewablePermissions(user, location.pathname);
-
+    
     return (
         <Box component='aside'>
             <Box className='box-balance'>

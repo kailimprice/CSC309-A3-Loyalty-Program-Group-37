@@ -6,40 +6,64 @@ import { Link } from 'react-router-dom';
 import { useUserContext } from '../../contexts/UserContext';
 import logo from "../../assets/logo.png";
 import { hasPerms } from '../../utils/utils';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import "./Navbar.css"
-
-const settings = ['QR Code', 'Profile', 'Logout'];
 
 // inspired by https://mui.com/material-ui/react-app-bar/?srsltid=AfmBOooWDrbMd6d-96DUha-sfChITDwLyi6DOf277qa1ipbjZ_KmvPP9#app-bar-with-responsive-menu
 const Navbar = () => {
+    const { user, viewAs, setViewAs } = useUserContext();
+    const navigate = useNavigate();
     const location = useLocation().pathname;
 
-    // retrieve user from context
-    const { user, viewAs } = useUserContext();
-    
-    const pages = ['Dashboard', 'Transactions', 'Events', 'Promotions'];
-    if (hasPerms(viewAs, 'manager'))
-        pages.push('Users');
-    
     const [anchorElNav, setAnchorElNav] = useState(null);
     const [anchorElUser, setAnchorElUser] = useState(null);
-
     const handleOpenNavMenu = (event) => {
         setAnchorElNav(event.currentTarget);
     };
-
     const handleOpenUserMenu = (event) => {
         setAnchorElUser(event.currentTarget);
     };
-
     const handleCloseNavMenu = () => {
         setAnchorElNav(null);
     };
-
     const handleCloseUserMenu = () => {
         setAnchorElUser(null);
     };
+
+    // Stub appbar for NotFound
+    if (!user)
+        return <AppBar position="static" sx={{ bgcolor: "black" }}>
+            <Container maxWidth="xl">
+                <Toolbar disableGutters>
+                    <Stack direction='row' sx={{alignItems: 'center'}}>
+                        <Avatar sx={{ mr: 1 }} alt="Avatar" src={logo} />
+                        <Typography variant="h5" component={Link} to="/" noWrap className='cssu-text'>
+                            CSSU
+                        </Typography>
+                    </Stack>
+                </Toolbar>
+            </Container>
+        </AppBar>;
+
+    const pages = ['Dashboard', 'Transactions', 'Events', 'Promotions'];
+    if (hasPerms(viewAs, 'manager'))
+        pages.push('Users');
+
+    function handleQR(event) {
+        console.log("TODO");
+        handleCloseUserMenu(event);
+    }
+    function handleProfile(event) {
+        navigate(`/users/${user.id}`);
+        handleCloseUserMenu(event);
+    }
+    function handleLogout(event) {
+        navigate('/');
+        localStorage.clear();
+        setViewAs(null);
+        handleCloseUserMenu(event);
+    }
+    const settings = [['QR Code', handleQR], ['Profile', handleProfile], ['Logout', handleLogout]];
 
     return <>
         <AppBar position="static" sx={{ bgcolor: "black" }}>
@@ -155,16 +179,14 @@ const Navbar = () => {
                     open={Boolean(anchorElUser)}
                     onClose={handleCloseUserMenu}
                 >
-                    {/* TODO: display each setting page */}
-                {settings.map((setting) => (
-                    <MenuItem 
-                        key={setting} 
-                        onClick={handleCloseUserMenu}
-                        component={Link}
-                        to={setting === "Profile" ? `/users/${user.id}`: "TODO"}>
-                    <Typography sx={{ textAlign: 'center' }}>{setting}</Typography>
+
+                {settings.map((setting) => {
+                    const [name, handler] = setting;
+                    return <MenuItem key={setting}
+                                    onClick={handler}>
+                        <Typography sx={{ textAlign: 'center' }}>{name}</Typography>
                     </MenuItem>
-                ))}
+                })}
                 </Menu>
             </Box>
             </Toolbar>
