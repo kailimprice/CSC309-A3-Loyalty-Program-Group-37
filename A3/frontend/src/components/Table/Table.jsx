@@ -1,8 +1,10 @@
-import {useNavigate} from 'react-router-dom';
+import {useState} from 'react';
+import {useSearchParams, useLocation, useNavigate} from 'react-router-dom';
 import {Stack} from '@mui/material';
 import Typography from '@mui/joy/Typography';
 import ButtonDirection from '../Button/ButtonDirection';
 import ButtonTag from '../Button/ButtonTag';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import './Table.css'
 
 function parseDate(string) {
@@ -16,6 +18,10 @@ function parseDate(string) {
 }
 
 export default function Table({columns, data, selection, setSelection, page, numPages, buttons}) {
+    const location = useLocation();
+    const [sortBy, setSortBy] = useState(new URLSearchParams(location.search).get('orderBy'));
+    const [sortDirection, setSortDirection] = useState(new URLSearchParams(location.search).get('order'));
+
     // Selection
     function toggleRow(id) {
         return (event) => {
@@ -35,11 +41,37 @@ export default function Table({columns, data, selection, setSelection, page, num
     }, {});
 
     // Header
+    const [searchParams, setSearchParams] = useSearchParams();
+    function toggleSort(key) {
+        return () => {
+            const p = new URLSearchParams(location.search);
+            if (sortBy == key) {
+                if (sortDirection == 'asc') {
+                    setSortDirection('desc');
+                    p.set('order', 'desc');
+                } else {
+                    setSortDirection(null);
+                    setSortBy(null);
+                    p.delete('order');
+                    p.delete('orderBy');
+                }
+            } else {
+                setSortBy(key);
+                setSortDirection('asc');
+                p.set('orderBy', key);
+                p.set('order', 'asc');
+            }
+            setSearchParams(p);
+        }
+    }
     const headerContent = Object.keys(columns).map((x) => { 
-        return <th key={x} align={alignment[x]}>
-            <Typography variant='h6' sx={{color: 'rgb(50, 50, 50)'}}>
-                {columns[x][0]}
-            </Typography>
+        return <th key={x} onClick={toggleSort(x)}>
+            <Stack spacing={0.25} sx={{flexDirection: alignment[x] == 'left' ? 'row' : 'row-reverse', alignItems: 'center'}}>
+                <Typography variant='h6' sx={{color: 'rgb(50, 50, 50)', padding: '0'}}>
+                    {columns[x][0]}
+                </Typography>
+                {sortBy == x && <ArrowUpwardIcon sx={{width: '20px', height: '20px', transition: '0.1s', transform: `rotate(${sortDirection == 'asc' ? 360 : 180}deg)`}}/>}
+            </Stack>
         </th>
     });
     const header = <tr>
@@ -55,7 +87,6 @@ export default function Table({columns, data, selection, setSelection, page, num
             }
         }
     }
-
     const rows = [];
     for (let i = 0; i < data.length; i++) {
         const id = data[i].id;
