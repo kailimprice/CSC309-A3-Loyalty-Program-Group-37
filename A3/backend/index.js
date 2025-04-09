@@ -736,7 +736,7 @@ app.get('/transactions', permLevel('manager'), async (req, res) => {
 
     const include = {infoPurchase: {include: {promotionIds: true}},
                      infoAdjustment: {include: {promotionIds: true}},
-                     infoRedemption: {include: {promotionIds: true}}, infoTransfer: true, infoEvent: true};
+                     infoRedemption: true, infoTransfer: true, infoEvent: true};
     const orderBy = {};
     if (query['orderBy']) {
         orderBy[query['orderBy']] = query['order'];
@@ -784,7 +784,7 @@ app.get('/users/me/transactions', permLevel('regular'), async (req, res) => {
 
     const include = {infoPurchase: {include: {promotionIds: true}},
                      infoAdjustment: {include: {promotionIds: true}},
-                     infoRedemption: {include: {promotionIds: true}}, infoTransfer: true, infoEvent: true};
+                     infoRedemption: true, infoTransfer: true, infoEvent: true};
     const [count, result, e3] = await findMany(prisma.transaction, filter, query, res, include);
     if (e3) return e3;
     postProcessGetTransaction(include, result);
@@ -835,8 +835,7 @@ async function purchaseTransaction(req, res, data1) {
     if (e2) return e2;
 
     data2['earned'] = Math.round(data2['spent'] * 4);
-    if (req.user.suspicious)
-        data2['suspicious'] = true;
+    data2['suspicious'] = req.user.suspicious;
 
     const {promotionIds} = data2; 
     if (promotionIds) {

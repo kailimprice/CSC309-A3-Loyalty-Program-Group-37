@@ -106,7 +106,7 @@ export default function Sidebar() {
     //use role to access menu items
 
     // import user context
-    const { user, viewAs, setViewAs } = useUserContext();
+    const { user, viewAs, setViewAs, setUpdateDisplay } = useUserContext();
     const location = useLocation();
     if (!user)
         return;
@@ -158,9 +158,6 @@ export default function Sidebar() {
     async function handleSubmit(json) {
         console.log('raw json:', json);
         let endpoint = endpoints[dialogTitle];
-        // What does this check?
-        // if (!dialogTitle || !endpoint)
-        //     return;
 
         if (['redemption', 'transfer', 'purchase'].includes(dialogTitle))
             json.type = dialogTitle;
@@ -186,11 +183,12 @@ export default function Sidebar() {
                 const error = await response.json();
                 return `${response.status}: ${error.error}`;
             }
-            return
+            setUpdateDisplay(x => !x);
+            return;
         } catch(error) {
-            return 'Creation failed.'
+            console.log(error);
+            return 'Failed to create user.';
         }
-        // TODO reload the table!!!!
     }
 
     return (

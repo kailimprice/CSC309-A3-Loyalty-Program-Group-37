@@ -1,17 +1,22 @@
 import  { useState } from 'react';
 import {AppBar, Box, Toolbar, IconButton, Typography, Menu, Container,
-        Avatar, Button, Tooltip, MenuItem, Stack} from '@mui/material';
+        Avatar, Button, Tooltip, MenuItem, Stack, Dialog} from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import { Link } from 'react-router-dom';
 import { useUserContext } from '../../contexts/UserContext';
 import logo from "../../assets/logo.png";
 import { hasPerms } from '../../utils/utils';
 import { useLocation, useNavigate } from 'react-router-dom';
+import QRCode from "react-qr-code";
 import "./Navbar.css"
 
 // inspired by https://mui.com/material-ui/react-app-bar/?srsltid=AfmBOooWDrbMd6d-96DUha-sfChITDwLyi6DOf277qa1ipbjZ_KmvPP9#app-bar-with-responsive-menu
 const Navbar = () => {
     const { user, viewAs, setViewAs } = useUserContext();
+    const pages = ['Dashboard', 'Transactions', 'Events', 'Promotions'];
+    if (hasPerms(viewAs, 'manager'))
+        pages.push('Users');
+
     const navigate = useNavigate();
     const location = useLocation().pathname;
 
@@ -30,6 +35,15 @@ const Navbar = () => {
         setAnchorElUser(null);
     };
 
+    // QR code display
+    const [qrOpen, setQrOpen] = useState(false);
+    const closeQr = () => setQrOpen(false);
+    const DialogQR = <Dialog open={qrOpen} onClose={closeQr} className='dialog-qr'>
+        <Box sx={{padding: '45px'}}>
+            <QRCode value={{id: user.id, utorid: user.utorid}} size='large' />
+        </Box>
+    </Dialog>;
+
     // Stub appbar for NotFound
     if (!user)
         return <AppBar position="static" sx={{ bgcolor: "black" }}>
@@ -45,12 +59,8 @@ const Navbar = () => {
             </Container>
         </AppBar>;
 
-    const pages = ['Dashboard', 'Transactions', 'Events', 'Promotions'];
-    if (hasPerms(viewAs, 'manager'))
-        pages.push('Users');
-
     function handleQR(event) {
-        console.log("TODO");
+        setQrOpen(true);
         handleCloseUserMenu(event);
     }
     function handleProfile(event) {
@@ -66,6 +76,7 @@ const Navbar = () => {
     const settings = [['QR Code', handleQR], ['Profile', handleProfile], ['Logout', handleLogout]];
 
     return <>
+        {DialogQR}
         <AppBar position="static" sx={{ bgcolor: "black" }}>
         <Container maxWidth="xl">
             <Toolbar disableGutters>

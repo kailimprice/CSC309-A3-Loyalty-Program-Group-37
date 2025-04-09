@@ -1,13 +1,11 @@
-// All transactions:
-//View all transactions, filter, pages/infinite scroll
-//Filter by name, createdBy, suspicious, promotionId, type, relatedId, amount, operator, page, limit
-//Functionality: manage transactions, create adjustment transactions
+/*
+/transactions (manager+)
+- name, createdBy, suspicious, promotionId, type, relatedId, amount, operator, page, limit
 //Need to be able to edit suspicious/not
 
-// Transactions:
-//View: transaction history with pages/infinite scroll
-//Other: redemption request creation, points transfer
-
+/users/me/transactions (regular+)
+- type, relatedId, promotionId, amount, operator, page, limit
+*/
 import Typography from '@mui/joy/Typography';
 import Table from '../../components/Table/Table.jsx'
 import {useState, useEffect} from 'react'
@@ -15,26 +13,39 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 import {Stack, Button} from '@mui/material';
 import {DialogGeneral, FilterBody} from '../../components/DialogGeneral/DialogGeneral.jsx';
 import {useUserContext} from '../../contexts/UserContext';
-import {fetchServer} from "../../utils/utils";
+import {fetchServer, hasPerms} from "../../utils/utils";
 import NotFound from "../NotFound/NotFound.jsx"
 import {useSearchParams, useLocation} from 'react-router-dom';
 
 const resultsPerPage = 10;
+
+const columns = {
+    id: ['ID', 'number'],
+    type: ['Type', ['Adjustment', 'Event', 'Purchase', 'Redemption', 'Transfer']],
+    createdBy: ['Creator', 'string'],
+    amount: ['Points', 'number'],
+    suspicious: ['Suspicious', 'boolean', null, () => console.log('hi'), true],
+    processedBy: ['Processed', 'boolean'],
+    sender: ['Sender', 'string'],
+    recipient: ['Recipient', 'string'],
+    related: ['Related', 'string']
+};
 
 export default function Transactions() {
     const [filterOpen, setFilterOpen] = useState(false);
     const [data, setData] = useState([]);
     const [page, setPage] = useState(0);
     const [numPages, setNumPages] = useState(0);
-    const {viewAs} = useUserContext();
+    const {viewAs, updateDisplay} = useUserContext();
     const [searchParams, setSearchParams] = useSearchParams();
     const token = localStorage.getItem('token');
     const location = useLocation();
+    const baseUrl = hasPerms(viewAs, 'manager') ? 'transactions' : 'users/me/transactions';
 
     // Fetch all users
-    async function getUsers(token) {
+    async function getTransactions(token) {
         let params = location.search;
-        let [response, error] = await fetchServer(`transactions${params}`, {
+        let [response, error] = await fetchServer(`${baseUrl}${params}`, {
             method: 'GET',
             headers: new Headers({'Authorization': `Bearer ${token}`})
         });
@@ -46,8 +57,28 @@ export default function Transactions() {
         }
         response = await response.json();
         const {results, count} = response;
+        console.log(results);
         for (let i = 0; i < results.length; i++) {
-            results[i].role = results[i].role[0].toUpperCase() + results[i].role.slice(1);
+            const {type, infoAdjustment, infoEvent, infoPurchase, infoRedemption, infoTransfer} = results[i];
+            results[i].type = type[0].toUpperCase() + type.slice(1);
+            
+            if (infoAdjustment) {
+                results[i].amount = infoRedemption.amount;
+                results[i].suspicious = infoAdjustment.suspicious;
+            } else if (infoEvent) {
+                results[i].amount = infoEvent.awarded;
+                results[i].suspicious = null;
+            } else if (infoPurchase) {
+                results[i].amount = infoPurchase.spent;
+                results[i].suspicious = infoPurchase.suspicious;
+            } else if (infoRedemption) {
+                results[i].amount = infoRedemption.amount;
+                results[i].suspicious = null;
+            } else if (infoTransfer) {
+                results[i].amount = infoTransfer.sent;
+                results[i].suspicious = null;
+            }
+
         }
         if (count == 0)
             setPage(0);
@@ -61,8 +92,8 @@ export default function Transactions() {
     useEffect(() => {
         if (!token)
             return;
-        getUsers(token);
-    }, [location.search]);
+        getTransactions(token);
+    }, [location.search, updateDisplay, baseUrl]);
     if (!token)
         return <NotFound/>
     
@@ -120,17 +151,6 @@ export default function Transactions() {
     function changeSuspicious(id, suspicious) {
         changeProperty(id, 'suspicious', suspicious == 'Yes' ? false : true);
     }
-
-    // Initialize editable columns based on user role
-    const columns = {
-        id: ['ID', 'number'],
-        utorid: ['UTORid', 'string'],
-        name: ['Name', 'string'],
-        type: ['Type', 'string'],
-        createdBy: ['Creator', 'string'],
-        suspicious: ['Suspicious', 'string'],
-        amount: ['Points', 'number']
-    };
 
     // Filter
     const filterFields = {

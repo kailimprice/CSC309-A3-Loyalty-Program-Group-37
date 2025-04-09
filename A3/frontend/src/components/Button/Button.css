@@ -46,3 +46,24 @@
 .tag-add:hover {    background-color: #45ff6a; }
 .tag-add:active {   background-color: #2d9e23; }
 .tag-add-text {     color: #e9ebff; }
+
+
+.tag-adjustment {        background-color: #4f3824; }
+.tag-adjustment:hover {  background-color: #75573C; }
+.tag-adjustment-text {   color: #ffd6b5; }
+
+.tag-event {          background-color: #d1603d; }
+.tag-event:hover {    background-color: #F07C58; }
+.tag-event-text {     color: rgb(255, 218, 203); }
+
+.tag-purchase {          background-color: #ddb967; }
+.tag-purchase:hover {    background-color: #d0e37f; }
+.tag-purchase-text {     color: #fbffd8; }
+
+.tag-redemption {          background-color: #367bb4; }
+.tag-redemption:hover {    background-color: #45a2ff; }
+.tag-redemption-text {     color: #e9ebff; }
+
+.tag-transfer {          background-color: #48284a; }
+.tag-transfer:hover {    background-color: #763C7A; }
+.tag-transfer-text {     color: #F6CEF9; }
