@@ -62,13 +62,16 @@ export function FilterBody({fields}) {
     const rows = [];
     for (let name in fields) {
         const [display, type] = fields[name];
+        const required = (fields[name].length > 2) ? fields[name][2] : false;
+
         rows.push(<Fragment key={display}>
-            <Typography key={display}>{display}</Typography>
+            <Typography key={display}>{display}{required ? '*' : ''}</Typography>
             {type == 'text' &&
                 <TextField 
                     fullWidth 
                     variant="outlined" 
                     margin='dense' 
+                    required={required}
                     slotProps={{htmlInput: {style: {padding: '5px 10px'}}}}
                     id={name} 
                     name={name} 
@@ -76,16 +79,18 @@ export function FilterBody({fields}) {
                 />
             }
             {type == 'boolean' &&
-            <RadioGroup row sx={{justifyContent: 'center'}}>
+            <RadioGroup row sx={{justifyContent: 'center'}} defaultValue={required ? false : null}>
                 <FormControlLabel name={name} value={false} control={<Radio/>} label="No"/>
                 <FormControlLabel name={name} value={true} control={<Radio/>} label="Yes"/>
             </RadioGroup>}
-            {type == 'booleanPromotion' &&
-                <RadioGroup row sx={{justifyContent: 'center'}}>
-                    <FormControlLabel name={name} value={'automatic'} control={<Radio/>} label="Automatic"/>
-                    <FormControlLabel name={name} value={'onetime'} control={<Radio/>} label="One-time"/>
-                </RadioGroup>
-                }
+            
+            {Array.isArray(type) &&
+            <RadioGroup row sx={{justifyContent: 'center'}}  defaultValue={required ? type[0][1] : null}>
+                {type.map(([display, actualName]) => {
+                    return <FormControlLabel name={name} value={actualName} control={<Radio/>} label={display}/> 
+                })}
+            </RadioGroup>}
+
             {type == 'number' && 
                 <TextField
                     fullWidth
@@ -94,6 +99,7 @@ export function FilterBody({fields}) {
                     id={name}
                     name={name}
                     type='number'
+                    required={required}
                 />
             }
             {type == 'dollar' && 
@@ -104,6 +110,7 @@ export function FilterBody({fields}) {
                     id={name}
                     name={name}
                     type="number"
+                    required={required}
                 />
             }
             {type == 'ids' && 
@@ -113,7 +120,8 @@ export function FilterBody({fields}) {
                     margin="dense"
                     id={name}
                     name={name}
-                    placeholder="1, 2, 3"
+                    placeholder="e.g. 1, 2, 3"
+                    required={required}
                 />
             }
             {type == 'time' && 
@@ -124,6 +132,7 @@ export function FilterBody({fields}) {
                     id={name}
                     name={name}
                     type="datetime-local"
+                    required={required}
                 />
             }
         </Fragment>);

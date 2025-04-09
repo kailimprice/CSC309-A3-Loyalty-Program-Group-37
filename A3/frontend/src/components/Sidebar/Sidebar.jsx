@@ -48,45 +48,45 @@ const sidebarButtons ={
 const sidebarDialogFields = {
     redemption: {
         /* type */
-        amount: ['Amount', 'number'],
+        amount: ['Amount', 'number', true],
         remark: ['Remark', 'text']  /* optional */
     },
     transfer: {
-        userId: ['User ID', 'number'], /* from url? */
+        userId: ['Recipient ID', 'number'], /* from url? */
         /* type */
-        amount: ['Amount', 'number'],
+        amount: ['Transfer Amount', 'number', true],
         remark: ['Remark', 'text'] /* optional */
     },
     purchase: {
-        utorid: ['UTORid', 'text'],
+        utorid: ['UTORid', 'text', true],
         /* type */
-        spent: ['Amount Spent', 'dollar'],
-        promotionIds: ['Promotion Ids', 'ids'], /* optional */
+        spent: ['Amount Spent', 'dollar', true],
+        promotionIds: ['Promotion IDs', 'ids'], /* optional */
         remark: ['Remark', 'text']  /* optional */
     },
     event: {
-        name: ['Name', 'text'],
-        description: ['Description', 'text'],
-        location: ['Location', 'text'],
-        startTime: ['Start Time', 'time'],
-        endTime: ['End Time', 'time'],
+        name: ['Name', 'text', true],
+        description: ['Description', 'text', true],
+        location: ['Location', 'text', true],
+        startTime: ['Start Time', 'time', true],
+        endTime: ['End Time', 'time', true],
         capacity: ['Capacity', 'number'], /* optional */
-        points: ['Points', 'number'],
+        points: ['Points', 'number', true],
     },
     promotion: {
-        name: ['Name', 'text'],
-        description: ['Description', 'text'],
-        type: ['Type', 'booleanPromotion'], /* automatic or one time */
-        startTime: ['Start Time', 'time'],
-        endTime: ['End Time', 'time'],
-        minSpending: ['Min Spend', 'number'], /* optional */
+        name: ['Name', 'text', true],
+        description: ['Description', 'text', true],
+        type: ['Type', [['Automatic', 'automatic'], ['One-Time', 'onetime']], true], /* automatic or one time */
+        startTime: ['Start Time', 'time', true],
+        endTime: ['End Time', 'time', true],
+        minSpending: ['Minimum Spent', 'number'], /* optional */
         rate: ['Rate', 'number'], /* optional */
         points: ['Points', 'number'] /* optional */
     },
     user: {
-        utorid: ['UTORid', 'text'],
-        name: ['Name', 'text'],
-        email: ['Email', 'text'],
+        utorid: ['UTORid', 'text', true],
+        name: ['Name', 'text', true],
+        email: ['Email', 'text', true],
     }
 }
 
@@ -112,6 +112,7 @@ export default function Sidebar() {
         return;
     const viewablePermissions = getViewablePermissions(user, location.pathname);
     const buttonItems = sidebarButtons[viewAs];
+    const [dialogTitle, setDialogTitle] = useState(null); 
     const [openDialogButton, setOpenDialogButton] = useState(null);
     const endpoints = {
         redemption: 'users/me/transactions',
@@ -122,22 +123,29 @@ export default function Sidebar() {
         user: 'users'
     };
 
+    function openDialog(button) {
+        return () => {
+            setOpenDialogButton(button.key);
+            setDialogTitle(button.key);
+        };
+    }
+    function closeDialog() {
+        setOpenDialogButton(null);
+    }
+
     async function handleSubmit(json) {
         console.log('json: ' + json)
-        let endpoint = endpoints[openDialogButton];
-        if (!openDialogButton) {
+        let endpoint = endpoints[dialogTitle];
+        if (!dialogTitle || !endpoint)
             return
-        }
-        if (!endpoint) {
-            return
-        }
-        if (openDialogButton === 'redemption' || openDialogButton === 'transfer' || openDialogButton === 'purchase') {
-            json.type = openDialogButton;
-        }
-        if (openDialogButton === 'transfer') {
+
+        if (['redemption', 'transfer', 'purchase'].includes(dialogTitle)) {
+            json.type = dialogTitle;
+        } else if (dialogTitle === 'transfer') {
             endpoint = `users/${json.userId}/transactions`;
             delete json.userId;
         }
+
         try {
             const token = localStorage.getItem('token');
             console.log('token: ' + token)
@@ -174,10 +182,11 @@ export default function Sidebar() {
                     </Typography>
                 </Box>
             </Box>
-            <Box display='flex' flexDirection='column' justifyContent='flex-start' height='100%' gap='10px' sx={{}}>
+            <Box display='flex' flexDirection='column' justifyContent='flex-start' height='100%' sx={{margin: '16px 0px'}}>
                 {buttonItems.map((button) => {
                     return (
-                        <Button key={button.key} sx={{textTransform: 'none', fontWeight: 'bold', backgroundColor: 'white'}} variant='outlined' size='large' onClick={() => {setOpenDialogButton(button.key)}}> 
+                        <Button key={button.key} sx={{borderRadius: '0px', justifyContent: 'flex-start', textTransform: 'none', fontWeight: 'bold', backgroundColor: 'white', color: 'black'}}
+                                variant='contained' size='large' className='sidebar-button' onClick={openDialog(button)}> 
                             {button.label}
                         </Button>
                     )
@@ -185,13 +194,13 @@ export default function Sidebar() {
             </Box>
 
             <DialogGeneral 
-                title={`Create ${openDialogButton}`} 
+                title={`Create ${dialogTitle ? dialogTitle[0].toUpperCase() + dialogTitle.slice(1) : null}`} 
                 submitTitle='Create' 
                 open={!!openDialogButton} 
-                setOpen={() => setOpenDialogButton(null)}
-                dialogStyle={{width: '400px'}}
+                setOpen={closeDialog}
+                dialogStyle={{width: '450px'}}
                 submitFunc={handleSubmit}>
-                <FilterBody fields={sidebarDialogFields[openDialogButton]}/>
+                <FilterBody fields={sidebarDialogFields[dialogTitle]}/>
             </DialogGeneral>
 
             <Stack direction='row' sx={{justifyContent: 'flex-end', gap: '10px'}}>
