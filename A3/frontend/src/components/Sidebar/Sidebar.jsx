@@ -113,9 +113,53 @@ export default function Sidebar() {
     const viewablePermissions = getViewablePermissions(user, location.pathname);
     const buttonItems = sidebarButtons[viewAs];
     const [openDialogButton, setOpenDialogButton] = useState(null);
+    const endpoints = {
+        redemption: 'users/me/transactions',
+        /* special case for transfer since it has :userId */
+        purchase: 'transactions',
+        event: 'events',
+        promotion: 'promotions',
+        user: 'users'
+    };
 
-    async function handleSubmit() {
-        //todo
+    async function handleSubmit(json) {
+        console.log('json: ' + json)
+        let endpoint = endpoints[openDialogButton];
+        if (!openDialogButton) {
+            return
+        }
+        if (!endpoint) {
+            return
+        }
+        if (openDialogButton === 'redemption' || openDialogButton === 'transfer' || openDialogButton === 'purchase') {
+            json.type = openDialogButton;
+        }
+        if (openDialogButton === 'transfer') {
+            endpoint = `users/${json.userId}/transactions`;
+            delete json.userId;
+        }
+        try {
+            const token = localStorage.getItem('token');
+            console.log('token: ' + token)
+
+            const response = await fetch(`http://localhost:3000/${endpoint}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(json),
+            })
+            console.log('response: ' + response)
+
+            if (!response.ok) {
+                const error = await response.json();
+                return error.error;
+            }
+            return
+        } catch(error) {
+            return 'Creation failed.'
+        }
     }
 
     return (
@@ -146,7 +190,7 @@ export default function Sidebar() {
                 open={!!openDialogButton} 
                 setOpen={() => setOpenDialogButton(null)}
                 dialogStyle={{width: '400px'}}
-                submitFunc={() => handleSubmit()}>
+                submitFunc={handleSubmit}>
                 <FilterBody fields={sidebarDialogFields[openDialogButton]}/>
             </DialogGeneral>
 
