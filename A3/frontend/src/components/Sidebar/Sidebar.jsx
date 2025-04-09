@@ -11,7 +11,18 @@ import {Stack, Box, Select, MenuItem, Button, TextField, Dialog, DialogActions, 
     DialogContent, DialogContentText, DialogTitle, NativeSelect} from '@mui/material'
 import "./Sidebar.css";
 import { useUserContext } from '../../contexts/UserContext';
-import { PERMISSION_LEVELS } from "../../utils/utils";
+import { hasPerms, PERMISSION_LEVELS } from "../../utils/utils";
+import { useLocation } from "react-router-dom";
+
+
+function getViewablePermissions(user, url) {
+    let viewable = PERMISSION_LEVELS.slice(1).filter(x => hasPerms(user.role, x));
+    // Add more special cases if necessary
+    if (url.startsWith('/users/') && url != `/users/${user.id}`) {
+        viewable = viewable.filter(x => hasPerms(x, 'manager'));
+    }
+    return viewable;
+}
 
 export default function Sidebar(role) {
     //use role to access menu items
@@ -19,6 +30,8 @@ export default function Sidebar(role) {
 
     // import user context
     const { user, viewAs, setViewAs } = useUserContext();
+    const location = useLocation();
+    const viewablePermissions = getViewablePermissions(user, location.pathname);
 
     return (
         <Box component='aside'>
@@ -43,18 +56,16 @@ export default function Sidebar(role) {
                     <Select
                         className='select-view-as'
                         // start off with the highest role
-                        defaultValue={user.role}
+                        value={viewAs}
+                        onChange = {(event) => setViewAs(event.target.value)}
                         inputProps={{
                             name: 'role',
                             id: 'uncontrolled-native'
                         }}
                     >
-                        {/* this can be read as {if && then} */}
-                        {/* roles go highest -> lowest */}
-                        {user.role === 'superuser' && <MenuItem value={'superuser'}>Superuser</MenuItem>}
-                        {user.role !== 'regular' && user.role !== 'cashier' && <MenuItem value={'manager'}>Manager</MenuItem>}
-                        {user.role !== 'regular' && <MenuItem value={'cashier'}>Cashier</MenuItem>}
-                        <MenuItem value={'regular'}>Regular</MenuItem>
+                        {viewablePermissions.map(x => {
+                            return <MenuItem value={x}>{x[0].toUpperCase() + x.slice(1)}</MenuItem>;
+                        })}
                     </Select>
                 </FormControl>
             </Stack>
