@@ -1,6 +1,7 @@
 import {useState, Fragment} from 'react'
 import {Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
         Typography, TextField, RadioGroup, Radio, FormControlLabel} from '@mui/material';
+import { Input } from '@mui/joy'
 
 /**
  * General-purpose dialog box. In your code, add a state:
@@ -96,7 +97,7 @@ export function FilterBody({fields}) {
                 />
             }
             {type == 'dollar' && 
-                <TextField
+                <Input
                     fullWidth
                     variant="outlined"
                     margin="dense"
@@ -112,7 +113,7 @@ export function FilterBody({fields}) {
                     margin="dense"
                     id={name}
                     name={name}
-                    placeholder="1,2,3 etc"
+                    placeholder="1, 2, 3"
                 />
             }
             {type == 'time' && 
