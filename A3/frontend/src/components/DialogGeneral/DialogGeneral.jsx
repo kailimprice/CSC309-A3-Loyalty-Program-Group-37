@@ -36,7 +36,7 @@ export default function DialogGeneral({title, children, submitTitle, open, setOp
             {title}
         </DialogTitle>
         
-        <DialogContent>
+        <DialogContent sx={{paddingBottom: '5px'}}>
             {error && 
             <Box sx={{backgroundColor: '#ffe4e1', borderRadius: '4px', padding: '10px', marginTop: '10px', marginBottom: '10px'}}>
                 <DialogContentText sx={{color: 'red'}}>{error}</DialogContentText>                   
