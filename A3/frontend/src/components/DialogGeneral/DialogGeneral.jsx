@@ -71,6 +71,12 @@ export function FilterBody({fields}) {
                 <FormControlLabel name={name} value={false} control={<Radio/>} label="No"/>
                 <FormControlLabel name={name} value={true} control={<Radio/>} label="Yes"/>
             </RadioGroup>}
+            {type == 'booleanPromotion' &&
+                <RadioGroup row sx={{justifyContent: 'center'}}>
+                    <FormControlLabel name={name} value={false} control={<Radio/>} label="Automatic"/>
+                    <FormControlLabel name={name} value={true} control={<Radio/>} label="One-time"/>
+                </RadioGroup>
+                }
             {type == 'number' && 
                 <TextField
                     fullWidth

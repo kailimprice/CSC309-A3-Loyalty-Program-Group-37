@@ -76,7 +76,7 @@ const sidebarDialogFields = {
     promotion: {
         name: ['Name', 'text'],
         description: ['Description', 'text'],
-        type: ['Type', 'boolean'], /* automatic or one time */
+        type: ['Type', 'booleanPromotion'], /* automatic or one time */
         startTime: ['Start Time', 'time'],
         endTime: ['End Time', 'time'],
         minSpending: ['Minimum Spend', 'number'], /* optional */
