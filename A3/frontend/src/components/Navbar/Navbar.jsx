@@ -184,7 +184,11 @@ const Navbar = (role) => {
                 >
                     {/* TODO: display each setting page */}
                 {settings.map((setting) => (
-                    <MenuItem key={setting} onClick={handleCloseUserMenu}>
+                    <MenuItem 
+                        key={setting} 
+                        onClick={handleCloseUserMenu}
+                        component={Link}
+                        to={setting === "Profile" ? `/users/${user.id}`: "TODO"}>
                     <Typography sx={{ textAlign: 'center' }}>{setting}</Typography>
                     </MenuItem>
                 ))}

@@ -12,7 +12,6 @@ import Dashboard from './pages/Dashboard/Dashboard.jsx'
 import Landing from './pages/Landing/Landing.jsx'
 import NotFound from './pages/NotFound/NotFound.jsx'
 import Layout from './components/Layout/Layout.jsx'
-import Profile from './pages/Profile/Profile.jsx'
 import { UserProvider } from './contexts/UserContext.jsx';
 
 import {CssBaseline} from '@mui/material';
@@ -31,7 +30,6 @@ const routes = [
     ['promotions/:id', <Promotion/>],
     ['users', <Users/>],
     ['users/:id', <User/>],
-    ['profile/', <Profile/>],
 ]
 
 function App() {

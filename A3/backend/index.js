@@ -323,7 +323,7 @@ function checkCondition(res, condition, errStatus, errMessage) {
     return false;
 }
 function postProcessBirthday(result) {
-    if ('birthday' in result)
+    if ('birthday' in result && result['birthday'] !== null && result['birthday'] !== undefined)
         result['birthday'] = result['birthday'].toISOString().split('T')[0];
 }
 
@@ -535,7 +535,7 @@ app.get('/users/me', async (req, res) => {
 app.patch('/users/me', upload.single('avatar'), async (req, res) => {
     const {name, email, birthday} = req.body;
 
-    if (!checkName(name) || !checkEmail(email) || !checkBirthday(birthday))
+    if (!checkName(name) && !checkEmail(email) && !checkBirthday(birthday))
         return res.status(400).json({'error': 'Bad arguments'});
 
     const data = req.file ? {'avatarUrl': req.file.path} : {};

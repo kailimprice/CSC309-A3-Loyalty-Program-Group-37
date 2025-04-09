@@ -1,9 +1,10 @@
 // inspired by t10 CityContext
 // there is no restriction to what can be stored in here
+// UPDATE: removed editUserDetails
 //
 // to use:
 //   1. import { useUserContext } from '../../contexts/UserContext';
-//   2. inside function: const { user, setUserDetails, editUserDetails } = useUserContext();
+//   2. inside function: const { user, setUserDetails } = useUserContext();
 //   3. usage:
 //        * retrieve attributes: (user.role, user.name, etc.)
 //        * set attributes: setUserDetails({ key: val }) 
@@ -62,25 +63,8 @@ export const UserProvider = ({ children }) => {
         setToken(newToken);
     };
 
-    // destructure curr details and join with updatedDetails
-    const editUserDetails = async (updatedDetails) => {
-        // update actual data in db
-        console.log("details", updatedDetails);
-        console.log("token", localStorage.getItem("token"));
-        // const [userInfo, e] = await fetchServer('users/me', {
-        //     method: 'PATCH',
-        //     headers: new Headers({'Authorization': `Bearer ${localStorage.getItem("token")}`}),
-        //     body: JSON.stringify(updatedDetails)
-        // });
-        // if (e) return e;
-        // let responseJson = await userInfo.json();
-        // setUser(responseJson);
-
-        setUser(updatedDetails);
-    };
-
     return (
-        <UserContext.Provider value={{ user, setUserDetails, editUserDetails, setTokenDetails }}>
+        <UserContext.Provider value={{ user, token, setUserDetails, setTokenDetails }}>
             {children}
         </UserContext.Provider>
     );
