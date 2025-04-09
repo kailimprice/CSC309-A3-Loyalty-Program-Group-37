@@ -51,7 +51,7 @@ export default function Table({columns, data, selection, setSelection, page, num
     function doubleClick(id) {
         return (event) => {
             if (!Array.from(event.target.classList).includes('no-select')) {
-                navigate(`/users/${id}`);
+                navigate(`./${id}`);
             }
         }
     }
@@ -66,21 +66,34 @@ export default function Table({columns, data, selection, setSelection, page, num
             const format = columns[colName][1];
             const settable = columns[colName].length > 2 ? columns[colName][2] : null;
             const changeFunc = columns[colName].length > 3 ? columns[colName][3] : null;
-
+            const editable = columns[colName].length > 4 ? columns[colName][4] : null;
+            
+            const value = data[i][colName];
+            let cellContent;
+            if (Array.isArray(format) && editable) {
+                cellContent = <ButtonTag value={value}
+                                        type={`tag-${value.toLowerCase()}`}
+                                        id={data[i].id}
+                                        options={settable}
+                                        changeFunc={changeFunc}/>
+            } else if (format == 'boolean' && editable) {
+                cellContent = <ButtonTag value={value == true ? 'Yes' : value == false ? 'No' : null}
+                                        id={data[i].id}
+                                        type='tag-boolean'
+                                        options={['No', 'Yes']}
+                                        changeFunc={changeFunc}/>
+            } else if (format == 'boolean') {
+                cellContent = <Typography variant='body1' sx={{color: 'rgb(80, 80, 80)', textAlign: alignment[colName]}}>
+                    {value == true ? 'Yes' : value == false ? 'No' : null}
+                </Typography>
+            } else {
+                cellContent = <Typography variant='body1' sx={{color: 'rgb(80, 80, 80)', textAlign: alignment[colName]}}>
+                    {format == 'date' && parseDate(value)}
+                    {format != 'date' && value}
+                </Typography>
+            }
             const cell = <td key={`${i}.${colName}`} onDoubleClick={doubleClick(id)} onClick={toggleRow(id)}>
-                {['string', 'number', 'date'].includes(format) &&
-                <Typography variant='body1' sx={{color: 'rgb(80, 80, 80)', textAlign: alignment[colName]}}>
-                    {format == 'date' && parseDate(data[i][colName])}
-                    {format != 'date' && data[i][colName]}
-                </Typography>}
-                
-                {format == 'boolean' &&
-                <ButtonTag value={data[i][colName] == true ? 'Yes' : data[i][colName] == false ? 'No' : null} id={data[i].id}
-                            type='tag-boolean' options={['No', 'Yes']} changeFunc={changeFunc}/>}
-                
-                {Array.isArray(format) &&
-                <ButtonTag value={data[i][colName]} type={`tag-${data[i][colName].toLowerCase()}`} id={data[i].id}
-                            options={settable} changeFunc={changeFunc}/>}
+                {cellContent}
             </td>
             row.push(cell);
         }

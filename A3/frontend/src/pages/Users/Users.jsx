@@ -12,33 +12,33 @@ import Typography from '@mui/joy/Typography';
 import Table from '../../components/Table/Table.jsx'
 import {useState, useEffect} from 'react'
 import FilterListIcon from '@mui/icons-material/FilterList';
-import {Box, Stack, Button, TextField, Checkbox} from '@mui/material';
+import {Box, Stack, Button, TextField, Radio, RadioGroup, FormControlLabel} from '@mui/material';
 import DialogGeneral from '../../components/DialogGeneral/DialogGeneral.jsx';
 import {useUserContext} from '../../contexts/UserContext';
 import {fetchServer} from "../../utils/utils";
 import NotFound from "../NotFound/NotFound.jsx"
-import {useLocation, useNavigate} from 'react-router-dom';
+import {useSearchParams, useLocation} from 'react-router-dom';
 
 const resultsPerPage = 10;
 
 export default function Users() {
-    const [filter, setFilter] = useState(false);
+    const [filterOpen, setFilterOpen] = useState(false);
     const [selection, setSelection] = useState(undefined);
     const [data, setData] = useState([]);
     const [page, setPage] = useState(0);
     const [numPages, setNumPages] = useState(0);
     const [pageSize, setPageSize] = useState(0);
     const {user} = useUserContext();
-
-    // Fetch all users
-    const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const token = localStorage.getItem('token');
     const location = useLocation();
 
+    // Fetch all users
     async function getUsers(token) {
-        let [response, error] = await fetchServer('users', {
+        let params = location.search;
+        let [response, error] = await fetchServer(`users${params}`, {
             method: 'GET',
-            headers: new Headers({'Authorization': `Bearer ${token}`}),
-            // params: JSON.stringify(...)
+            headers: new Headers({'Authorization': `Bearer ${token}`})
         });
         if (error) {
             setPage(0);
@@ -51,16 +51,15 @@ export default function Users() {
         for (let i = 0; i < results.length; i++) {
             results[i].role = results[i].role[0].toUpperCase() + results[i].role.slice(1);
         }
-        setPage(1);
+        setPage(count > 0 ? 1 : 0);
         setNumPages(Math.ceil(count / resultsPerPage));
         setData(results);
     }
-    const token = localStorage.getItem('token');
     useEffect(() => {
         if (!token)
             return;
         getUsers(token);
-    }, [token]);
+    }, [location.search]);
     if (!token)
         return <NotFound/>
     
@@ -73,8 +72,10 @@ export default function Users() {
         // Change server
         let [response, error] = await fetchServer(`users/${id}`, {
             method: 'PATCH',
-            headers: new Headers({'Authorization': `Bearer ${token}`,
-                                'Content-Type': 'application/json'}),
+            headers: new Headers({
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }),
             body: JSON.stringify(json)
         });
         if (error)
@@ -116,12 +117,12 @@ export default function Users() {
         utorid: ['UTORid', 'string'],
         name: ['Name', 'string'],
         birthday: ['Birthday', 'date'],
-        role: ['Role', roles, rolesSettable, changeRole],
+        role: ['Role', roles, rolesSettable, changeRole, true],
         points: ['Points', 'number'],
         createdAt: ['Created', 'date'],
         lastLogin: ['Last Login', 'date'],
-        verified: ['Verified', 'boolean', null, changeVerified],
-        suspicious: ['Suspicious', 'boolean', null, changeSuspicious]
+        verified: ['Verified', 'boolean', null, changeVerified, true],
+        suspicious: ['Suspicious', 'boolean', null, changeSuspicious, true]
     };
 
     // Filter
@@ -142,7 +143,10 @@ export default function Users() {
                 <TextField fullWidth variant="outlined" margin='dense' slotProps={{htmlInput: {style: {padding: '5px 10px'}}}}
                             id={name} name={name} type={type}/>}
                 {type == 'boolean' &&
-                <Box align='center'><Checkbox id={name} name={name} /></Box>}
+                <RadioGroup row sx={{justifyContent: 'center'}}>
+                    <FormControlLabel name={name} value={false} control={<Radio/>} label="No"/>
+                    <FormControlLabel name={name} value={true} control={<Radio/>} label="Yes"/>
+                </RadioGroup>}
             </>);
         }
         return <Box style={{display: 'grid', gridTemplateColumns: 'auto auto', alignItems: 'center'}}>
@@ -154,18 +158,13 @@ export default function Users() {
             if (json[key] == '')
                 delete json[key];
         }
-        console.log(json);
-        const searchParams = new URLSearchParams(location.search);
-        for (let key in json) {
-            searchParams.set(key, json[key]);
-        }
-        navigate(`/users?${searchParams.toString()}`);
+        setSearchParams(json);
     }
 
     // Buttons in table header
     const buttons = <Stack direction='row' spacing={1} sx={{margin: '5px 0px'}}>
         <Button sx={{textTransform: 'none'}} variant='outlined' size='small'
-                startIcon={<FilterListIcon/>} onClick={() => setFilter(true)}> 
+                startIcon={<FilterListIcon/>} onClick={() => setFilterOpen(true)}> 
             Filter
         </Button>
     </Stack>
@@ -175,7 +174,7 @@ export default function Users() {
             Users
         </Typography>
 
-        <DialogGeneral title='Filter' submitTitle='Apply' open={filter} setOpen={setFilter}
+        <DialogGeneral title='Filter' submitTitle='Apply' open={filterOpen} setOpen={setFilterOpen}
                         dialogStyle={{width: '400px'}}
                         submitFunc={applyFilter}>
             <FilterBody fields={filterFields}/>
