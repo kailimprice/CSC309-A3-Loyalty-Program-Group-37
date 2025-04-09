@@ -24,7 +24,7 @@ function getViewablePermissions(user, url) {
     return viewable;
 }
 
-export default function Sidebar(role) {
+export default function Sidebar() {
     //use role to access menu items
     let menuItems = <><h1>Test!</h1><h2>Test!</h2><h3>Helo</h3></>;//add dynamic menu items
 
