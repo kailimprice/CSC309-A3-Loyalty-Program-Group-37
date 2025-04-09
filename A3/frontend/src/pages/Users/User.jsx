@@ -30,6 +30,7 @@ export default function User() {
     // error tracking
     const [error, setError] = useState("You do not have permission to edit this user.");
 
+    const permission = (user.role === "manager" || user.role === "superuser" || id === user.id)
 
     // get user details for given id
     useEffect(() => {
