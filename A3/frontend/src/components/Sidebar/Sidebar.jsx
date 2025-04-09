@@ -158,9 +158,6 @@ export default function Sidebar() {
     async function handleSubmit(json) {
         console.log('raw json:', json);
         let endpoint = endpoints[dialogTitle];
-        // What does this check?
-        // if (!dialogTitle || !endpoint)
-        //     return;
 
         if (['redemption', 'transfer', 'purchase'].includes(dialogTitle))
             json.type = dialogTitle;

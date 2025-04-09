@@ -32,7 +32,7 @@ export default function Transactions() {
     const location = useLocation();
 
     // Fetch all users
-    async function getUsers(token) {
+    async function getTransactions(token) {
         let params = location.search;
         let [response, error] = await fetchServer(`transactions${params}`, {
             method: 'GET',
@@ -61,7 +61,7 @@ export default function Transactions() {
     useEffect(() => {
         if (!token)
             return;
-        getUsers(token);
+        getTransactions(token);
     }, [location.search]);
     if (!token)
         return <NotFound/>
