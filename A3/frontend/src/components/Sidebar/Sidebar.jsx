@@ -79,7 +79,7 @@ const sidebarDialogFields = {
         type: ['Type', 'booleanPromotion'], /* automatic or one time */
         startTime: ['Start Time', 'time'],
         endTime: ['End Time', 'time'],
-        minSpending: ['Minimum Spend', 'number'], /* optional */
+        minSpending: ['Min Spend', 'number'], /* optional */
         rate: ['Rate', 'number'], /* optional */
         points: ['Points', 'number'] /* optional */
     },
