@@ -4,11 +4,11 @@
 //
 // to use:
 //   1. import { useUserContext } from '../../contexts/UserContext';
-//   2. inside function: const { user, setUserDetails } = useUserContext();
+//   2. inside function: const { user, token, setUserDetails } = useUserContext();
 //   3. usage:
 //        * retrieve attributes: (user.role, user.name, etc.)
+//        * retrieve tokenL {token}
 //        * set attributes: setUserDetails({ key: val }) 
-//        * update attributes: updatedDetails({ key: val })
 
 import { createContext, useContext, useState, useEffect } from "react";
 import { fetchServer } from "../utils/utils";
