@@ -64,7 +64,7 @@ export default function Sidebar(role) {
                         }}
                     >
                         {viewablePermissions.map(x => {
-                            return <MenuItem value={x}>{x[0].toUpperCase() + x.slice(1)}</MenuItem>;
+                            return <MenuItem key={x} value={x}>{x[0].toUpperCase() + x.slice(1)}</MenuItem>;
                         })}
                     </Select>
                 </FormControl>

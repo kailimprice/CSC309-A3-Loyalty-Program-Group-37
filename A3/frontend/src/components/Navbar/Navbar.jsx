@@ -80,7 +80,7 @@ const Navbar = () => {
                     {/* display each clickable nav page  */}
                     {pages.map((page) => (
                         <MenuItem key={page} onClick={handleCloseNavMenu}>
-                        <Typography sx={{ textAlign: 'center' }}>{page}</Typography>
+                            <Typography sx={{ textAlign: 'center' }}>{page}</Typography>
                         </MenuItem>
                     ))}
                 </Menu>
@@ -103,6 +103,7 @@ const Navbar = () => {
                     <Button className='nav-button'
                             to={`/${page.toLowerCase()}`}
                             component={Link}
+                            key={page}
                             sx={{ my: 1, color: 'white', display: 'block', fontSize: '20px', textTransform: 'none', fontWeight: location.startsWith(`/${page.toLowerCase()}`) ? 'bold' : 'normal'}}
                     >
                         {page}
