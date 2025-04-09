@@ -1,4 +1,4 @@
-import { TextField, Button, Grid, Checkbox } from '@mui/material';
+import { TextField, Button, Grid, Dialog, Box } from '@mui/material';
 import { useState, useEffect } from 'react'
 import { useUserContext } from '../../contexts/UserContext.jsx';
 import { fetchServer } from '../../utils/utils.jsx';
@@ -8,7 +8,9 @@ import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import ErrorIcon from '@mui/icons-material/Error';
 import VerifiedOutlinedIcon from '@mui/icons-material/VerifiedOutlined';
 import VerifiedIcon from '@mui/icons-material/Verified';
+import QrCode2Icon from '@mui/icons-material/QrCode2';
 import { useNavigate } from 'react-router-dom';
+import QRCode from 'react-qr-code';
 
 
 export default function Transaction() {
@@ -31,6 +33,16 @@ const [relatedId, setRelatedId] = useState("");
 // error tracking
 const [error, setError] = useState("");
 const [permission, setPermission] = useState(false);
+
+// QR code display
+const [qrOpen, setQrOpen] = useState(true);
+const closeQr = () => setQrOpen(false);
+const DialogQR = <Dialog open={qrOpen} onClose={closeQr} className='dialog-qr'>
+    <Box sx={{padding: '45px'}}>
+        <QRCode value={{id: user.id, transaction: id}} size='large' />
+    </Box>
+</Dialog>;
+
 
 
 // get event details for given id
@@ -145,10 +157,14 @@ const handleToggleProcessed = async (processed) => {
     setError(""); 
 };
 
+const handleQRCode = () => {
+    setQrOpen(true); 
+};
 
 // layout inspired by prev project https://github.com/emily-su-dev/Sinker/blob/main/src/app/components/InfoBox.tsx
 // Grid setup inspired by https://mui.com/material-ui/react-Grid/
 return <>
+        {DialogQR}
         <div style={{ display: "flex", justifyContent: "space-between" }}>
             <h1>Transaction {id}</h1>
             <div style={{ display: "flex", gap: "1rem" }}>
@@ -193,6 +209,27 @@ return <>
                     >
                         {processed ? <VerifiedIcon /> : <VerifiedOutlinedIcon/>}
                         {processed ? "Processed" : "Unprocessed"}
+                    </Button>
+                }
+                {(permission && (user.role === "manager" || user.role === "superuser")) &&
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        sx={{ 
+                            backgroundColor: qrOpen ? "#4467C4" : "white",
+                            color: qrOpen ? "white" : "#4467C4",
+                            // lighter shade
+                            "&:hover": {
+                                backgroundColor: qrOpen ? "#365a9d" : "#f0f0f0", 
+                            }, 
+                            width: "200px",
+                            display: "flex",
+                            justifyContent: "center",
+                            gap: "8px" }}
+                        onClick={() => handleQRCode()}
+                    >
+                        <QrCode2Icon />
+                        Scan QR Code
                     </Button>
                 }
             </div>
