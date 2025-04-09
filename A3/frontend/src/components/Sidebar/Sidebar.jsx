@@ -13,6 +13,36 @@ import "./Sidebar.css";
 import { useUserContext } from '../../contexts/UserContext';
 import { hasPerms, PERMISSION_LEVELS } from "../../utils/utils";
 import { useLocation } from "react-router-dom";
+import {DialogGeneral, FilterBody} from '../../components/DialogGeneral/DialogGeneral.jsx';
+
+const sidebarButtons ={
+    regular: [
+        { key: 'redemption', label: '+ Redemption' },
+        { key: 'transfer', label: '+ Transfer' },
+    ],
+    cashier: [
+        { key: 'redemption', label: '+ Redemption' },
+        { key: 'transfer', label: '+ Transfer' },
+        { key: 'purchase', label: '+ Purchase' },
+        { key: 'user', label: '+ User' },
+    ],
+    manager: [
+        { key: 'redemption', label: '+ Redemption' },
+        { key: 'transfer', label: '+ Transfer' },
+        { key: 'purchase', label: '+ Purchase' },
+        { key: 'event', label: '+ Event'},
+        { key: 'promotion', label: '+ Promotion' },
+        { key: 'user', label: '+ User' },
+    ],
+    superuser: [
+        { key: 'redemption', label: '+ Redemption' },
+        { key: 'transfer', label: '+ Transfer' },
+        { key: 'purchase', label: '+ Purchase' },
+        { key: 'event', label: '+ Event'},
+        { key: 'promotion', label: '+ Promotion' },
+        { key: 'user', label: '+ User' },
+    ]
+}
 
 
 function getViewablePermissions(user, url) {
@@ -24,14 +54,21 @@ function getViewablePermissions(user, url) {
     return viewable;
 }
 
-export default function Sidebar(role) {
+
+
+export default function Sidebar() {
     //use role to access menu items
-    let menuItems = <><h1>Test!</h1><h2>Test!</h2><h3>Helo</h3></>;//add dynamic menu items
 
     // import user context
     const { user, viewAs, setViewAs } = useUserContext();
     const location = useLocation();
     const viewablePermissions = getViewablePermissions(user, location.pathname);
+    const buttonItems = sidebarButtons[viewAs];
+  
+
+    async function handleSubmit() {
+        //todo
+    }
 
     return (
         <Box component='aside'>
@@ -45,9 +82,18 @@ export default function Sidebar(role) {
                     </Typography>
                 </Box>
             </Box>
-            <Box>
-                {menuItems}
+            <Box display='flex' flexDirection='column' justifyContent='flex-start' height='100%' gap='10px' sx={{}}>
+                {buttonItems.map((button) => {
+                    return (
+                        <Button key={button.key} sx={{textTransform: 'none', fontWeight: 'bold', backgroundColor: 'white'}} variant='outlined' size='large' onClick={() => {setOpenDialogButton(button.key)}}> 
+                            {button.label}
+                        </Button>
+                    )
+                })}
             </Box>
+
+            
+
             <Stack direction='row' sx={{justifyContent: 'flex-end', gap: '10px'}}>
                 <Typography variant='subtitle2' sx={{fontStyle: 'italics', display: 'block'}}>
                     Viewing as: 
