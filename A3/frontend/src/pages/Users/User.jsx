@@ -45,7 +45,7 @@ export default function User() {
             })
           })
           if (error) {
-            setError("Error fetching user details:", error);
+            setError(error);
             console.error("Error fetching user details:", error);
             return;
           }
@@ -73,7 +73,7 @@ export default function User() {
               })
             })
             if (error) {
-              setError("Error fetching user profile details:", error);
+              setError(error);
               console.error("Error fetching user profile details:", error);
               return;
             }
@@ -113,7 +113,7 @@ export default function User() {
             body: JSON.stringify(updateDetails)
           })
           if (error) {
-            setError("Error patching curent user details:", error);
+            setError(error);
             console.error("Error patching curent user details:", error);
             return;
           } 
@@ -142,7 +142,7 @@ export default function User() {
             body: JSON.stringify(updateDetails)
           })
           if (error) {
-            setError("Error  patching user details:", error);
+            setError(error);
             console.error("Error patching user details:", error);
             return;
           }
