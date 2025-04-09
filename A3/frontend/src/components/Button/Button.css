@@ -71,11 +71,6 @@
 .tag-redemption-text {     color: #e9ebff; }
 
 .tag-transfer {          background-color: #48284a; }
-<<<<<<< HEAD
 /* .tag-transfer:hover {    background-color: #763C7A; } */
 /* .tag-transfer:active {   background-color: #2F1431; } */
 .tag-transfer-text {     color: #F6CEF9; }
-=======
-.tag-transfer:hover {    background-color: #763C7A; }
-.tag-transfer-text {     color: #F6CEF9; }
->>>>>>> c0ccb83f6dd27c26b44f580d65f1d5e5b8f1eb25
