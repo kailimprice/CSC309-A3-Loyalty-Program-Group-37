@@ -41,3 +41,8 @@
 .tag-regular:hover {    background-color: #45a2ff; }
 .tag-regular:active {   background-color: #23239e; }
 .tag-regular-text {     color: #e9ebff; }
+
+.tag-add {          background-color: #36b436; }
+.tag-add:hover {    background-color: #45ff6a; }
+.tag-add:active {   background-color: #2d9e23; }
+.tag-add-text {     color: #e9ebff; }

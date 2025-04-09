@@ -24,6 +24,20 @@ export default function ButtonTag({value, options, changeFunc, type, id}) {
         </span>
     }
 
+    // option to call changeFunc if X delete is clicked
+    if (options === 'deletable') {
+        return (
+            <span className={`no-select tag ${type}`} aria-describedby={buttonId} style={{ borderRadius: '50px', alignItems: 'center'}}>
+                <Typography variant="body2" className={`no-select ${type}-text`} sx={{ display: 'inline' }}>
+                    {value}
+                </Typography>
+                <span className="delete-icon" onClick={() => changeFunc(id, 'delete')} style={{ cursor: 'pointer', color: 'black', fontWeight: '1000', fontSize: '14px', marginLeft: '8px'}} >
+                    X
+                </span>
+            </span>
+        );
+    }
+
     if (options.length == 0) {
         return <span className={`no-select tag ${type}`} aria-describedby={buttonId} style={{borderRadius: '50px'}}>
             <Typography variant='body2' className={`no-select ${type}-text`} sx={{display: 'inline'}}>
@@ -31,6 +45,8 @@ export default function ButtonTag({value, options, changeFunc, type, id}) {
             </Typography>
         </span>
     }
+
+    
     return <>
         <span className={`no-select tag ${type}`} aria-describedby={buttonId} style={{borderRadius: open ? '0px' : '50px'}}
                 onClick={(event) => setAnchorEl(event.currentTarget)}>
