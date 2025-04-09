@@ -217,19 +217,11 @@ function parseTakeSkip(query, res) {
     const skip = isNaN(page) ? 0 : take * (page - 1);
     return [take, skip, false]
 }
-async function findMany(client, filter, query, res, include=null, omit=null) {
+async function findMany(client, filter, query, res, include={}, omit={}, orderBy={}) {
     const [take, skip, e3] = parseTakeSkip(query, res);
     if (e3) return [null, null, e3];
     
-    let result;
-    if (include && omit)
-        result = await client.findMany({where: filter, take: take, skip: skip, include: include, omit: omit});
-    else if (include)
-        result = await client.findMany({where: filter, take: take, skip: skip, include: include});
-    else if (omit)
-        result = await client.findMany({where: filter, take: take, skip: skip, omit: omit});
-    else
-        result = await client.findMany({where: filter, take: take, skip: skip});
+    let result = await client.findMany({where: filter, take: take, skip: skip, include: include, omit: omit, orderBy: orderBy});
     const count = await client.count({where: filter});
     console.log(`200, got ${count} total, ${result.length} displayed with filter ${JSON.stringify(query)}, take=${take}, skip=${skip}`);
     return [count, result, false];
@@ -451,7 +443,7 @@ app.post('/auth/resets/:resetToken', async (req, res) => {
 Get/Create Users
 *******************************************************************************/
 app.get('/users', permLevel('manager'), async (req, res) => {
-    const variables = ['utorid', 'name', 'role', 'verified', 'activated', 'page', 'limit'];
+    const variables = ['utorid', 'name', 'role', 'verified', 'activated', 'page', 'limit', 'orderBy', 'order'];
     const [query, e1] = queryAllow(variables, req, res);
     if (e1) return e1;
 
@@ -459,12 +451,6 @@ app.get('/users', permLevel('manager'), async (req, res) => {
     const filter = {};
     const varTransforms = {utorid: null, name: null, role: null, verified: x => (x == 'true') ? true : false};
     objectAddLax(varTransforms, query, filter);
-
-    // // Ordering
-    // const e2 = checkCondition(res, (!query['orderBy']) == (!query['order']), 400, `orderBy=${orderBy}, order=${order}`);
-    // if (e2) return e2;
-    // const sortable = ['id', 'utorid', 'name', 'birthday', 'role', 'points', 'createdAt', 'lastLogin', 'verified', 'suspicious'];
-    // const e3 = checkCondition(res, !query['orderBy'] || ['id', 'utorid', 'verified', 'activated', ].includes(query['orderBy']))
     
     // Extra behaviour
     if (query['activated'] == 'true') {
@@ -472,9 +458,17 @@ app.get('/users', permLevel('manager'), async (req, res) => {
     } else if (query['activated'] == 'false') {
         filter['lastLogin'] = null;
     }
+
+    // Ordering
+    const orderBy = {};
+    if (query['orderBy']) {
+        orderBy[query['orderBy']] = query['order'];
+        delete filter['orderBy'];
+        delete filter['order'];
+    }
     
-    let [count, result, e4] = await findMany(prisma.user, filter, query, res);
-    if (e4) return e4;
+    let [count, result, e2] = await findMany(prisma.user, filter, query, res, {}, {}, orderBy);
+    if (e2) return e2;
     return res.status(200).json({count: count, results: result});
 });
 app.post('/users', permLevel('cashier'), async (req, res) => {
@@ -725,7 +719,7 @@ function postProcessGetTransaction(include, result) {
     });
 }
 app.get('/transactions', permLevel('manager'), async (req, res) => {
-    const variables = ['name', 'createdBy', 'suspicious', 'promotionId', 'type', 'relatedId', 'amount', 'operator', 'page', 'limit'];
+    const variables = ['name', 'createdBy', 'suspicious', 'promotionId', 'type', 'relatedId', 'amount', 'operator', 'page', 'limit', 'orderBy', 'order'];
     const [query, e1] = queryAllow(variables, req, res);
     if (e1) return e1;
     
@@ -739,7 +733,13 @@ app.get('/transactions', permLevel('manager'), async (req, res) => {
     const include = {infoPurchase: {include: {promotionIds: true}},
                      infoAdjustment: {include: {promotionIds: true}},
                      infoRedemption: {include: {promotionIds: true}}, infoTransfer: true, infoEvent: true};
-    const [count, result, e3] = await findMany(prisma.transaction, filter, query, res, include);
+    const orderBy = {};
+    if (query['orderBy']) {
+        orderBy[query['orderBy']] = query['order'];
+        delete filter['orderBy'];
+        delete filter['order'];
+    }
+    const [count, result, e3] = await findMany(prisma.transaction, filter, query, res, include, {}, orderBy);
     if (e3) return e3;
     postProcessGetTransaction(include, result);
     return res.status(200).json({count: count, results: result});
@@ -1006,7 +1006,7 @@ function isCount(allowZero) {
 }
 
 app.get('/events', permLevel('regular'), async (req, res) => {
-    const variables = ['name', 'location', 'started', 'ended', 'showFull', 'page', 'limit', 'published'];
+    const variables = ['name', 'location', 'started', 'ended', 'showFull', 'page', 'limit', 'published', 'order', 'orderBy'];
     const [query, e1] = queryAllow(variables, req, res)
     if (e1) return e1;
     
@@ -1026,7 +1026,15 @@ app.get('/events', permLevel('regular'), async (req, res) => {
     if (ended === true)                     filter['endTime'] = {lte: now()};
     else if (ended === false)               filter['endTime'] = {gte: now()};
 
-    let [count, result, e3] = await findMany(prisma.event, filter, query, res, {guests: true});
+    // Ordering
+    const orderBy = {};
+    if (query['orderBy']) {
+        orderBy[query['orderBy']] = query['order'];
+        delete filter['orderBy'];
+        delete filter['order'];
+    }
+
+    let [count, result, e3] = await findMany(prisma.event, filter, query, res, {guests: true}, {}, orderBy);
     if (e3) return e3;
     if (filter['showFull'] !== true)
         result = result.filter(x => x.guests.length != x.capacity);
@@ -1397,8 +1405,8 @@ app.post('/promotions', permLevel('manager'), async (req, res) => {
 });
 
 app.get('/promotions', permLevel('regular'), async (req, res) => {
-    const variablesFilter = ['name', 'type', 'page', 'limit'];
-    const variables = hasPerms(req.user.role, 'manager') ? ['name', 'type', 'page', 'limit', 'started', 'ended'] : variablesFilter;
+    const variablesFilter = ['name', 'type', 'page', 'limit', 'orderBy', 'order'];
+    const variables = hasPerms(req.user.role, 'manager') ? ['name', 'type', 'page', 'limit', 'started', 'ended', 'orderBy', 'order'] : variablesFilter;
     const [query, e1] = queryAllow(variables, req, res);
     if (e1) return e1;
 
@@ -1423,7 +1431,14 @@ app.get('/promotions', permLevel('regular'), async (req, res) => {
     }
 
     const omit = {description: true};
-    const [count, result, e3] = await findMany(prisma.promotion, filter, req.query, res, null, omit);
+    const orderBy = {};
+    if (query['orderBy']) {
+        orderBy[query['orderBy']] = query['order'];
+        delete filter['orderBy'];
+        delete filter['order'];
+    }
+
+    const [count, result, e3] = await findMany(prisma.promotion, filter, req.query, res, {}, omit, orderBy);
     if (e3) return e3;
     return res.status(200).json({count: count, results: result});
 });

@@ -8,8 +8,17 @@ table {
     width: 100%;
     overflow-x: auto;
 }
-td, th {
+
+thead td {
     padding: 2px 10px;
+}
+tbody th {
+    padding: 5px 10px;
+    cursor: pointer;
+    user-select: none;
+}
+tfoot td {
+    padding: 5px 10px;
 }
 tfoot tr {
     text-align: left;

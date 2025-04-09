@@ -22,7 +22,7 @@ export const UserProvider = ({ children }) => {
     // upon every change to user or token, pull from local storage if exists
     const [user, setUser] = useState(() => {
         const localUser = localStorage.getItem("user");
-        console.log("User update:", localUser);
+        // console.log("User update:", localUser);
         return localUser ? JSON.parse(localUser) : null;
     });
     
@@ -33,7 +33,7 @@ export const UserProvider = ({ children }) => {
 
     // when user or token change, store them in local storage
     useEffect(() => {
-        console.log("Storing user in localStorage:", user);
+        // console.log("Storing user in localStorage:", user);
         if (user) {
             localStorage.setItem("user", JSON.stringify(user));
         } else {
@@ -59,7 +59,7 @@ export const UserProvider = ({ children }) => {
 
     // only overwrite neccessary details
     const setTokenDetails = (newToken) => {
-        console.log("Setting token:", newToken);
+        // console.log("Setting token:", newToken);
         setToken(newToken);
     };
 

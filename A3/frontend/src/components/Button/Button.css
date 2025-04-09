@@ -8,11 +8,9 @@
     transition: 0s;
 }
 
-
 .tag-option {           background-color: white; user-select: none; }
 .tag-option:hover {     background-color: rgb(233, 233, 233); }
 .tag-option:active {    background-color: rgb(222, 222, 222); }
-
 
 .tag-boolean {          background-color: rgb(150, 150, 150); }
 .tag-boolean:hover {    background-color: rgb(180, 180, 180); }
