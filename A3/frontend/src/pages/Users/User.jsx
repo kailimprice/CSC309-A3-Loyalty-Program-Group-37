@@ -45,7 +45,7 @@ export default function User() {
             })
           })
           if (err) {
-            setError(err);
+            setError("You do not have permission to view this user.");
             console.error("Error fetching user details:", err);
             return;
           }
@@ -73,7 +73,7 @@ export default function User() {
               })
             })
             if (err) {
-              setError(err);
+              setError("You do not have permission to view this user.");
               console.error("Error fetching user profile details:", err);
               return;
             }
@@ -160,7 +160,7 @@ export default function User() {
     // layout inspired by prev project https://github.com/emily-su-dev/Sinker/blob/main/src/app/components/InfoBox.tsx
     // grid setup inspired by https://mui.com/material-ui/react-grid/
     return <>
-          <h1>Edit User Information</h1>
+          <h1>User {id}</h1>
           <Grid container spacing={2} padding={3} alignItems={'center'}>
             {/* display error message if one*/}
             {error && (
@@ -286,7 +286,7 @@ export default function User() {
                     </>
                 ) : null}
 
-                {!error && (
+                {!error && permission && (
                   <>
                   {/* submit */}
                   <Grid size={12}>

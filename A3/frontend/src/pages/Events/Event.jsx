@@ -71,7 +71,7 @@ useEffect(() => {
     const hasPermission = user.role === "manager" || user.role === "superuser" || isOrganizer;
 
     if (!hasPermission) {
-        setError("You do not have permission to edit this event.");
+        setError("You do not have permission to view this event.");
         console.error("Permission denied: User cannot edit this event.");
         return;
     }
@@ -341,8 +341,8 @@ const handleDelete = async () => {
 // Grid setup inspired by https://mui.com/material-ui/react-Grid/
 return <>
         <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <h1>Edit Event {id}</h1>
-            {(user.role === "manager" || user.role === "superuser") &&
+            <h1>Event {id}</h1>
+            {(permission && (user.role === "manager" || user.role === "superuser")) &&
                 <Button
                     variant="contained"
                     color="primary"
