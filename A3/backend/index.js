@@ -721,13 +721,13 @@ function postProcessGetTransaction(include, result) {
     });
 }
 app.get('/transactions', permLevel('manager'), async (req, res) => {
-    const variables = ['name', 'createdBy', 'suspicious', 'promotionId', 'type', 'relatedId', 'amount', 'operator', 'page', 'limit', 'orderBy', 'order'];
+    const variables = ['utorid', 'name', 'createdBy', 'suspicious', 'promotionId', 'type', 'relatedId', 'amount', 'operator', 'page', 'limit', 'orderBy', 'order'];
     const [query, e1] = queryAllow(variables, req, res);
     if (e1) return e1;
     
     const {type, operator, relatedId, amount} = query;
     const filter = {};
-    objectAddLax(['name', 'createdBy', 'suspicious', 'promotionId', 'type'], query, filter, res);
+    objectAddLax(['utorid', 'name', 'createdBy', 'suspicious', 'promotionId', 'type'], query, filter, res);
     if (type != 'purchase' && relatedId)    filter['relatedId'] = relatedId;
     if (operator == 'lte')                  filter['amount'] = {lte: amount};
     else if (operator == 'gte')             filter['amount'] = {gte: amount};
