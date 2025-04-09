@@ -93,7 +93,7 @@ export default function Users() {
                     
                     // Special case for role
                     if (key == 'role') {
-                        if (value == 'cashier') {
+                        if (value == 'Cashier') {
                             newData[i].suspicious = false;
                         } else {
                             newData[i].suspicious = null;

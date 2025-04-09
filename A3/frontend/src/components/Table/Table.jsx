@@ -111,7 +111,7 @@ export default function Table({columns, data, page, numPages, buttons}) {
             } else if (format == 'boolean' && editable) {
                 cellContent = <ButtonTag value={value == true ? 'Yes' : value == false ? 'No' : null}
                                         id={data[i].id}
-                                        type='tag-boolean'
+                                        type={`tag-boolean-${value}`}
                                         options={'boolean'}
                                         changeFunc={changeFunc}/>
             } else if (format == 'boolean') {

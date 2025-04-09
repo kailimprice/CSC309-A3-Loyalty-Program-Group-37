@@ -94,7 +94,7 @@ const sidebarDialogFields = {
 function getViewablePermissions(user, url) {
     let viewable = PERMISSION_LEVELS.slice(1).filter(x => hasPerms(user.role, x));
     // Add more special cases if necessary
-    if (url.startsWith('/users/') && url != `/users/${user.id}`) {
+    if (url.startsWith('/users') && url != `/users/${user.id}`) {
         viewable = viewable.filter(x => hasPerms(x, 'manager'));
     }
     return viewable;
@@ -108,6 +108,8 @@ export default function Sidebar() {
     // import user context
     const { user, viewAs, setViewAs } = useUserContext();
     const location = useLocation();
+    if (!user)
+        return;
     const viewablePermissions = getViewablePermissions(user, location.pathname);
     const buttonItems = sidebarButtons[viewAs];
     const [openDialogButton, setOpenDialogButton] = useState(null);
@@ -164,7 +166,7 @@ export default function Sidebar() {
                         }}
                     >
                         {viewablePermissions.map(x => {
-                            return <MenuItem value={x}>{x[0].toUpperCase() + x.slice(1)}</MenuItem>;
+                            return <MenuItem key={x} value={x}>{x[0].toUpperCase() + x.slice(1)}</MenuItem>;
                         })}
                     </Select>
                 </FormControl>

@@ -13,13 +13,14 @@ import Typography from '@mui/joy/Typography';
 import landing_splash from "../../assets/landing_splash.jpg";
 import logo from "../../assets/logo.png";
 import "./Landing.css";
+import "../../components/Navbar/Navbar.css"
 import {useState} from "react";
 import {useNavigate} from "react-router-dom";
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import {Visibility, VisibilityOff} from '@mui/icons-material';
-import {Paper, Box, Button, TextField, Dialog, DialogActions, TextareaAutosize,
-        FormControl, IconButton, InputLabel, Input, InputAdornment, FormHelperText,
-        DialogContent, DialogContentText, DialogTitle, Tooltip} from '@mui/material';
+import {Paper, Box, Button, TextField, Dialog, DialogActions, TextareaAutosize, AppBar, Toolbar,
+        FormControl, IconButton, InputLabel, Input, InputAdornment, FormHelperText, Container,
+        DialogContent, DialogContentText, DialogTitle, Tooltip, Avatar, Stack} from '@mui/material';
 import {fetchServer} from "../../utils/utils";
 import { useUserContext } from '../../contexts/UserContext';
 
@@ -123,29 +124,11 @@ function InputPassword({id, name, label, errorChecking}) {
     // return <TextField autoFocus required fullWidth margin="dense" variant="standard"
     //                 id={id} name={name} label={label} type="password"/>
 }
+    
 
-
-
-
-function DialogLanding() {
-    const [currDialog, setCurrDialog] = useState(null);
-    const [currError, setCurrError] = useState(undefined);
-    // Show password error checking after 1st sign-in attempt
-    const [attempted, setAttempted] = useState(false);
-
-    // load user context in 
-    const { user, setUserDetails, setTokenDetails } = useUserContext();
-
-    const closeDialog = () => {
-        setCurrDialog(null);
-        setCurrError(undefined);
-        setAttempted(false);
-    }
-    const changeDialog = (name) => {
-        setCurrDialog(name);
-        setCurrError(undefined);
-        setAttempted(false);
-    }
+function DialogLanding({currDialog, setCurrDialog, currError, setCurrError,
+                        attempted, setAttempted, changeDialog, closeDialog}) {
+    const {setUserDetails, setTokenDetails, setViewAs} = useUserContext();
     const [token, setToken] = useState({});
 
     const resetPasswordRequest = async (json) => {
@@ -188,7 +171,6 @@ function DialogLanding() {
         });
         if (e2) return e2;
         let responseJson = await response.json();
-
         setTokenDetails(responseJson.token);
 
         // Fetch user information
@@ -198,17 +180,12 @@ function DialogLanding() {
         });
         if (e3) return e3;
         responseJson = await userInfo.json();
-
-        setUserDetails(responseJson)
-
+        setUserDetails(responseJson);
+        setViewAs(responseJson.role);
         navigate('dashboard');
     }
 
     return <>
-        <Button variant="outlined" onClick={() => changeDialog('signIn')}>
-            Sign In
-        </Button>
-
         <DialogGeneric
             title='Sign in to CSSU'
             children={<>
@@ -278,13 +255,37 @@ function DialogLanding() {
 
 
 export default function Landing() {
+    const [currDialog, setCurrDialog] = useState(null);
+    const [currError, setCurrError] = useState(undefined);
+    const [attempted, setAttempted] = useState(false);  // Show password error checking after 1st sign-in attempt
+    const closeDialog = () => {
+        setCurrDialog(null);
+        setCurrError(undefined);
+        setAttempted(false);
+    }
+    const changeDialog = (name) => {
+        setCurrDialog(name);
+        setCurrError(undefined);
+        setAttempted(false);
+    }   
+
     return <>
-        <header style={{ height: '10vh', padding: '20px', backgroundColor: '#000000' }}>
-            <Box sx={{display: 'flex', alignItems: 'center', height: '100%', gap: '15px', paddingLeft: '2vh'}}>
-                <Box component='img' src={logo} alt='CSSU logo' sx={{width: 'auto', height: '100%'}} />
-                <Typography level='title-lg' sx={{fontSize: '6vh', fontWeight: 'bold', color: 'white'}}> CSSU</Typography>
-            </Box>
-        </header>
+        <AppBar position="static" sx={{ bgcolor: "black" }}>
+            <Container maxWidth="xl">
+                <Toolbar disableGutters sx={{justifyContent: 'space-between'}}>
+                    <Stack direction='row' sx={{alignItems: 'center'}}>
+                        <Avatar sx={{ mr: 1 }} alt="Avatar" src={logo} />
+                        <Typography variant="h5" noWrap className='cssu-text'>
+                            CSSU
+                        </Typography>
+                    </Stack>
+                    <Button className='nav-button' onClick={() => changeDialog('signIn')}
+                            sx={{ my: 1, color: 'white', display: 'block', fontSize: '20px', textTransform: 'none'}}>
+                        Sign In
+                    </Button>
+                </Toolbar>
+            </Container>
+        </AppBar>
         <main id='main-landing'>
             <div id='block-text'>
                 <Typography level="h1" sx={{fontWeight: 'normal'}} >
@@ -299,7 +300,10 @@ export default function Landing() {
                 <img src={landing_splash} alt='Splash image' id='splash' />
             </div>
         </main>
-        <DialogLanding/>
+        <DialogLanding currDialog={currDialog} setCurrDialog={setCurrDialog}
+                        currError={currError} setCurrError={setCurrError}
+                        attempted={attempted} setAttempted={setAttempted}
+                        changeDialog={changeDialog} closeDialog={closeDialog}/>
         <footer>
             <Typography level="body-md" sx={{color: 'white'}}>
                 &copy;CSC309, Winter 2025, Bahen Center for Information Technology.

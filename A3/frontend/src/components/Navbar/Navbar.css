@@ -1,0 +1,11 @@
+.cssu-text {
+    font-family: monospace !important;
+    font-weight: 700 !important;
+    font-size: 1.25rem !important;
+    letter-spacing: .3rem !important;
+    color: white !important;
+    text-decoration: none;
+}
+.nav-button:hover {
+    background-color: rgb(35, 35, 35);
+}
