@@ -38,15 +38,15 @@ export default function User() {
         let userDetails;
 
           // fetch from users/:userId
-          const [response, error] = await fetchServer(`users/${id}`, {
+          const [response, err] = await fetchServer(`users/${id}`, {
             method: "GET",
             headers: new Headers({
               Authorization: `Bearer ${token}`
             })
           })
-          if (error) {
-            setError(error);
-            console.error("Error fetching user details:", error);
+          if (err) {
+            setError(err);
+            console.error("Error fetching user details:", err);
             return;
           }
           userDetails = await response.json();
@@ -66,15 +66,15 @@ export default function User() {
 
           if (id === user.id) {
             // fetch from users/me
-            const [response, error] = await fetchServer(`users/me`, {
+            const [response, err] = await fetchServer(`users/me`, {
               method: "GET",
               headers: new Headers({
                 Authorization: `Bearer ${token}`
               })
             })
-            if (error) {
-              setError(error);
-              console.error("Error fetching user profile details:", error);
+            if (err) {
+              setError(err);
+              console.error("Error fetching user profile details:", err);
               return;
             }
             let profileDetails = await response.json();
@@ -86,6 +86,8 @@ export default function User() {
 
             console.log("Profile details:", userDetails);
           }
+
+          setError("");
       };
 
       // call func
@@ -104,7 +106,7 @@ export default function User() {
 
           console.log("Updated details being sent:", updateDetails);
           // patch to users/me
-          const [response, error] = await fetchServer(`users/me`, {
+          const [response, err] = await fetchServer(`users/me`, {
             method: "PATCH",
             headers: new Headers({
               "Content-Type": "application/json",
@@ -112,9 +114,9 @@ export default function User() {
             }),
             body: JSON.stringify(updateDetails)
           })
-          if (error) {
-            setError(error);
-            console.error("Error patching curent user details:", error);
+          if (err) {
+            setError(err);
+            console.error("Error patching curent user details:", err);
             return;
           } 
 
@@ -133,7 +135,7 @@ export default function User() {
 
           console.log("Updated details being sent:", updateDetails);
           // patch to users/:userId
-          const [response, error] = await fetchServer(`users/${id}`, {
+          const [response, err] = await fetchServer(`users/${id}`, {
             method: "PATCH",
             headers: new Headers({
               "Content-Type": "application/json",
@@ -141,9 +143,9 @@ export default function User() {
             }),
             body: JSON.stringify(updateDetails)
           })
-          if (error) {
-            setError(error);
-            console.error("Error patching user details:", error);
+          if (err) {
+            setError(err);
+            console.error("Error patching user details:", err);
             return;
           }
 
@@ -167,7 +169,7 @@ export default function User() {
                       <Alert severity="error">{error}</Alert>
                   </Grid>
             )}
-            
+
             {/* if editing own profile */}
             {id === user.id ? (
                     <>

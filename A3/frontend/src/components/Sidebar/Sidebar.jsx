@@ -143,7 +143,7 @@ export default function Sidebar() {
             if (name in json)
                 json[name] = (new Date(json[name])).toISOString();
         }        
-        for (let name of ['points', 'spent', 'amount']) {
+        for (let name of ['points', 'spent', 'amount', 'capacity']) {
             if (name in json)
                 json[name] = parseInt(json[name], 10);
         }

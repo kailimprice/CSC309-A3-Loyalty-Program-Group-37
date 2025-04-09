@@ -44,6 +44,10 @@
 .tag-regular:active {   background-color: #23239e; }
 .tag-regular-text {     color: #e9ebff; }
 
+.tag-add {          background-color: #36b436; }
+.tag-add:hover {    background-color: #45ff6a; }
+.tag-add:active {   background-color: #2d9e23; }
+.tag-add-text {     color: #e9ebff; }
 
 
 .tag-adjustment, .tag-adjustment-clickable {                background-color: #4f3824; }
@@ -67,6 +71,11 @@
 .tag-redemption-text {     color: #e9ebff; }
 
 .tag-transfer {          background-color: #48284a; }
+<<<<<<< HEAD
 /* .tag-transfer:hover {    background-color: #763C7A; } */
 /* .tag-transfer:active {   background-color: #2F1431; } */
 .tag-transfer-text {     color: #F6CEF9; }
+=======
+.tag-transfer:hover {    background-color: #763C7A; }
+.tag-transfer-text {     color: #F6CEF9; }
+>>>>>>> c0ccb83f6dd27c26b44f580d65f1d5e5b8f1eb25
