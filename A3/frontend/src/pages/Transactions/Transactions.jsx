@@ -60,57 +60,6 @@ export default function Transactions() {
         }
         response = await response.json();
         const {results, count} = response;
-        console.log(results);
-        for (let i = 0; i < results.length; i++) {
-            const {type, createdBy, infoAdjustment, infoEvent, infoPurchase, infoRedemption, infoTransfer} = results[i];
-            results[i].type = type[0].toUpperCase() + type.slice(1);
-            
-            if (infoAdjustment) {
-                results[i].amount = infoRedemption.amount;
-                results[i].utorid = infoRedemption.utorid;
-                results[i].name = infoRedemption.user ? infoRedemption.user.name : null;
-                results[i].suspicious = infoAdjustment.suspicious;
-                results[i].processedBy = null;
-                results[i].transfer = null;
-                results[i].purchaser = null;
-                results[i].type = [results[i].type, infoAdjustment.relatedId];
-            } else if (infoEvent) {
-                results[i].amount = infoEvent.awarded;
-                results[i].utorid = infoEvent.recipient;
-                results[i].name = infoEvent.user ? infoEvent.user.name : null;
-                results[i].suspicious = null;
-                results[i].processedBy = null;
-                results[i].transfer = null;
-                results[i].purchaser = null;
-                results[i].type = [results[i].type, infoEvent.relatedId];
-            } else if (infoPurchase) {
-                results[i].amount = infoPurchase.spent;
-                results[i].utorid = infoPurchase.utorid;
-                results[i].name = infoPurchase.user ? infoPurchase.user.name : null;
-                results[i].suspicious = infoPurchase.suspicious;
-                results[i].processedBy = null;
-                results[i].purchaser = infoPurchase.utorid;
-                results[i].transfer = null;
-            } else if (infoRedemption) {
-                results[i].amount = infoRedemption.amount;
-                results[i].utorid = infoRedemption.utorid;
-                results[i].name = infoRedemption.user ? infoRedemption.user.name : null;
-                results[i].suspicious = null;
-                results[i].processedBy = infoRedemption.user ? infoRedemption.user.utorid : 'N/A';
-                results[i].purchaser = null;
-                results[i].transfer = null;
-            } else if (infoTransfer) {
-                results[i].amount = infoTransfer.sent;
-                results[i].utorid = null;
-                results[i].name = null;
-                results[i].suspicious = null;
-                results[i].processed = null;
-                results[i].purchaser = null;
-                const t = infoTransfer.relatedUser.utorid == createdBy ? 'From: ' : 'Sent: ';
-                results[i].transfer = `${t}${infoTransfer.relatedUser.utorid}`;
-            }
-
-        }
         if (count == 0)
             setPage(0);
         else if (!searchParams.get('page'))
