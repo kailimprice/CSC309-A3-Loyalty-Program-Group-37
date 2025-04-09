@@ -10,7 +10,7 @@ export async function fetchServer(path, details, errors) {
     return [response, false];
 }
 
-const PERMISSION_LEVELS = ['any', 'regular', 'cashier', 'manager', 'superuser'];
+export const PERMISSION_LEVELS = ['any', 'regular', 'cashier', 'manager', 'superuser'];
 export function hasPerms(levelHas, levelNeeded) {
     const has = PERMISSION_LEVELS.findIndex(x => x == levelHas);
     const needed = PERMISSION_LEVELS.findIndex(x => x == levelNeeded);

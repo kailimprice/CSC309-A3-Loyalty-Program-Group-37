@@ -63,8 +63,10 @@ export const UserProvider = ({ children }) => {
         setToken(newToken);
     };
 
+    const [viewAs, setViewAs] = useState(user ? user.role : null);
+
     return (
-        <UserContext.Provider value={{ user, token, setUserDetails, setTokenDetails }}>
+        <UserContext.Provider value={{ user, token, setUserDetails, setTokenDetails, viewAs, setViewAs }}>
             {children}
         </UserContext.Provider>
     );

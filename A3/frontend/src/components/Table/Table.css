@@ -40,3 +40,18 @@ tbody tr {
     border-top: 1px solid rgb(222, 222, 222);
     border-bottom: 1px solid rgb(222, 222, 222);
 }
+.table-buttons-page-stack {
+    justify-content: space-between;
+}
+.table-page-stack {
+    justify-content: flex-end;
+    align-items: center;
+}
+@media (max-width: 1200px) {
+    .table-buttons-page-stack {
+        flex-direction: column !important;
+    }
+    .table-page-stack {
+        justify-content: flex-start;
+    }
+}

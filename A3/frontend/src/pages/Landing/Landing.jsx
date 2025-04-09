@@ -69,7 +69,7 @@ function Copyable({children}) {
         }
     };
     return <Paper className="copy-box" sx={{margin: '10px 0px'}}>
-        <TextareaAutosize readOnly aria-label='minimum-height' minRows={5} value={children} />
+        <TextareaAutosize className='copyable' readOnly aria-label='minimum-height' minRows={5} value={children} />
         <Tooltip title="Copy to clipboard">
             <Button onClick={handleCopy} sx={{minWidth: '30px'}}>
                 <ContentCopyIcon sx={{height: '20px', color: '#216C17'}}/>
@@ -285,9 +285,9 @@ export default function Landing() {
                 <Typography level='title-lg' sx={{fontSize: '6vh', fontWeight: 'bold', color: 'white'}}> CSSU</Typography>
             </Box>
         </header>
-        <section>
+        <main id='main-landing'>
             <div id='block-text'>
-                <Typography level="h1" sx={{fontSize: '56px', fontWeight: 'normal'}} >
+                <Typography level="h1" sx={{fontWeight: 'normal'}} >
                     Do you love <b>money</b>?<br />
                     We love <b>money</b> too.<br />
                     Get stuff from CSSU.<br />
@@ -298,7 +298,7 @@ export default function Landing() {
             <div id='block-img'>
                 <img src={landing_splash} alt='Splash image' id='splash' />
             </div>
-        </section>
+        </main>
         <DialogLanding/>
         <footer>
             <Typography level="body-md" sx={{color: 'white'}}>

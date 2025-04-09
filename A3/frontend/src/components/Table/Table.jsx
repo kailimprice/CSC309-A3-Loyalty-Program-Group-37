@@ -148,8 +148,8 @@ export default function Table({columns, data, page, numPages, buttons}) {
     }
     const footer = <tr>
         <td colSpan={Object.keys(columns).length}>
-            <Stack direction='row' sx={{justifyContent: 'space-between'}}>
-                <Stack direction='row' spacing={1} sx={{justifyContent: 'flex-end', alignItems: 'center'}}>
+            <Stack direction='row' className='table-buttons-page-stack'>
+                <Stack direction='row' spacing={1} className='table-page-stack'>
                     <ButtonDirection type='left' disabled={page <= 1} size='small' click={incrementPage(-1)}/>
                     <ButtonDirection type='right' disabled={page >= numPages} size='small' click={incrementPage(1)}/>
                     <Typography variant='body2' align='right' sx={{color: 'rgb(150, 150, 150)'}}>

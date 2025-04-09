@@ -19,16 +19,14 @@ const Layout = () => {
                 <Navbar role={role} />
             </header>
             <main>
-                <Box display='flex' height='100%' flexDirection='row' >
+                <Box component='section'>
                     <Sidebar role={role} />
-                    <Box width='100%' sx={{margin: '16px'}}>
+                    <Box id='main-content'>
                         <Outlet />
                     </Box>
                 </Box>
             </main>
-            <footer>
-                <Footer />
-            </footer>
+            <Footer />
         </>
     )
 
