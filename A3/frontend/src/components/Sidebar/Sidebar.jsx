@@ -94,8 +94,11 @@ const sidebarDialogFields = {
 function getViewablePermissions(user, url) {
     let viewable = PERMISSION_LEVELS.slice(1).filter(x => hasPerms(user.role, x));
     // Add more special cases if necessary
-    if (url.startsWith('/users') && url != `/users/${user.id}`) {
+
+    if (url == '/users') {
         viewable = viewable.filter(x => hasPerms(x, 'manager'));
+    } else if (url.startsWith('/users/') && url != `/users/${user.id}`) {
+        viewable = viewable.filter(x => hasPerms(x, 'cashier'));
     }
     return viewable;
 }

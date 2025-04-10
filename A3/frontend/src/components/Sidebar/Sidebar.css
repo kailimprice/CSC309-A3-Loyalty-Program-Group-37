@@ -23,7 +23,3 @@ aside {
     height: 33px;
     margin-top: 8px !important;
 }
-.Mui-disabled {
-    pointer-events: all !important;
-    cursor: not-allowed !important;
-}
