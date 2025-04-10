@@ -9,8 +9,10 @@ import ErrorIcon from '@mui/icons-material/Error';
 import VerifiedOutlinedIcon from '@mui/icons-material/VerifiedOutlined';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
+import EditSharpIcon from '@mui/icons-material/EditSharp';
 import { useNavigate } from 'react-router-dom';
 import QRCode from 'react-qr-code';
+import { DialogGeneral, FilterBody } from '../../components/DialogGeneral/DialogGeneral.jsx';
 
 
 export default function Transaction() {
@@ -35,7 +37,7 @@ const [error, setError] = useState("");
 const [permission, setPermission] = useState(false);
 
 // QR code display
-const [qrOpen, setQrOpen] = useState(true);
+const [qrOpen, setQrOpen] = useState(false);
 const closeQr = () => setQrOpen(false);
 const DialogQR = <Dialog open={qrOpen} onClose={closeQr} className='dialog-qr'>
     <Box sx={{padding: '45px'}}>
@@ -44,6 +46,13 @@ const DialogQR = <Dialog open={qrOpen} onClose={closeQr} className='dialog-qr'>
 </Dialog>;
 
 
+// adjustment dialog display
+const [adjustmentDialogOpen, setAdjustmentDialogOpen] = useState(false);
+const adjustmentFields = {
+    amount: ['Amount', 'number', true], 
+    remark: ['Remark', 'text'], 
+    promotionIds: ['Promotion IDs', 'ids'],
+};
 
 // get event details for given id
 useEffect(() => {
@@ -161,10 +170,64 @@ const handleQRCode = () => {
     setQrOpen(true); 
 };
 
+const handleCreateAdjustment = async (formData) => {
+    try {
+        // preset data for utorid, type, and transactions 
+        const adjustmentDetails = {
+            ...formData,
+            amount: parseInt(formData.amount, 10),
+            relatedId: id, 
+            utorid: utorid,
+            type: "adjustment",
+        };
+
+        // from sidebar
+        if ('promotionIds' in adjustmentDetails) {
+            adjustmentDetails['promotionIds'] = adjustmentDetails['promotionIds']
+                                    .replace(/\s+/g, '')
+                                    .split(',')
+                                    .map(x => parseInt(x, 10))
+                                    .filter(x => !isNaN(x));
+        }
+
+        const [response, err] = await fetchServer(`transactions`, {
+            method: "POST",
+            headers: new Headers({
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            }),
+            body: JSON.stringify(adjustmentDetails),
+        });
+
+        if (err) {
+            console.error("Error creating adjustment:", err);
+            return `Error: ${err.message}`;
+        }
+
+        console.log("Adjustment created successfully:", await response.json());
+        return;
+    } catch (err) {
+        console.error("Error:", err);
+        return "Failed to create adjustment.";
+    }
+};
+
+const AdjustmentDialog = <DialogGeneral
+        title="Create Adjustment"
+        submitTitle="Submit"
+        open={adjustmentDialogOpen}
+        setOpen={setAdjustmentDialogOpen}
+        submitFunc={handleCreateAdjustment}
+        dialogStyle={{ width: "450px" }}
+    >
+    <FilterBody fields={adjustmentFields} />
+</DialogGeneral>
+
 // layout inspired by prev project https://github.com/emily-su-dev/Sinker/blob/main/src/app/components/InfoBox.tsx
 // Grid setup inspired by https://mui.com/material-ui/react-Grid/
 return <>
         {DialogQR}
+        {AdjustmentDialog}
         <div style={{ display: "flex", justifyContent: "space-between" }}>
             <h1>Transaction {id}</h1>
             <div style={{ display: "flex", gap: "1rem" }}>
@@ -209,6 +272,28 @@ return <>
                     >
                         {processed ? <VerifiedIcon /> : <VerifiedOutlinedIcon/>}
                         {processed ? "Processed" : "Unprocessed"}
+                    </Button>
+                }
+                {(permission && (type === "purchase") && (user.role === "manager" || user.role === "superuser")) &&
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        sx={{ 
+                            backgroundColor: adjustmentDialogOpen ? "#4467C4" : "white",
+                            color: adjustmentDialogOpen ? "white" : "#4467C4",
+                            // lighter shade
+                            "&:hover": {
+                                backgroundColor: adjustmentDialogOpen ? "#365a9d" : "#f0f0f0", 
+                            }, 
+                            width: "200px",
+                            display: "flex",
+                            justifyContent: "center",
+                            gap: "8px" }}
+                            // open dialog box
+                        onClick={() => setAdjustmentDialogOpen(true)}
+                    >
+                        <EditSharpIcon />
+                        Adjustment
                     </Button>
                 }
                 {(permission && (user.role === "manager" || user.role === "superuser")) &&
