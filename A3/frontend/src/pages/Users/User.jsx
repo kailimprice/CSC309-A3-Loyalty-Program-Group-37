@@ -2,209 +2,202 @@
 //View/edit: name, email, birthday, avatar
 //Functionality: ability to reset password
 
-import { TextField, Button, Grid, NativeSelect, Checkbox, Alert, Typography, Stack } from '@mui/material';
+import { Grid, Alert, Typography } from '@mui/material';
 import { useState, useEffect } from 'react'
 import EditIcon from '@mui/icons-material/Edit';
 import CheckIcon from '@mui/icons-material/Check';
 import { useUserContext } from '../../contexts/UserContext.jsx';
-import { fetchServer, hasPerms } from '../../utils/utils.jsx';
+import { fetchServer, hasPerms, validatePassword } from '../../utils/utils.jsx';
 import { useParams } from 'react-router-dom';
-import { FormControl } from '@mui/joy';
 import { SpecificHeader, TextInput, DateInput, FileInput, NumberInput, BooleanInput, ChoiceInput,
-         ButtonInput, ButtonInputRow } from '../../components/Form/Form.jsx';
+         ButtonInput, ButtonInputRow, PasswordInput } from '../../components/Form/Form.jsx';
+import { DialogGeneral } from '../../components/DialogGeneral/DialogGeneral.jsx';
 
 export default function User() {
     const { user, token, setUserDetails, viewAs } = useUserContext();
-    const id = parseInt(useParams().id, 10);
-
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
-    const [birthday, setBirthday] = useState(null); 
-    const [avatarUrl, setAvatarUrl] = useState("");
-    const [verified, setVerified] = useState(false);
-    const [suspicious, setSuspicious] = useState(false);
-    const [role, setRole] = useState("");
-    // error tracking
+    const [currUser, setCurrUser] = useState({});
+    const [changes, setChanges] = useState({});
     const [error, setError] = useState("");
-
+    const [file, setFile] = useState(undefined);
+    const [oldPasswordOpen, setOldPasswordOpen] = useState(false);
+    
+    const id = parseInt(useParams().id, 10);
     const ownProfile = user.id == id;
     const managerPerms = hasPerms(viewAs, 'manager');
+    const baseUrl = ownProfile ? 'users/me' : `users/${id}`;
 
-    // get user details for given id
-    useEffect(() => {
-        // wrap in async to use await
-        const getUserDetails = async () => {
-            let userDetails;
+    function makeChange(key) {
+        return (event) => {
+            let value;
+            if (typeof(event) == 'string') {
+                value = event;
+            } else {
+                const type = event.target.type;
+                if (type == 'checkbox') {
+                    value = event.target.checked;
+                } else {
+                    value = event.target.value;
+                }    
+            }
+            const newChanges = {...changes};
+            if (currUser[key] == value) {
+                delete newChanges[key];
+            } else {
+                newChanges[key] = value;
+            }
+            console.log(newChanges);
+            setChanges(newChanges);
+        }
+    }
 
-            // fetch from users/:userId
-            const [response, err] = await fetchServer(`users/${id}`, {
-                method: "GET",
-                headers: new Headers({
-                Authorization: `Bearer ${token}`
-                })
+    async function getUserDetails() {
+        const [response, err] = await fetchServer(baseUrl, {
+            method: "GET",
+            headers: new Headers({
+            Authorization: `Bearer ${token}`
             })
-            if (err) {
-                setError("You do not have permission to view this user.");
-                console.error("Error fetching user details:", err);
-                return;
-            }
-            userDetails = await response.json();
-
-            setName(userDetails.name || "");
-            setEmail(userDetails.email || "");
-            // need to use dayjs here for datepicker
-            setBirthday(userDetails.birthday ? userDetails.birthday : null);
-            setAvatarUrl(userDetails.avatarUrl || "");
-            // defaulting these to false, i noticed suspicious doesnt have a default
-            setVerified(userDetails.verified || false);
-            setSuspicious(userDetails.suspicious || false);
-            setRole(userDetails.role || "");
-
-            console.log("User details:", userDetails);
-
-
-            if (id === user.id) {
-                // fetch from users/me
-                const [response, err] = await fetchServer(`users/me`, {
-                method: "GET",
-                headers: new Headers({
-                    Authorization: `Bearer ${token}`
-                })
-                })
-                if (err) {
-                setError("You do not have permission to view this user.");
-                console.error("Error fetching user profile details:", err);
-                return;
-                }
-                let profileDetails = await response.json();
-
-                setName(profileDetails.name);
-                setEmail(profileDetails.email);
-                // need to use dayjs here for datepicker
-                setBirthday(userDetails.birthday);
-
-                console.log("Profile details:", userDetails);
-            }
-
-            setError("");
-        };
-
-        // call func
+        })
+        if (err)
+            return setError(err);
+        const userDetails = await response.json();
+        if (ownProfile)
+            setUserDetails(userDetails);
+        setCurrUser(userDetails);
+        setError("");          
+    };
+    useEffect(() => {
         getUserDetails();
-    }, [id])
+    }, [id]);
 
-    const handleSubmit = async () => {
-
-      if (id === user.id) {
-          let updateDetails = {};
-          if (name) updateDetails.name = name;
-          if (email) updateDetails.email = email;
-          // need to convert back to YYYY-MM-DD
-          if (birthday) updateDetails.birthday = birthday.format("YYYY-MM-DD");
-          if (avatarUrl) updateDetails.avatarUrl = avatarUrl;
-
-          console.log("Updated details being sent:", updateDetails);
-          // patch to users/me
-          const [response, err] = await fetchServer(`users/me`, {
+    // Action buttons
+    async function handleVerifyUser() {
+        const [response, err] = await fetchServer(baseUrl, {
             method: "PATCH",
             headers: new Headers({
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
             }),
-            body: JSON.stringify(updateDetails)
-          })
-          if (err) {
-            setError(err);
-            console.error("Error patching curent user details:", err);
-            return;
-          } 
-
-          setUserDetails(updateDetails);
-          setError(""); 
-      }
-
-      if (user.role === "manager" || user.role === "superuser") {
-          let updateDetails = {};
-          if (email) updateDetails.email = email;
-          // cant checm if (...) since these are bools and react wants them defined
-          // i think its okay to edit them anyways bc we always pull their curr val or default
-          updateDetails.verified = verified;
-          updateDetails.suspicious = suspicious;
-          if (role) updateDetails.role = role;
-
-          console.log("Updated details being sent:", updateDetails);
-          // patch to users/:userId
-          const [response, err] = await fetchServer(`users/${id}`, {
+            body: JSON.stringify({verified: true})
+        })
+        if (err)
+            return setError(err);
+        getUserDetails();
+    }
+    async function handleSubmitPassword() {
+        console.log("All changes:", changes);
+        const e1 = validatePassword(changes['old']);
+        if (e1)
+            return setError('Error in password.');
+        const [response, e2] = await fetchServer('users/me/password', {
             method: "PATCH",
             headers: new Headers({
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
             }),
-            body: JSON.stringify(updateDetails)
-          })
-          if (err) {
-            setError(err);
-            console.error("Error patching user details:", err);
-            return;
-          }
-
-          if (id === user.id){
-            setUserDetails(updateDetails);
-          }
-
-          setError(""); 
-      }
+            body: JSON.stringify({old: changes['old'], new: changes['new']})
+        });
+        if (e2)
+            return setError(e2);
+        
+        const newChanges = {...changes};
+        delete newChanges['old'];
+        delete newChanges['new'];
+        if (Object.keys(newChanges).length > 0)
+            return await handleSubmit(newChanges);
+    }
+    async function handleSubmit(json) {
+        let header = {Authorization: `Bearer ${token}`};
+        let body;
+        if (file) {
+            body = new FormData();
+            body.append('avatar', file);
+            for (let key in json) {
+                body.append(key, json[key]);
+            }
+        } else {
+            header['Content-Type'] = 'application/json';
+        }
+        const [response, err] = await fetchServer(baseUrl, {
+            method: "PATCH",
+            headers: new Headers(header),
+            body: body
+        });
+        if (err)
+            return setError(err);
+        setFile(undefined);
+        setChanges({});
+        getUserDetails();
+    }
+    async function preSubmit() {
+        if ('new' in changes) {
+            const err = validatePassword(changes['new']);
+            if (err)
+                return setError('Error in password.');
+            setOldPasswordOpen(true);
+        } else {
+            await handleSubmit(changes);
+        }
     };
 
     // layout inspired by prev project https://github.com/emily-su-dev/Sinker/blob/main/src/app/components/InfoBox.tsx
     // grid setup inspired by https://mui.com/material-ui/react-grid/
     return <>
+        {/* Update password dialog */}
+        <DialogGeneral title='Update User' submitTitle='Update' open={oldPasswordOpen} dialogStyle={{width: '500px'}}
+                            setOpen={setOldPasswordOpen} submitFunc={handleSubmitPassword}>
+            <Typography variant='body1' sx={{marginBottom: '15px'}}>
+                Please enter your old password before changing it.
+            </Typography>
+            <Grid container spacing={0} alignItems={'center'}>
+                <PasswordInput name='old' field='Old Password' changeFunc={makeChange('old')}/>
+            </Grid>
+        </DialogGeneral>
+
         <SpecificHeader display='Users' baseUrl={managerPerms ? '/users' : null} id={ownProfile ? 'Me' : id} />
         <Grid container spacing={0} alignItems={'center'}>
-            {/* display error message if one*/}
             {error && 
             <Grid size={12}>
                 {/* alerts: https://mui.com/material-ui/react-alert/?srsltid=AfmBOoou_o4_8K8hszRKhrNwGHIQi0AiFRewwf3tT0chGeQsevtOFnp2 */}
-                <Alert severity="error">{error}</Alert>
+                <Alert severity="error" sx={{marginBottom: '5px'}}>{error}</Alert>
             </Grid>}
             
-            <NumberInput editable={false} field='ID' value={user.id} />
-            <TextInput editable={false} field='UTORid' value={user.utorid} />
-            <TextInput editable={ownProfile} field='Name' value={name} changeFunc={(e) => setName(e.target.value)} />
-            <NumberInput editable={false} field='Points' value={user.points} />
+            <NumberInput editable={false} field='ID' value={currUser.id} />
+            <TextInput editable={false} field='UTORid' value={currUser.utorid} />
+            <TextInput editable={ownProfile} field='Name' value={currUser.name} changeFunc={makeChange('name')} />
+            <NumberInput editable={false} field='Points' value={currUser.points} />
 
             {(ownProfile || managerPerms) &&
             <>
-                <FileInput editable={ownProfile} field='Profile Picture' value={avatarUrl} changeFunc={setAvatarUrl}/>
-                <DateInput editable={ownProfile} field='Birthday' value={birthday} changeFunc={setBirthday} />
+                <FileInput editable={ownProfile} field='Profile Picture' value={currUser.avatarUrl} changeFunc={setFile}/>
+                <DateInput editable={ownProfile} field='Birthday' value={currUser.birthday} changeFunc={makeChange('birthday')} />
                 <TextInput editable={ownProfile || managerPerms}
-                            field='Email' value={email} changeFunc={(e) => setEmail(e.target.value)} />
+                            field='Email' value={currUser.email} changeFunc={makeChange('email')} />
                 <DateInput editable={false} field='Account Created' value={user.createdAt} />
                 <DateInput editable={false} field='Last Login' value={user.lastLogin} />
             </>}
             
-            <BooleanInput editable={false} field='Verified' value={verified} onlySetTrue
-                        changeFunc={(e) => setVerified(e.target.checked)}/>
+            <BooleanInput editable={false} field='Verified' value={changes['verified'] || currUser.verified} onlySetTrue />
             
             {/* Only cashiers can be suspicious */}
-            {managerPerms && role == 'cashier' &&
-            <BooleanInput editable={true} field='Suspicious' value={suspicious} onlySetTrue
-                        changeFunc={(e) => setSuspicious(e.target.checked)}/>}
+            {managerPerms && currUser.role == 'cashier' &&
+            <BooleanInput editable={true} field='Suspicious' value={changes['suspicious'] || currUser.suspicious} onlySetTrue changeFunc={makeChange('suspicious')}/>}
 
             {managerPerms && (() => {
                 const choices = ['regular', 'cashier', 'manager', 'superuser'];
                 const choicesSettable = (viewAs == 'superuser') ? choices : ['regular', 'cashier'];
-                return <ChoiceInput editable={managerPerms} field='Role' value={role} choices={choicesSettable}
-                                    changeFunc={(e) => setRole(e.target.value)} />; 
+                return <ChoiceInput editable={managerPerms} field='Role' value={currUser.role} choices={choicesSettable} changeFunc={makeChange('role')} />; 
             })()}
 
+            {ownProfile &&
+            <PasswordInput editable={false} field='New Password' value='' changeFunc={makeChange('new')}/>}
+            
             {/* TODO promotions used */}
             <TextInput editable={false} field='Promotions' value='TODO'/>
         </Grid>
         <ButtonInputRow>
-            <ButtonInput title='Update' variant='contained' click={handleSubmit} icon={<EditIcon />} />
+            <ButtonInput title='Update' variant='contained' click={preSubmit} icon={<EditIcon />} disabled={!file && Object.keys(changes).length == 0}/>
             {managerPerms &&
-            <ButtonInput title='Verify User' variant='outlined' click={() => {return}} icon={<CheckIcon />} />}
+            <ButtonInput title='Verify User' variant='outlined' click={handleVerifyUser} icon={<CheckIcon />}  disabled={currUser.verified}/>}
         </ButtonInputRow>
     </>
 }

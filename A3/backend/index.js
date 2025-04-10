@@ -174,7 +174,7 @@ function objectAddLax(variables, source, adder) {
     }
 }
 
-function objectAddStrict(validation, source, adder, res) {
+function objectAddStrict(validation, source, adder, res, noEmpty=true) {
     for (let name in validation) {
         const checkerTransform = validation[name];
         const value = source[name];
@@ -195,7 +195,7 @@ function objectAddStrict(validation, source, adder, res) {
             return res.status(400).json({'error': 'Bad argument'});
         }
     }
-    if (Object.keys(adder).length == 0) {
+    if (Object.keys(adder).length == 0 && noEmpty) {
         console.log(`400, no body arguments`);
         return res.status(400).json({'error': 'No body arguments'});
     }
@@ -512,10 +512,37 @@ app.post('/users', permLevel('cashier'), async (req, res) => {
 /*******************************************************************************
 Current User Info
 *******************************************************************************/
+const fs = require('fs');
+const path = require('path');
 const multer = require('multer')
-const upload = multer({dest: 'uploads/'});
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const dir = `uploads/${req.user.id}`;
+        fs.mkdir(dir, {recursive: true}, (err) => {
+            if (err)
+                return cb(err);
+            cb(null, dir);
+        })
+    },
+    filename: (req, file, cb) => {
+        cb(null, file.originalname);
+    }
+});
+const upload = multer({storage: storage});
 
-app.get('/users/me', async (req, res) => {
+app.get('/files', permLevel('regular'), async (req, res) => {
+    let {filepath} = req.query;
+    if (!filepath)
+        return res.status(400).json({'error': `Bad path ${filepath}`});
+    filepath = path.join(__dirname, filepath);
+    res.sendFile(filepath, (err) => {
+        if (err) {
+            console.error("Error sending file:", err);
+            return res.status(err.status).end();
+        }
+    });
+});
+app.get('/users/me', permLevel('regular'), async (req, res) => {
     console.log(req.utorid);
     const [result, error] = await findUnique(prisma.user, {utorid: req.utorid}, res, null, {password: true});
     if (error) return error;
@@ -523,15 +550,10 @@ app.get('/users/me', async (req, res) => {
     result['promotions'] = []; // TODO
     return res.status(200).json(result);
 });
-app.patch('/users/me', upload.single('avatar'), async (req, res) => {
-    const {name, email, birthday} = req.body;
-
-    if (!checkName(name) && !checkEmail(email) && !checkBirthday(birthday))
-        return res.status(400).json({'error': 'Bad arguments'});
-
+app.patch('/users/me', permLevel('regular'), upload.single('avatar'), async (req, res) => {
     const data = req.file ? {'avatarUrl': req.file.path} : {};
     const validation = {name: checkName, email: checkEmail, birthday: [checkBirthday, x => new Date(x)]};
-    const e1 = objectAddStrict(validation, req.body, data, res);
+    const e1 = objectAddStrict(validation, req.body, data, res, false);
     if (e1) return e1;
 
     const result = await prisma.user.update({where: {utorid: req.utorid}, data: data, omit: {password: true}});
