@@ -68,9 +68,10 @@ export const UserProvider = ({ children }) => {
     // setupdateDisplay is called in the side bar after a request is made
     // in /users, /transactions, etc., the change to updateDisplay is used as a effect to reload the data 
     const [updateDisplay, setUpdateDisplay] = useState(false);
+    const [relatedIdDesc, setRelatedIdDesc] = useState('');
 
     return (
-        <UserContext.Provider value={{ user, token, setUserDetails, setTokenDetails, viewAs, setViewAs, updateDisplay, setUpdateDisplay }}>
+        <UserContext.Provider value={{ user, token, setUserDetails, setTokenDetails, viewAs, setViewAs, updateDisplay, setUpdateDisplay, relatedIdDesc, setRelatedIdDesc }}>
             {children}
         </UserContext.Provider>
     );

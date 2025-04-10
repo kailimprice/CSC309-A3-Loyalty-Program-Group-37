@@ -2,6 +2,7 @@ import {useState, Fragment} from 'react'
 import {Box, Button, Dialog, DialogActions, DialogContent, DialogContentText,
         DialogTitle, Typography, TextField, RadioGroup, Radio, FormControlLabel,
         FormControl, MenuItem, Select, ToggleButton, ToggleButtonGroup, Stack} from '@mui/material';
+import { useUserContext } from '../../contexts/UserContext';
 
 /**
  * General-purpose dialog box. In your code, add a state:
@@ -64,6 +65,7 @@ export function DialogGeneral({title, children, submitTitle, open, setOpen, subm
  */
 export function FilterBody({fields}) {
     const [sign, setSign] = useState('lte');
+    const {setRelatedIdDesc} = useUserContext();
     const rows = [];
     for (let name in fields) {
         const [display, type] = fields[name];
@@ -91,7 +93,22 @@ export function FilterBody({fields}) {
 
             {Array.isArray(type) &&
             <FormControl fullWidth variant="outlined" sx={{justifyContent: 'center', margin: '8px 0px 4px 0px'}}>
-                <Select labelId={`${name}-select-label`} defaultValue={required ? type[0][1] : ''} name={name} displayEmpty>
+                <Select labelId={`${name}-select-label`} defaultValue={required ? type[0][1] : ''} name={name}
+                        displayEmpty onChange={event => {
+                            const value = event.target.value;
+                            if (fields[name].length == 4 && fields[name][3] == 'relatedId') {
+                                if (value == 'event')
+                                    setRelatedIdDesc('Event ID');
+                                else if (value == 'adjustment')
+                                    setRelatedIdDesc('Transaction ID');
+                                else if (value == 'redemption')
+                                    setRelatedIdDesc('Processor ID');
+                                else if (value == 'transfer')
+                                    setRelatedIdDesc('Transferee ID');
+                                else
+                                    setRelatedIdDesc('');
+                            }
+                        }}>
                     {type.map(([display, actualName]) => {
                         return <MenuItem key={actualName} value={actualName}>
                             {display}
@@ -102,6 +119,7 @@ export function FilterBody({fields}) {
             
             {type == 'threshold' && 
             <Stack direction='row'>
+                <TextField id='operator' name='operator' type='text' value={sign} sx={{display: 'none'}}/>
                 <ToggleButtonGroup value={sign} exclusive onChange={(event, x) => {if (x) setSign(x)}}>
                     <ToggleButton value='lte'>&le;</ToggleButton>
                     <ToggleButton value='gte'>&ge;</ToggleButton>

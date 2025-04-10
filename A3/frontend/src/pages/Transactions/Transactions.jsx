@@ -23,7 +23,7 @@ export default function Transactions() {
     const [data, setData] = useState([]);
     const [page, setPage] = useState(0);
     const [numPages, setNumPages] = useState(0);
-    const {viewAs, updateDisplay} = useUserContext();
+    const {viewAs, updateDisplay, relatedIdDesc} = useUserContext();
     const [searchParams, setSearchParams] = useSearchParams();
     const token = localStorage.getItem('token');
     const location = useLocation();
@@ -115,13 +115,15 @@ export default function Transactions() {
 
     // Filter
     const filterFields = {
-        type: ['Type', transactionTypes.map(x => [x, x.toLowerCase()])],
-        relatedId: ['Related ID', 'number'],
-        verified: ['Verified', 'boolean'],
-        activated: ['Account Activated', 'boolean'],
+        type: ['Type', transactionTypes.map(x => [x, x.toLowerCase()]), null, 'relatedId'],
         promotionId: ['Promotion ID', 'number'],
         amount: ['Amount', 'threshold'] // amount + operator
     };
+    if (relatedIdDesc != '') {
+        filterFields.relatedId = [relatedIdDesc, 'number'];
+    } else {
+        delete filterFields.relatedId;
+    }
     if (hasPerms(viewAs, 'manager')) {
         filterFields.utorid = ['UTORid', 'text'];
         filterFields.name = ['Name', 'text'];
@@ -134,6 +136,9 @@ export default function Transactions() {
             if (json[key] == '')
                 delete json[key];
         }
+        if (!json['amount'])
+            delete json['operator'];
+        console.log(json);
         setSearchParams(json);
     }
 
@@ -151,7 +156,7 @@ export default function Transactions() {
         </Typography>
 
         <DialogGeneral title='Filter' submitTitle='Apply' open={filterOpen} setOpen={setFilterOpen}
-                        dialogStyle={{width: '400px'}}
+                        dialogStyle={{width: '500px'}}
                         submitFunc={applyFilter}>
             <FilterBody fields={filterFields}/>
         </DialogGeneral>
