@@ -1,7 +1,7 @@
 import {useState, Fragment} from 'react'
-import {Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
-        Typography, TextField, RadioGroup, Radio, FormControlLabel} from '@mui/material';
-import { Input } from '@mui/joy'
+import {Box, Button, Dialog, DialogActions, DialogContent, DialogContentText,
+        DialogTitle, Typography, TextField, RadioGroup, Radio, FormControlLabel,
+        FormControl, MenuItem, Select, ToggleButton, ToggleButtonGroup, Stack} from '@mui/material';
 
 /**
  * General-purpose dialog box. In your code, add a state:
@@ -63,6 +63,7 @@ export function DialogGeneral({title, children, submitTitle, open, setOpen, subm
  * dataType supports 'text' and 'boolean'
  */
 export function FilterBody({fields}) {
+    const [sign, setSign] = useState('lte');
     const rows = [];
     for (let name in fields) {
         const [display, type] = fields[name];
@@ -87,13 +88,27 @@ export function FilterBody({fields}) {
                 <FormControlLabel name={name} value={false} control={<Radio/>} label="No"/>
                 <FormControlLabel name={name} value={true} control={<Radio/>} label="Yes"/>
             </RadioGroup>}
-            
+
             {Array.isArray(type) &&
-            <RadioGroup row sx={{justifyContent: 'center'}}  defaultValue={required ? type[0][1] : null}>
-                {type.map(([display, actualName]) => {
-                    return <FormControlLabel name={name} value={actualName} control={<Radio/>} label={display}/> 
-                })}
-            </RadioGroup>}
+            <FormControl fullWidth variant="outlined" sx={{justifyContent: 'center', margin: '8px 0px 4px 0px'}}>
+                <Select labelId={`${name}-select-label`} defaultValue={required ? type[0][1] : ''} name={name} displayEmpty>
+                    {type.map(([display, actualName]) => {
+                        return <MenuItem key={actualName} value={actualName}>
+                            {display}
+                        </MenuItem>;
+                    })}
+                </Select>
+            </FormControl>}
+            
+            {type == 'threshold' && 
+            <Stack direction='row'>
+                <ToggleButtonGroup value={sign} exclusive onChange={(event, x) => {if (x) setSign(x)}}>
+                    <ToggleButton value='lte'>&le;</ToggleButton>
+                    <ToggleButton value='gte'>&ge;</ToggleButton>
+                </ToggleButtonGroup>
+                <TextField fullWidth variant='outlined' margin='dense'
+                            id={name} name={name} type='number' required={required}/>
+            </Stack>}
 
             {type == 'number' && 
                 <TextField

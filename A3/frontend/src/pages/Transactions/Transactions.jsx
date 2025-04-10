@@ -1,7 +1,6 @@
 /*
 /transactions (manager+)
 - name, createdBy, suspicious, promotionId, type, relatedId, amount, operator, page, limit
-//Need to be able to edit suspicious/not
 
 /users/me/transactions (regular+)
 - type, relatedId, promotionId, amount, operator, page, limit
@@ -30,9 +29,10 @@ export default function Transactions() {
     const location = useLocation();
     const baseUrl = hasPerms(viewAs, 'manager') ? 'transactions' : 'users/me/transactions';
 
+    const transactionTypes = ['Adjustment', 'Event', 'Purchase', 'Redemption', 'Transfer'];
     const columns = {
         id: ['ID', 'number'],
-        type: ['Type', 'link', ['Adjustment', 'Event', 'Purchase', 'Redemption', 'Transfer']],
+        type: ['Type', 'link', transactionTypes],
         createdBy: ['Creator', 'string'],
         utorid: ['UTORid', 'string'],
         name: ['Name', 'string'],
@@ -42,7 +42,7 @@ export default function Transactions() {
         processedBy: ['Processor', 'string']
     };
     if (hasPerms(viewAs, 'manager')) {
-        columns.suspicious = ['Suspicious', 'boolean', null, () => console.log('hi'), true];
+        columns.suspicious = ['Suspicious', 'boolean', null, changeSuspicious, true];
     }
 
     // Fetch all transactions
@@ -78,13 +78,13 @@ export default function Transactions() {
         return <NotFound/>
     
     // In-page changes
-    async function changeProperty(id, key, value, transform) {
+    async function changeProperty(id, path, key, value, transform) {
         transform = transform ? transform : x => x;
         const json = {};
         json[key] = transform(value);
 
         // Change server
-        let [response, error] = await fetchServer(`transactions/${id}`, {
+        let [response, error] = await fetchServer(path, {
             method: 'PATCH',
             headers: new Headers({
                 'Authorization': `Bearer ${token}`,
@@ -101,15 +101,6 @@ export default function Transactions() {
             for (let i = 0; i < newData.length; i++) {
                 if (newData[i].id == id) {
                     newData[i][key] = value;
-                    
-                    // Special case for role
-                    // if (key == 'role') {
-                    //     if (value == 'Cashier') {
-                    //         newData[i].suspicious = false;
-                    //     } else {
-                    //         newData[i].suspicious = null;
-                    //     }
-                    // }
                     break;
                 }
             }
@@ -118,28 +109,26 @@ export default function Transactions() {
             console.log("WTF");
         }
     }
-    function changeRole(id, role) {
-        if (data.find(x => x.id == id).role == role)
-            return;
-        changeProperty(id, 'role', role, x => x.toLowerCase());
-    }
-    function changeVerified(id, verified) {
-        if (verified == 'Yes')
-            return;
-        changeProperty(id, 'verified', true);
-    }
     function changeSuspicious(id, suspicious) {
-        changeProperty(id, 'suspicious', suspicious == 'Yes' ? false : true);
+        changeProperty(id, `transactions/${id}/suspicious`, 'suspicious', suspicious == 'Yes' ? false : true);
     }
 
     // Filter
     const filterFields = {
-        utorid: ['UTORid', 'text'],
-        name: ['Name', 'text'],
-        role: ['Role', 'text'],
+        type: ['Type', transactionTypes.map(x => [x, x.toLowerCase()])],
+        relatedId: ['Related ID', 'number'],
         verified: ['Verified', 'boolean'],
-        activated: ['Account Activated', 'boolean']
+        activated: ['Account Activated', 'boolean'],
+        promotionId: ['Promotion ID', 'number'],
+        amount: ['Amount', 'threshold'] // amount + operator
     };
+    if (hasPerms(viewAs, 'manager')) {
+        filterFields.utorid = ['UTORid', 'text'];
+        filterFields.name = ['Name', 'text'];
+        filterFields.createdBy = ['Creator', 'text'];
+        filterFields.suspicious = ['Suspicious', 'boolean'];
+    }
+
     async function applyFilter(json) {
         for (let key in json) {
             if (json[key] == '')

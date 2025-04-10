@@ -19,3 +19,7 @@ aside {
 .sidebar-button:hover {
     background-color: rgb(233, 233, 233);
 }
+.MuiToggleButtonGroup-grouped {
+    height: 33px;
+    margin-top: 8px !important;
+}
