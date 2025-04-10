@@ -104,7 +104,7 @@ function permLevel(levelNeeded) {
         req.user = user;
         if (hasPerms(user.role, levelNeeded)) {
             // View page with different role
-            const role = req.body['viewAsRole'];
+            let role = req.body['viewAsRole'] || req.query['viewAsRole'];
             if (!role)
                 return next();
             if (!hasPerms(role, levelNeeded))
@@ -1086,7 +1086,7 @@ async function adjustmentTransaction(req, res, data1) {
         } else {
             const [bonus, e3] = await checkApplyPromotions(promotionIds, utorid, res, data2['spent']);
             if (e3) return e3;
-            data2['earned'] += bonus;
+            data2['amount'] += bonus;
             data2['promotionIds'] = {connect: promotionIds.map(x => {return {id: x}})};
         }
     }

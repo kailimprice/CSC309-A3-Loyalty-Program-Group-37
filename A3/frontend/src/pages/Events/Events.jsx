@@ -29,10 +29,12 @@ export default function Events() {
     // Fetch all events
     async function getEvents(token) {
         let params = location.search;
+        console.log(params);
         let [response, error] = await fetchServer(`events${params}`, {
             method: 'GET',
             headers: new Headers({'Authorization': `Bearer ${token}`})
         });
+        // json['viewAsRole'] = viewAs;
         if (error) {
             setPage(0);
             setNumPages(0);
@@ -58,7 +60,7 @@ export default function Events() {
         if (!token)
             return;
         getEvents(token);
-    }, [location.search, updateDisplay]);
+    }, [location.search, updateDisplay, viewAs]);
     if (!token)
         return <NotFound/>
     
@@ -104,7 +106,9 @@ export default function Events() {
         }
     }
     function changePublished(id, published) {
-        changeProperty(id, `/events/${id}`, published == 'Yes' ? false : true);
+        if (published == 'Yes')
+            return;
+        changeProperty(id, `events/${id}`, 'published', true);
     }
 
     const columns = {
@@ -113,8 +117,8 @@ export default function Events() {
         location: ['Location', 'string'],
         startTime: ['Start Time', 'date'],
         endTime: ['End Time', 'date'],
-        capacity: ['Capacity', 'number'],
-        numGuests: ['Guests', 'number']
+        numGuests: ['Guests', 'number'],
+        capacity: ['Capacity', 'number']
     };
     if (hasPerms(viewAs, 'manager')) {
         columns.pointsRemain = ['Points Remaining', 'number'];
@@ -124,12 +128,15 @@ export default function Events() {
     
     // Filter
     const filterFields = {
-        utorid: ['UTORid', 'text'],
         name: ['Name', 'text'],
-        role: ['Role', 'text'],
-        verified: ['Verified', 'boolean'],
-        activated: ['Account Activated', 'boolean']
+        location: ['Location', 'text'],
+        started: ['Event Started', 'boolean'],
+        ended: ['Event Ended', 'boolean'],
+        showFull: ['Event is Full', 'boolean']
     };
+    if (hasPerms(viewAs, 'manager')) {
+        filterFields.published = ['Published', 'boolean'];
+    }
     async function applyFilter(json) {
         for (let key in json) {
             if (json[key] == '')
