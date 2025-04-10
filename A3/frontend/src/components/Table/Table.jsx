@@ -18,8 +18,7 @@ function parseDate(string) {
     return `${year}/${month}/${day}`;
 }
 
-export default function Table({columns, data, page, numPages, buttons}) {
-    const [selection, setSelection] = useState(undefined);
+export default function Table({columns, data, page, numPages, buttons, selection, setSelection}) {
     const location = useLocation();
     const [sortBy, setSortBy] = useState(new URLSearchParams(location.search).get('orderBy'));
     const [sortDirection, setSortDirection] = useState(new URLSearchParams(location.search).get('order'));
@@ -127,8 +126,9 @@ export default function Table({columns, data, page, numPages, buttons}) {
                 if (Array.isArray(value)) {
                     const display = `${value[0]} (ID# ${value[1]})`;
                     const type = `tag-${value[0].toLowerCase()}-clickable`;
+                    const baseUrl = value[0] == 'Event' ? 'events' : 'transactions';
                     const click = () => {
-                        navigate(`/${value[0].toLowerCase()}/${value[1]}`);
+                        navigate(`/${baseUrl}/${value[1]}`);
                     };
                     cellContent = <Tag value={display} type={type} options={format} click={click}/>;
                 } else {

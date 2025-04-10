@@ -6,17 +6,20 @@
 import Typography from '@mui/joy/Typography';
 import Table from '../../components/Table/Table.jsx'
 import {useState, useEffect} from 'react'
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import FilterListIcon from '@mui/icons-material/FilterList';
-import {Stack, Button} from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import {Stack, Button, Dialog} from '@mui/material';
 import {DialogGeneral, FilterBody} from '../../components/DialogGeneral/DialogGeneral.jsx';
 import {useUserContext} from '../../contexts/UserContext';
 import {fetchServer, hasPerms} from "../../utils/utils";
 import NotFound from "../NotFound/NotFound.jsx"
-import {useSearchParams, useLocation} from 'react-router-dom';
+import {useSearchParams, useLocation, useNavigate} from 'react-router-dom';
 
 const resultsPerPage = 10;
 
 export default function Events() {
+    const [selection, setSelection] = useState(undefined);
     const [filterOpen, setFilterOpen] = useState(false);
     const [data, setData] = useState([]);
     const [page, setPage] = useState(0);
@@ -87,15 +90,6 @@ export default function Events() {
             for (let i = 0; i < newData.length; i++) {
                 if (newData[i].id == id) {
                     newData[i][key] = value;
-                    
-                    // Special case for role
-                    if (key == 'role') {
-                        if (value == 'Cashier') {
-                            newData[i].suspicious = false;
-                        } else {
-                            newData[i].suspicious = null;
-                        }
-                    }
                     break;
                 }
             }
@@ -145,7 +139,40 @@ export default function Events() {
     }
 
     // Buttons in table header
+    const [deleteDialogOpen, setDialogDeleteOpen] = useState(false);
+    const [deleteDialogText, setDeleteDialogText] = useState('');
+    async function deleteRow() {
+        if (!selection)
+            return;
+        let [result, error] = await fetchServer(`events/${selection}`, {
+            method: 'DELETE',
+            headers: new Headers({'Authorization': `Bearer ${token}`})
+        });
+        if (error) {
+            setDialogDeleteOpen(true);
+            setDeleteDialogText(error);
+            return;
+        }
+        setData(data.filter(x => x.id != selection));
+    }
+    const ErrorDialog = <DialogGeneral title='Failed to Delete'
+                                    children={<Typography>{deleteDialogText}</Typography>}
+                                    open={!!deleteDialogOpen} setOpen={setDialogDeleteOpen}
+                                    submitTitle={'Okay'} submitFunc={async () => {return}}/>
+    const navigate = useNavigate();
     const buttons = <Stack direction='row' spacing={1} sx={{margin: '5px 0px'}}>
+        <Button sx={{textTransform: 'none'}} variant='outlined' size='small' disabled={!selection}
+                startIcon={<FormatListBulletedIcon/>} onClick={() => navigate(`./${selection}`)}> 
+            View
+        </Button>
+        {hasPerms(viewAs, 'manager') &&
+        <>
+            {ErrorDialog}
+            <Button sx={{textTransform: 'none'}} variant='outlined' size='small' disabled={!selection}
+                startIcon={<DeleteIcon/>} onClick={() => deleteRow()}> 
+                Delete
+            </Button>
+        </>}
         <Button sx={{textTransform: 'none'}} variant='outlined' size='small'
                 startIcon={<FilterListIcon/>} onClick={() => setFilterOpen(true)}> 
             Filter
@@ -163,6 +190,6 @@ export default function Events() {
             <FilterBody fields={filterFields}/>
         </DialogGeneral>
         
-        <Table columns={columns} data={data} page={page} numPages={numPages} buttons={buttons}/>
+        <Table columns={columns} data={data} page={page} numPages={numPages} buttons={buttons} selection={selection} setSelection={setSelection}/>
     </>
 }

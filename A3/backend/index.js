@@ -831,9 +831,9 @@ function sanitizeTransactions(results) {
         results[i].type = type[0].toUpperCase() + type.slice(1);
         
         if (infoAdjustment) {
-            results[i].amount = infoRedemption.amount;
-            results[i].utorid = infoRedemption.utorid;
-            results[i].name = infoRedemption.user ? infoRedemption.user.name : null;
+            results[i].amount = infoAdjustment.amount;
+            results[i].utorid = infoAdjustment.utorid;
+            results[i].name = infoAdjustment.user ? infoAdjustment.user.name : null;
             results[i].suspicious = infoAdjustment.suspicious;
             results[i].processedBy = null;
             results[i].transfer = null;
@@ -1625,7 +1625,7 @@ app.get('/promotions', permLevel('regular'), async (req, res) => {
         else if (started === 'false')   filter['startTime'] = {gte: now};
         else if (ended === 'true')      filter['endTime'] = {lte: now};
         else if (ended === 'false')     filter['endTime'] = {gte: now};
-    } else {
+    } else if (req.user.role == 'regular') {
         filter['startTime'] = {lte: now};
         filter['endTime'] = {gte: now};
         // TODO FILTER to promotions not used by the user

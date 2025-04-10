@@ -76,7 +76,7 @@ const sidebarDialogFields = {
     promotion: {
         name: ['Name', 'text', true],
         description: ['Description', 'text', true],
-        type: ['Type', [['Automatic', 'automatic'], ['One-Time', 'onetime']], true], /* automatic or one time */
+        type: ['Type', [['Automatic', 'automatic'], ['One-time', 'one-time']], true], /* automatic or one time */
         startTime: ['Start Time', 'time', true],
         endTime: ['End Time', 'time', true],
         minSpending: ['Minimum Spent', 'number'], /* optional */
@@ -143,7 +143,7 @@ export default function Sidebar() {
             if (name in json)
                 json[name] = (new Date(json[name])).toISOString();
         }        
-        for (let name of ['points', 'spent', 'amount', 'capacity']) {
+        for (let name of ['points', 'spent', 'amount', 'capacity', 'minSpending', 'rate', 'points']) {
             if (name in json)
                 json[name] = parseInt(json[name], 10);
         }
@@ -156,7 +156,7 @@ export default function Sidebar() {
     }
 
     async function handleSubmit(json) {
-        console.log('raw json:', json);
+        // console.log('raw json:', json);
         let endpoint = endpoints[dialogTitle];
 
         if (['redemption', 'transfer', 'purchase'].includes(dialogTitle))
@@ -166,7 +166,7 @@ export default function Sidebar() {
             delete json.userId;
         }
         sanitizeJson(json);
-        console.log('clean json:', json);
+        // console.log('clean json:', json);
 
         try {
             const token = localStorage.getItem('token');

@@ -11,17 +11,19 @@
 import Typography from '@mui/joy/Typography';
 import Table from '../../components/Table/Table.jsx'
 import {useState, useEffect} from 'react'
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import {Stack, Button} from '@mui/material';
 import {DialogGeneral, FilterBody} from '../../components/DialogGeneral/DialogGeneral.jsx';
 import {useUserContext} from '../../contexts/UserContext';
 import {fetchServer} from "../../utils/utils";
 import NotFound from "../NotFound/NotFound.jsx"
-import {useSearchParams, useLocation} from 'react-router-dom';
+import {useSearchParams, useLocation, useNavigate} from 'react-router-dom';
 
 const resultsPerPage = 10;
 
 export default function Users() {
+    const [selection, setSelection] = useState(undefined);
     const [filterOpen, setFilterOpen] = useState(false);
     const [data, setData] = useState([]);
     const [page, setPage] = useState(0);
@@ -154,7 +156,12 @@ export default function Users() {
     }
 
     // Buttons in table header
+    const navigate = useNavigate();
     const buttons = <Stack direction='row' spacing={1} sx={{margin: '5px 0px'}}>
+        <Button sx={{textTransform: 'none'}} variant='outlined' size='small' disabled={!selection}
+                        startIcon={<FormatListBulletedIcon/>} onClick={() => navigate(`./${selection}`)}> 
+            View
+        </Button>
         <Button sx={{textTransform: 'none'}} variant='outlined' size='small'
                 startIcon={<FilterListIcon/>} onClick={() => setFilterOpen(true)}> 
             Filter
@@ -172,6 +179,6 @@ export default function Users() {
             <FilterBody fields={filterFields}/>
         </DialogGeneral>
         
-        <Table columns={columns} data={data} page={page} numPages={numPages} buttons={buttons}/>
+        <Table columns={columns} data={data} page={page} numPages={numPages} buttons={buttons} selection={selection} setSelection={setSelection}/>
     </>
 }

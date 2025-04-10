@@ -43,18 +43,20 @@ export function DialogGeneral({title, children, submitTitle, open, setOpen, subm
             {title}
         </DialogTitle>
         
-        <DialogContent sx={{paddingBottom: '5px'}}>
+        <DialogContent sx={{paddingBottom: submitTitle ? '5px' : '20px'}}>
             {error && 
-            <Box sx={{backgroundColor: '#ffe4e1', borderRadius: '4px', padding: '10px', marginTop: '10px', marginBottom: '10px'}}>
+            <Box sx={{backgroundColor: '#ffe4e1', borderRadius: '4px', padding: '10px', marginTop: '10px',
+                        marginBottom: '10px'}}>
                 <DialogContentText sx={{color: 'red'}}>{error}</DialogContentText>                   
             </Box>}
             {children}
         </DialogContent>
 
+        {submitTitle &&
         <DialogActions>
             <Button sx={{width: 'calc(100% - 30px)', margin: 'auto', marginBottom: '15px', textTransform: 'none'}}
                     type="submit" variant='contained'>{submitTitle}</Button>
-        </DialogActions>
+        </DialogActions>}
     </Dialog>;
 }
 

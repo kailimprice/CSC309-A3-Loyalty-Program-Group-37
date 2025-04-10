@@ -23,6 +23,7 @@ tfoot td {
 tfoot tr {
     text-align: left;
     transition: 0.1s;
+    cursor: default;
 }
 tfoot tr:hover {
     background-color: rgb(245, 245, 245);

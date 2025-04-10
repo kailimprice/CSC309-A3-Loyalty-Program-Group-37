@@ -74,3 +74,9 @@
 /* .tag-transfer:hover {    background-color: #763C7A; } */
 /* .tag-transfer:active {   background-color: #2F1431; } */
 .tag-transfer-text {     color: #F6CEF9; }
+
+
+.tag-automatic {     background-color: #5e7c30; }
+.tag-automatic-text {     color: #ebffca; }
+.tag-one-time {     background-color: #307c7c; }
+.tag-one-time-text {     color: #cafdff; }
