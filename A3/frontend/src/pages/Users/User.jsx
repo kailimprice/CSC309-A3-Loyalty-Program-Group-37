@@ -17,6 +17,7 @@ export default function User() {
     const { user, token, setUserDetails, viewAs } = useUserContext();
     const id = parseInt(useParams().id, 10);
 
+    const [utorid, setUtorid] = useState("");
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [birthday, setBirthday] = useState(null); 
@@ -50,6 +51,7 @@ export default function User() {
             }
             userDetails = await response.json();
 
+            setUtorid(userDetails.utorid || "");
             setName(userDetails.name || "");
             setEmail(userDetails.email || "");
             // need to use dayjs here for datepicker
@@ -63,7 +65,7 @@ export default function User() {
             console.log("User details:", userDetails);
 
 
-            if (id === user.id) {
+            if (ownProfile) {
                 // fetch from users/me
                 const [response, err] = await fetchServer(`users/me`, {
                 method: "GET",
@@ -78,6 +80,7 @@ export default function User() {
                 }
                 let profileDetails = await response.json();
 
+                setUtorid(profileDetails.utorid);
                 setName(profileDetails.name);
                 setEmail(profileDetails.email);
                 // need to use dayjs here for datepicker
@@ -95,7 +98,7 @@ export default function User() {
 
     const handleSubmit = async () => {
 
-      if (id === user.id) {
+      if (ownProfile) {
           let updateDetails = {};
           if (name) updateDetails.name = name;
           if (email) updateDetails.email = email;
@@ -148,7 +151,7 @@ export default function User() {
             return;
           }
 
-          if (id === user.id){
+          if (ownProfile){
             setUserDetails(updateDetails);
           }
 
@@ -168,8 +171,8 @@ export default function User() {
                 <Alert severity="error">{error}</Alert>
             </Grid>}
             
-            <NumberInput editable={false} field='ID' value={user.id} />
-            <TextInput editable={false} field='UTORid' value={user.utorid} />
+            <NumberInput editable={false} field='ID' value={id} />
+            <TextInput editable={false} field='UTORid' value={utorid} />
             <TextInput editable={ownProfile} field='Name' value={name} changeFunc={(e) => setName(e.target.value)} />
             <NumberInput editable={false} field='Points' value={user.points} />
 
