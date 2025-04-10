@@ -5,17 +5,14 @@
 import { TextField, Button, Grid, NativeSelect, Checkbox, Alert, Typography, Stack } from '@mui/material';
 import { useState, useEffect } from 'react'
 import { useUserContext } from '../../contexts/UserContext.jsx';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { fetchServer } from '../../utils/utils.jsx';
-import { useParams, useNavigate } from 'react-router-dom';
+import { fetchServer, hasPerms } from '../../utils/utils.jsx';
+import { useParams } from 'react-router-dom';
 import { FormControl } from '@mui/joy';
-import dayjs from 'dayjs';
+import { SpecificHeader, TextInput, DateInput, FileInput, NumberInput } from '../../components/Form/Form.jsx';
 
 export default function User() {
 
-    const { user, token, setUserDetails } = useUserContext();
+    const { user, token, setUserDetails, viewAs } = useUserContext();
 
     const id = parseInt(useParams().id, 10);
 
@@ -54,7 +51,7 @@ export default function User() {
           setName(userDetails.name || "");
           setEmail(userDetails.email || "");
           // need to use dayjs here for datepicker
-          setBirthday(userDetails.birthday ? dayjs(userDetails.birthday) : null);
+          setBirthday(userDetails.birthday ? userDetails.birthday : null);
           setAvatarUrl(userDetails.avatarUrl || "");
           // defaulting these to false, i noticed suspicious doesnt have a default
           setVerified(userDetails.verified || false);
@@ -82,7 +79,7 @@ export default function User() {
             setName(profileDetails.name);
             setEmail(profileDetails.email);
             // need to use dayjs here for datepicker
-            setBirthday(dayjs(userDetails.birthday));
+            setBirthday(userDetails.birthday);
 
             console.log("Profile details:", userDetails);
           }
@@ -157,94 +154,31 @@ export default function User() {
       }
     };
     
-    const navigate = useNavigate();
-    const header = <Stack direction='row'>
-        <Typography variant='body1' className='body-header' id='body-header-link' onClick={() => navigate('/users')}>
-            Users
-        </Typography>
-        <Typography variant='body2' className='body-header'>
-            /
-        </Typography>
-        <Typography variant='body1' className='body-header'>
-            {user.id == id ? 'Me' : id}
-        </Typography>
-    </Stack>
+    const ownProfile = user.id == id;
+
     // layout inspired by prev project https://github.com/emily-su-dev/Sinker/blob/main/src/app/components/InfoBox.tsx
     // grid setup inspired by https://mui.com/material-ui/react-grid/
     return <>
-        {header}
-          <Grid container spacing={0} padding={3} alignItems={'center'}>
+        <SpecificHeader display='Users' baseUrl='/users' id={ownProfile ? 'Me' : id} />
+        <Grid container spacing={0} alignItems={'center'}>
             {/* display error message if one*/}
-            {error && (
-                  <Grid size={12}>
-                      {/* alerts: https://mui.com/material-ui/react-alert/?srsltid=AfmBOoou_o4_8K8hszRKhrNwGHIQi0AiFRewwf3tT0chGeQsevtOFnp2 */}
-                      <Alert severity="error">{error}</Alert>
-                  </Grid>
-            )}
+            {error && 
+            <Grid size={12}>
+                {/* alerts: https://mui.com/material-ui/react-alert/?srsltid=AfmBOoou_o4_8K8hszRKhrNwGHIQi0AiFRewwf3tT0chGeQsevtOFnp2 */}
+                <Alert severity="error">{error}</Alert>
+            </Grid>}
 
             {/* if editing own profile */}
-            {id === user.id ? (
-                    <>
-                        {/* edit name */}
-                        <Grid size={{ xs: 5, sm: 5, md: 3 }}>
-                            <p>Name</p>
-                        </Grid>
-                        <Grid size={{ xs: 7, sm: 7, md: 9 }}>
-                            <TextField
-                                fullWidth
-                                variant="outlined"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                            />
-                        </Grid>
-
-                        {/* edit avatar */}
-                        <Grid size={{ xs: 5, sm: 5, md: 3 }}>
-                            <p>Avatar URL</p>
-                        </Grid>
-                        <Grid size={{ xs: 7, sm: 7, md: 9 }}>
-                            <TextField
-                                fullWidth
-                                variant="outlined"
-                                value={avatarUrl}
-                                onChange={(e) => setAvatarUrl(e.target.value)}
-                            />
-                        </Grid>
-
-                        {/* edit birthday */}
-                        <Grid size={{ xs: 5, sm: 5, md: 3 }}>
-                            <p>Birthday</p>
-                        </Grid>
-                        <Grid size={{ xs: 7, sm: 7, md: 9 }}>
-                            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                            <DatePicker
-                                value={birthday || null}
-                                onChange={(newValue) => setBirthday(newValue)}
-                                renderInput={(params) => <TextField {...params} />}
-                            />
-                            </LocalizationProvider>
-                        </Grid>
-                    </>
-                ): null}
-
-                 {/* to avoid duplicating the email edit box */}
-                 {(id === user.id) || (user.role === "manager" || user.role === "superuser") ? (
-                    <>
-                        {/* edit email */}
-                        <Grid size={{ xs: 5, sm: 5, md: 3 }}>
-                            <p>Email</p>
-                        </Grid>
-                        <Grid size={{ xs: 7, sm: 7, md: 9 }}>
-                            <TextField
-                                fullWidth
-                                variant="outlined"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                            />
-                        </Grid>
-                    </>
-                ): null}
-
+            
+            <NumberInput editable={false} field='ID' value={user.id} />
+            <TextInput editable={false} field='UTORid' value={user.utorid} />
+            <TextInput editable={ownProfile} field='Name' value={name} changeFunc={(e) => setName(e.target.value)} />
+            <FileInput editable={ownProfile} field='Profile Picture' value={avatarUrl} changeFunc={setAvatarUrl}/>
+            <DateInput editable={ownProfile} field='Birthday' value={birthday} changeFunc={setBirthday} />
+            <TextInput editable={ownProfile || hasPerms(viewAs, 'manager')}
+                        field='Email' value={email} changeFunc={(e) => setEmail(e.target.value)} />
+            <NumberInput editable={false} field='Points' value={user.points} />
+            
 
                 {/* if editing another user's profile as a manager or superuser */}
                 {(user.role === "manager" || user.role === "superuser") ? (
@@ -313,6 +247,6 @@ export default function User() {
                   </Grid>
                   </>
               )}
-          </Grid> 
+        </Grid> 
     </>
-  }
+}

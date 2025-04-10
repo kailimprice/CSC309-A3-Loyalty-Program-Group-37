@@ -13,7 +13,7 @@ import EditSharpIcon from '@mui/icons-material/EditSharp';
 import { useNavigate } from 'react-router-dom';
 import QRCode from 'react-qr-code';
 import { DialogGeneral, FilterBody } from '../../components/DialogGeneral/DialogGeneral.jsx';
-
+import { SpecificHeader } from '../../components/Form/Form.jsx';
 
 export default function Transaction() {
 
@@ -223,22 +223,10 @@ export default function Transaction() {
         <FilterBody fields={adjustmentFields} />
     </DialogGeneral>
 
-    const header = <Stack direction='row'>
-        <Typography variant='body1' className='body-header' id='body-header-link' onClick={() => navigate('/transactions')}>
-            Transactions
-        </Typography>
-        <Typography variant='body2' className='body-header'>
-            /
-        </Typography>
-        <Typography variant='body1' className='body-header'>
-            {id}
-        </Typography>
-    </Stack>;
-
     // layout inspired by prev project https://github.com/emily-su-dev/Sinker/blob/main/src/app/components/InfoBox.tsx
     // Grid setup inspired by https://mui.com/material-ui/react-Grid/
     return <>
-        {header}
+        <SpecificHeader display='Transactions' baseUrl='/transactions' id={id} />
         {DialogQR}
         {AdjustmentDialog}
         <div style={{ display: "flex", justifyContent: "space-between" }}>

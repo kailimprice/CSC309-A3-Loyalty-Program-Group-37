@@ -16,7 +16,7 @@ import ButtonTag from '../../components/Button/ButtonTag.jsx';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { useNavigate } from 'react-router-dom';
-
+import { SpecificHeader } from '../../components/Form/Form.jsx';
 
 export default function Event() {
 
@@ -337,21 +337,10 @@ export default function Event() {
         }
     };
 
-    const header = <Stack direction='row'>
-        <Typography variant='body1' className='body-header' id='body-header-link' onClick={() => navigate('/events')}>
-            Events
-        </Typography>
-        <Typography variant='body2' className='body-header'>
-            /
-        </Typography>
-        <Typography variant='body1' className='body-header'>
-            {id}
-        </Typography>
-    </Stack>;
     // layout inspired by prev project https://github.com/emily-su-dev/Sinker/blob/main/src/app/components/InfoBox.tsx
     // Grid setup inspired by https://mui.com/material-ui/react-Grid/
     return <>
-        {header}
+        <SpecificHeader display='Events' baseUrl='/events' id={id} />    
         <div style={{ display: "flex", justifyContent: "space-between" }}>
             {(permission && (user.role === "manager" || user.role === "superuser")) &&
                 <Button
