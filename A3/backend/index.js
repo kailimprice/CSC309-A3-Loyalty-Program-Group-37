@@ -727,34 +727,59 @@ app.get('/transactions', permLevel('manager'), async (req, res) => {
     const [query, e1] = queryAllow(variables, req, res);
     if (e1) return e1;
     
-    const {utorid, name, type, operator, relatedId, amount} = query;
+    let {utorid, name, type, suspicious, promotionId, operator, relatedId, amount} = query;
     const filter = {};
-    objectAddLax(['createdBy', 'suspicious', 'promotionId', 'type'], query, filter, res);
+    objectAddLax(['createdBy', 'type'], query, filter, res);
     if (type != 'purchase' && relatedId)    filter['relatedId'] = relatedId;
-    if (operator == 'lte')                  filter['amount'] = {lte: amount};
-    else if (operator == 'gte')             filter['amount'] = {gte: amount};
-
-    if (utorid && name) {
-        filter[AND] = [
-            {OR: [{infoPurchase: {user: {utorid: utorid}}},
-                {infoAdjustment: {user: {utorid: utorid}}},
-                {infoRedemption: {user: {utorid: utorid}}},
-                {infoEvent: {user: {utorid: utorid}}}]},
-            {OR: [{infoPurchase: {user: {name: name}}},
-                {infoAdjustment: {user: {name: name}}},
-                {infoRedemption: {user: {name: name}}},
-                {infoEvent: {user: {name: name}}}]}
-        ];
-    } else if (utorid) {
-        filter[OR] = [{infoPurchase: {user: {utorid: utorid}}},
+    
+    const ands = [];
+    if (amount)
+        amount = parseInt(amount, 10);
+    if (promotionId) {
+        promotionId = parseInt(promotionId, 10);
+        ands.push({OR: [
+            {infoPurchase: {promotionIds: {some: {id: promotionId}}}},
+            {infoAdjustment: {promotionIds: {some: {id: promotionId}}}}
+        ]});
+    }
+    if (suspicious) {
+        suspicious = suspicious == 'true' ? true : false;
+        ands.push({OR: [
+            {infoPurchase: {suspicious: suspicious}},
+            {infoAdjustment: {suspicious: suspicious}}
+        ]})
+    }
+    if (operator == 'lte') {
+        ands.push({OR: [
+            {infoPurchase: {spent: {lte: amount}}},
+            {infoAdjustment: {amount: {lte: amount}}},
+            {infoRedemption: {amount: {lte: amount}}},
+            {infoTransfer: {sent: {lte: amount}}},
+            {infoEvent: {awarded: {lte: amount}}}
+        ]});
+    } else if (operator == 'gte') {
+        ands.push({OR: [
+            {infoPurchase: {spent: {gte: amount}}},
+            {infoAdjustment: {amount: {gte: amount}}},
+            {infoRedemption: {amount: {gte: amount}}},
+            {infoTransfer: {sent: {gte: amount}}},
+            {infoEvent: {awarded: {gte: amount}}}
+        ]})
+    }
+    if (utorid) {
+        ands.push({OR: [{infoPurchase: {user: {utorid: utorid}}},
                     {infoAdjustment: {user: {utorid: utorid}}},
                     {infoRedemption: {user: {utorid: utorid}}},
-                    {infoEvent: {user: {utorid: utorid}}}];
-    } else if (name) {
-        filter[OR] = [{infoPurchase: {user: {name: name}}},
+                    {infoEvent: {user: {utorid: utorid}}}]});
+    }
+    if (name) {
+        ands.push({OR: [{infoPurchase: {user: {name: name}}},
                     {infoAdjustment: {user: {name: name}}},
                     {infoRedemption: {user: {name: name}}},
-                    {infoEvent: {user: {name: name}}}];
+                    {infoEvent: {user: {name: name}}}]});
+    }
+    if (ands) {
+        filter['AND'] = ands;
     }
 
     const include = {infoPurchase: {include: {promotionIds: true, user: {select: {utorid: true, name: true}}}},
@@ -875,17 +900,46 @@ app.get('/users/me/transactions', permLevel('regular'), async (req, res) => {
     const e2 = checkCondition(res, req.user.verified, 403, `user=${req.utorid} is not verified`);
     if (e2) return e2;
     
-    const {type, operator, relatedId, amount} = query;
+    let {type, operator, relatedId, promotionId, amount} = query;
     const filter = {OR: [{createdBy: req.utorid},
                         {infoPurchase: {user: {utorid: req.utorid}}},
                         {infoAdjustment: {user: {utorid: req.utorid}}},
                         {infoRedemption: {user: {utorid: req.utorid}}},
                         {infoEvent: {user: {utorid: req.utorid}}}
                     ]};
-    objectAddLax(['name', 'createdBy', 'suspicious', 'promotionId', 'type'], query, filter, res);
+    objectAddLax(['name', 'createdBy', 'type'], query, filter, res);
     if (type != 'purchase' && relatedId)    filter['relatedId'] = relatedId;
-    if (operator == 'lte')                  filter['amount'] = {lte: amount};
-    else if (operator == 'gte')             filter['amount'] = {gte: amount};
+    
+    const ands = [];
+    if (amount)
+        amount = parseInt(amount, 10);
+    if (promotionId) {
+        promotionId = parseInt(promotionId, 10);
+        ands.push({OR: [
+            {infoPurchase: {promotionIds: {some: {id: promotionId}}}},
+            {infoAdjustment: {promotionIds: {some: {id: promotionId}}}}
+        ]});
+    }
+    if (operator == 'lte') {
+        ands.push({OR: [
+            {infoPurchase: {spent: {lte: amount}}},
+            {infoAdjustment: {amount: {lte: amount}}},
+            {infoRedemption: {amount: {lte: amount}}},
+            {infoTransfer: {sent: {lte: amount}}},
+            {infoEvent: {awarded: {lte: amount}}}
+        ]});
+    } else if (operator == 'gte') {
+        ands.push({OR: [
+            {infoPurchase: {spent: {gte: amount}}},
+            {infoAdjustment: {amount: {gte: amount}}},
+            {infoRedemption: {amount: {gte: amount}}},
+            {infoTransfer: {sent: {gte: amount}}},
+            {infoEvent: {awarded: {gte: amount}}}
+        ]})
+    }
+    if (ands) {
+        filter['AND'] = ands;
+    }
 
     const include = {infoPurchase: {include: {promotionIds: true, user: {select: {utorid: true, name: true}}}},
                      infoAdjustment: {include: {promotionIds: true, user: {select: {utorid: true, name: true}}}},
@@ -933,6 +987,8 @@ app.get('/users/me/transactions', permLevel('regular'), async (req, res) => {
 Purchase transaction, adjustment transaction
 *******************************************************************************/
 async function checkApplyPromotions(promotionIds, utorid, res, spent) {
+    if (promotionIds.length == 0)
+        return spent;
     const now = new Date();
     const bonuses = [];
     for (let i = 0; i < promotionIds.length; i++) {
