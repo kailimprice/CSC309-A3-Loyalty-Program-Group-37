@@ -9,6 +9,7 @@
 //utorid, name, email
 //returns a reset token that user can use to reset password?
 
+import {Visibility, VisibilityOff} from '@mui/icons-material';
 import Typography from '@mui/joy/Typography';
 import landing_splash from "../../assets/landing_splash.jpg";
 import logo from "../../assets/logo.png";
@@ -17,11 +18,10 @@ import "../../components/Navbar/Navbar.css"
 import {useState} from "react";
 import {useNavigate} from "react-router-dom";
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import {Visibility, VisibilityOff} from '@mui/icons-material';
 import {Paper, Box, Button, TextField, Dialog, DialogActions, TextareaAutosize, AppBar, Toolbar,
         FormControl, IconButton, InputLabel, Input, InputAdornment, FormHelperText, Container,
         DialogContent, DialogContentText, DialogTitle, Tooltip, Avatar, Stack} from '@mui/material';
-import {fetchServer} from "../../utils/utils";
+import {fetchServer, validatePassword} from "../../utils/utils";
 import { useUserContext } from '../../contexts/UserContext';
 
 
@@ -79,22 +79,6 @@ function Copyable({children}) {
     </Paper>
 }
 
-function validatePassword(password) {
-    if (password == '')
-        return false;
-    if (password.length < 8 || password.length > 20)
-        return 'Password must be 8-20 characters long';
-    if (!/[a-z]/.test(password))
-        return 'Password must contain a lower-case letter';
-    if (!/[A-Z]/.test(password))
-        return 'Password must contain an upper-case letter';
-    if (!/\d/.test(password))
-        return 'Password must contain a digit';
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password))
-        return 'Password must contain a special character';
-    return false;
-}
-
 function InputPassword({id, name, label, errorChecking}) {
     const [password, setPassword] = useState('');
     const [visible, setVisible] = useState(false);
@@ -118,11 +102,6 @@ function InputPassword({id, name, label, errorChecking}) {
                     </InputAdornment>}/>
         {error && <FormHelperText error>{error}</FormHelperText>}
     </FormControl>
-    // Regular password box
-    // <TextField autoFocus required fullWidth margin="dense" variant="standard"
-    // id="password" name="password" label="Password" type="password"/>
-    // return <TextField autoFocus required fullWidth margin="dense" variant="standard"
-    //                 id={id} name={name} label={label} type="password"/>
 }
     
 
