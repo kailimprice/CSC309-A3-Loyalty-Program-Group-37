@@ -987,6 +987,8 @@ app.get('/users/me/transactions', permLevel('regular'), async (req, res) => {
 Purchase transaction, adjustment transaction
 *******************************************************************************/
 async function checkApplyPromotions(promotionIds, utorid, res, spent) {
+    if (promotionIds.length == 0)
+        return spent;
     const now = new Date();
     const bonuses = [];
     for (let i = 0; i < promotionIds.length; i++) {
