@@ -837,7 +837,6 @@ function sanitizeTransactions(results) {
             results[i].suspicious = infoAdjustment.suspicious;
             results[i].processedBy = null;
             results[i].transfer = null;
-            results[i].purchaser = null;
             results[i].type = [results[i].type, infoAdjustment.relatedId];
         } else if (infoEvent) {
             results[i].amount = infoEvent.awarded;
@@ -846,7 +845,6 @@ function sanitizeTransactions(results) {
             results[i].suspicious = null;
             results[i].processedBy = null;
             results[i].transfer = null;
-            results[i].purchaser = null;
             results[i].type = [results[i].type, infoEvent.relatedId];
         } else if (infoPurchase) {
             results[i].amount = infoPurchase.spent;
@@ -854,7 +852,6 @@ function sanitizeTransactions(results) {
             results[i].name = infoPurchase.user ? infoPurchase.user.name : null;
             results[i].suspicious = infoPurchase.suspicious;
             results[i].processedBy = null;
-            results[i].purchaser = infoPurchase.utorid;
             results[i].transfer = null;
         } else if (infoRedemption) {
             results[i].amount = infoRedemption.amount;
@@ -862,7 +859,6 @@ function sanitizeTransactions(results) {
             results[i].name = infoRedemption.user ? infoRedemption.user.name : null;
             results[i].suspicious = null;
             results[i].processedBy = infoRedemption.user ? infoRedemption.user.utorid : 'N/A';
-            results[i].purchaser = null;
             results[i].transfer = null;
         } else if (infoTransfer) {
             results[i].amount = infoTransfer.sent;
@@ -870,7 +866,6 @@ function sanitizeTransactions(results) {
             results[i].name = null;
             results[i].suspicious = null;
             results[i].processed = null;
-            results[i].purchaser = null;
             const t = infoTransfer.relatedUser.utorid == createdBy ? 'From: ' : 'Sent: ';
             results[i].transfer = `${t}${infoTransfer.relatedUser.utorid}`;
         }
@@ -989,8 +984,6 @@ app.get('/users/me/transactions', permLevel('regular'), async (req, res) => {
 Purchase transaction, adjustment transaction
 *******************************************************************************/
 async function checkApplyPromotions(promotionIds, utorid, res, spent) {
-    if (promotionIds.length == 0)
-        return spent;
     const now = new Date();
     const bonuses = [];
     for (let i = 0; i < promotionIds.length; i++) {
@@ -1014,6 +1007,8 @@ async function checkApplyPromotions(promotionIds, utorid, res, spent) {
         if (spent > minSpending)
             bonuses.push(Math.floor(spent * 100 * rate + points));
     }
+    if (bonuses.length == 0)
+        return [spent, false];
     return [bonuses.reduce((a, b) => a + b), false];
 }
 async function purchaseTransaction(req, res, data1) {
@@ -1031,6 +1026,8 @@ async function purchaseTransaction(req, res, data1) {
 
     data2['earned'] = Math.round(data2['spent'] * 4);
     data2['suspicious'] = req.user.suspicious;
+    if (!data2['suspicious'])
+        data2['suspicious'] = false;
 
     const {promotionIds} = data2; 
     if (promotionIds) {

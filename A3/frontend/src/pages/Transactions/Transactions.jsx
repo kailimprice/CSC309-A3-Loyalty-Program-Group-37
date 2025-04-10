@@ -39,7 +39,6 @@ export default function Transactions() {
         utorid: ['UTORid', 'string'],
         name: ['Name', 'string'],
         amount: ['Points', 'number'],
-        purchaser: ['Purchaser', 'string'],
         transfer: ['Transferee', 'string'],
         processedBy: ['Processor', 'string']
     };

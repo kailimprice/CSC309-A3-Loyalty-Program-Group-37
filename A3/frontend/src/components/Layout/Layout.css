@@ -47,3 +47,25 @@ section {
         width: 100%;
     }
 }
+
+#body-header-link {
+    cursor: pointer;
+    transition: 0.1s;
+    padding-inline: 0px 0px;
+    margin-inline: 0;
+    padding-right: 0.25em;
+}
+#body-header-link:hover {
+    color: rgb(188, 199, 212);
+}
+.body-header {
+    cursor: default;
+    font-size: 1em !important;
+    color: rgb(99, 107, 116);
+    padding-block: min(0.1em, 4px);
+    padding-inline: 0.25em;
+    margin-inline: -0.25em;
+    font-family: var(--joy-fontFamily-body, "Inter", var(--joy-fontFamily-fallback, -apple-system,
+                        BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif,
+                        "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol")) !important;
+}

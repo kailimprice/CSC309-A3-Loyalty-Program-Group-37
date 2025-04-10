@@ -2,17 +2,16 @@
 //View/edit: name, email, birthday, avatar
 //Functionality: ability to reset password
 
-import { TextField, Button, Grid, NativeSelect, Checkbox } from '@mui/material';
+import { TextField, Button, Grid, NativeSelect, Checkbox, Alert, Typography, Stack } from '@mui/material';
 import { useState, useEffect } from 'react'
 import { useUserContext } from '../../contexts/UserContext.jsx';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { fetchServer } from '../../utils/utils.jsx';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { FormControl } from '@mui/joy';
 import dayjs from 'dayjs';
-import { Alert } from '@mui/material'; 
 
 export default function User() {
 
@@ -158,11 +157,23 @@ export default function User() {
       }
     };
     
+    const navigate = useNavigate();
+    const header = <Stack direction='row'>
+        <Typography variant='body1' className='body-header' id='body-header-link' onClick={() => navigate('/users')}>
+            Users
+        </Typography>
+        <Typography variant='body2' className='body-header'>
+            /
+        </Typography>
+        <Typography variant='body1' className='body-header'>
+            {user.id == id ? 'Me' : id}
+        </Typography>
+    </Stack>
     // layout inspired by prev project https://github.com/emily-su-dev/Sinker/blob/main/src/app/components/InfoBox.tsx
     // grid setup inspired by https://mui.com/material-ui/react-grid/
     return <>
-          <h1>User {id}</h1>
-          <Grid container spacing={2} padding={3} alignItems={'center'}>
+        {header}
+          <Grid container spacing={0} padding={3} alignItems={'center'}>
             {/* display error message if one*/}
             {error && (
                   <Grid size={12}>

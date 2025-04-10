@@ -102,8 +102,7 @@ export default function Dashboard() {
     // inspired by https://mui.com/material-ui/react-timeline/?srsltid=AfmBOoq-7_v3wuE5l0W7FE6nrl43lddhGrCKH6yn1RvqNPgxwLGIh1gg#customization
     return <>
         {/* section header */}
-        <Typography variant='body1' sx={{fontSize: '1em', color: 'rgb(99, 107, 116)', paddingBlock: 'min(0.1em, 4px)', paddingInline: '0.25em', marginInline: '-0.25em',
-                                        fontFamily: 'var(--joy-fontFamily-body, "Inter", var(--joy-fontFamily-fallback, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"))'}}>
+        <Typography variant='body1' className='body-header'>
             Dashboard
         </Typography>
         

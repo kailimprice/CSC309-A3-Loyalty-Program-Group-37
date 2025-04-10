@@ -2,7 +2,7 @@
 //View/edit: name, email, birthday, avatar
 //Functionality: ability to reset password
 
-import { TextField, Button, Grid, Checkbox } from '@mui/material';
+import { TextField, Button, Grid, Checkbox, Typography, Stack } from '@mui/material';
 import { useState, useEffect } from 'react'
 import { useUserContext } from '../../contexts/UserContext.jsx';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -20,134 +20,216 @@ import { useNavigate } from 'react-router-dom';
 
 export default function Event() {
 
-const { user, token } = useUserContext();
-const navigate = useNavigate();
+    const { user, token } = useUserContext();
+    const navigate = useNavigate();
 
-const id = parseInt(useParams().id, 10);
+    const id = parseInt(useParams().id, 10);
 
-const [name, setName] = useState("");
-const [description, setDescription] = useState("");
-const [location, setLocation] = useState("");
-const [startTime, setStartTime] = useState(null);
-const [endTime, setEndTime] = useState(null);
-const [capacity, setCapacity] = useState(null);
-const [points, setPoints] = useState(null);
-const [published, setPublished] = useState(false);
-const [organizers, setOrganizers] = useState([]);
-const [guests, setGuests] = useState([]);
-// error tracking
-const [error, setError] = useState("");
-const [permission, setPermission] = useState(false);
-// store non-attendees for dropdown
-const [nonAttendees, setNonAttendees] = useState([]);
+    const [name, setName] = useState("");
+    const [description, setDescription] = useState("");
+    const [location, setLocation] = useState("");
+    const [startTime, setStartTime] = useState(null);
+    const [endTime, setEndTime] = useState(null);
+    const [capacity, setCapacity] = useState(null);
+    const [points, setPoints] = useState(null);
+    const [published, setPublished] = useState(false);
+    const [organizers, setOrganizers] = useState([]);
+    const [guests, setGuests] = useState([]);
+    // error tracking
+    const [error, setError] = useState("");
+    const [permission, setPermission] = useState(false);
+    // store non-attendees for dropdown
+    const [nonAttendees, setNonAttendees] = useState([]);
 
 
-// get event details for given id
-useEffect(() => {
-    // wrap in async to use await
-    const geteventDetails = async () => {
-    let eventDetails;
+    // get event details for given id
+    useEffect(() => {
+        // wrap in async to use await
+        const geteventDetails = async () => {
+        let eventDetails;
 
-    // fetch from events/:eventId
-    const [response, err] = await fetchServer(`events/${id}`, {
-        method: "GET",
-        headers: new Headers({
-            Authorization: `Bearer ${token}`
+        // fetch from events/:eventId
+        const [response, err] = await fetchServer(`events/${id}`, {
+            method: "GET",
+            headers: new Headers({
+                Authorization: `Bearer ${token}`
+            })
         })
-    })
-    if (err) {
-        setError(err);
-        console.error("Error fetching event details:", err);
-        return;
-    }
+        if (err) {
+            setError(err);
+            console.error("Error fetching event details:", err);
+            return;
+        }
 
-    eventDetails = await response.json();
+        eventDetails = await response.json();
 
-    // check if user has permission
-    const isOrganizer = eventDetails.organizers.some(
-        (organizer) => organizer.id === user.id
-    );
+        // check if user has permission
+        const isOrganizer = eventDetails.organizers.some(
+            (organizer) => organizer.id === user.id
+        );
 
-    const hasPermission = user.role === "manager" || user.role === "superuser" || isOrganizer;
+        const hasPermission = user.role === "manager" || user.role === "superuser" || isOrganizer;
 
-    if (!hasPermission) {
-        setError("You do not have permission to view this event.");
-        console.error("Permission denied: User cannot edit this event.");
-        return;
-    }
+        if (!hasPermission) {
+            setError("You do not have permission to view this event.");
+            console.error("Permission denied: User cannot edit this event.");
+            return;
+        }
 
-    setName(eventDetails.name || "");
-    setDescription(eventDetails.description || "");
-    setLocation(eventDetails.location || "");
-    setStartTime(eventDetails.startTime ? dayjs(eventDetails.startTime) : null);
-    setEndTime(eventDetails.endTime ? dayjs(eventDetails.endTime) : null);
-    setCapacity(eventDetails.capacity !== undefined ? eventDetails.capacity : null);
-    setPoints(eventDetails.pointsRemain !== undefined ? eventDetails.pointsRemain + eventDetails.pointsAwarded : null);
-    setPublished(eventDetails.published || false);
-    setOrganizers(eventDetails.organizers || []);
-    setGuests(eventDetails.guests || []);
+        setName(eventDetails.name || "");
+        setDescription(eventDetails.description || "");
+        setLocation(eventDetails.location || "");
+        setStartTime(eventDetails.startTime ? dayjs(eventDetails.startTime) : null);
+        setEndTime(eventDetails.endTime ? dayjs(eventDetails.endTime) : null);
+        setCapacity(eventDetails.capacity !== undefined ? eventDetails.capacity : null);
+        setPoints(eventDetails.pointsRemain !== undefined ? eventDetails.pointsRemain + eventDetails.pointsAwarded : null);
+        setPublished(eventDetails.published || false);
+        setOrganizers(eventDetails.organizers || []);
+        setGuests(eventDetails.guests || []);
 
-    console.log("Event details:", eventDetails);
+        console.log("Event details:", eventDetails);
 
-    setPermission(true);
+        setPermission(true);
+        };
+
+        // call func
+        geteventDetails();
+    }, [id])
+
+    // refetch non-attendees when guest or organizer changes
+    useEffect(() => {
+        // async to use await
+        const fetchNonAttendees = async () => {
+            const retNonAttendees = await getNonAttendees();
+            setNonAttendees(retNonAttendees); 
+        };
+
+        fetchNonAttendees();
+    }, [guests, organizers]); 
+
+    const getNonAttendees = async () => {
+        // fetch users
+        const [response, err] = await fetchServer("users", {
+            method: "GET",
+            headers: new Headers({
+                Authorization: `Bearer ${token}`,
+            }),
+        });
+
+        if (err) {
+            console.error("Error fetching users:", err);
+            return [];
+        }
+
+        const { results: users } = await response.json();
+
+        const guestIds = guests.map((guest) => guest.id);
+        const organizerIds = organizers.map((organizer) => organizer.id);
+
+        // filter out users who are already guests or organizers
+        let nonAttendees =  users.filter((user) => 
+            !guestIds.includes(user.id) && !organizerIds.includes(user.id)
+        );
+
+        // pull out only utorids
+        nonAttendees =  nonAttendees.map((user) => user.utorid);
+
+        console.log(nonAttendees);
+        return nonAttendees;
     };
 
-    // call func
-    geteventDetails();
-}, [id])
+    const handleSubmit = async () => {
+            let updateDetails = {};
+            if (name) updateDetails.name = name;
+            if (description) updateDetails.description = description;
+            if (location) updateDetails.location = location;
+            if (startTime) updateDetails.startTime = startTime.toISOString();
+            if (endTime) updateDetails.endTime = endTime.toISOString();
+            if (capacity !== undefined) updateDetails.capacity = capacity;
+            if (user.role === "manager" || user.role === "superuser") {
+                if (points !== undefined) updateDetails.points = points;
+                if (published !== undefined) updateDetails.published = published;
+            }
 
-// refetch non-attendees when guest or organizer changes
-useEffect(() => {
-    // async to use await
-    const fetchNonAttendees = async () => {
-        const retNonAttendees = await getNonAttendees();
-        setNonAttendees(retNonAttendees); 
+            console.log("Updated details being sent:", updateDetails);
+            // patch to events/:eventId
+            const [response, err] = await fetchServer(`events/${id}`, {
+                method: "PATCH",
+                headers: new Headers({
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                }),
+                body: JSON.stringify(updateDetails)
+            })
+            
+            if (err) {
+                setError(err);
+                console.error("Error updating event details::", err);
+                return;
+            } 
+
+            setError(""); 
     };
 
-    fetchNonAttendees();
-}, [guests, organizers]); 
+    const handleRemoveOrganizer = async (organizerId) => {
+        try {
+            const [response, err] = await fetchServer(`events/${id}/organizers/${organizerId}`, {
+                method: "DELETE",
+                headers: new Headers({
+                    Authorization: `Bearer ${token}`,
+                }),
+            });
 
-const getNonAttendees = async () => {
-    // fetch users
-    const [response, err] = await fetchServer("users", {
-        method: "GET",
-        headers: new Headers({
-            Authorization: `Bearer ${token}`,
-        }),
-    });
+            if (err) {
+                setError(err);
+                console.error(`Error removing organizer with ID ${organizerId}:`, err);
+                return;
+            }
 
-    if (err) {
-        console.error("Error fetching users:", err);
-        return [];
-    }
+            // remove organizer from state as well to trigger refresh
+            setOrganizers((prevOrganizers) =>
+                prevOrganizers.filter((organizer) => organizer.id !== organizerId)
+            );
 
-    const { results: users } = await response.json();
+            console.log(`Organizer with ID ${organizerId} removed successfully.`);
+        } catch (err) {
+            setError(err);
+            console.error("Error:", err);
+        }
+    };
 
-    const guestIds = guests.map((guest) => guest.id);
-    const organizerIds = organizers.map((organizer) => organizer.id);
+    const handleRemoveGuest = async (guestId) => {
+        try {
+            const [response, err] = await fetchServer(`events/${id}/guests/${guestId}`, {
+                method: "DELETE",
+                headers: new Headers({
+                    Authorization: `Bearer ${token}`,
+                }),
+            });
 
-    // filter out users who are already guests or organizers
-    let nonAttendees =  users.filter((user) => 
-        !guestIds.includes(user.id) && !organizerIds.includes(user.id)
-    );
+            if (err) {
+                setError(err);
+                console.error(`Error removing guest with ID ${guestId}:`, err);
+                return;
+            }
 
-    // pull out only utorids
-    nonAttendees =  nonAttendees.map((user) => user.utorid);
+            // remove organizer from state as well to trigger refresh
+            setOrganizers((prevGuests) =>
+                prevGuests.filter((guest) => guest.id !== guestId)
+            );
 
-    console.log(nonAttendees);
-    return nonAttendees;
-};
+            console.log(`Guest with ID ${guestId} removed successfully.`);
+        } catch (err) {
+            setError(err);
+            console.error("Error:", err);
+        }
+    };
 
-const handleSubmit = async () => {
+    const handleTogglePublished = async (published) => {
+        
         let updateDetails = {};
-        if (name) updateDetails.name = name;
-        if (description) updateDetails.description = description;
-        if (location) updateDetails.location = location;
-        if (startTime) updateDetails.startTime = startTime.toISOString();
-        if (endTime) updateDetails.endTime = endTime.toISOString();
-        if (capacity !== undefined) updateDetails.capacity = capacity;
+        // they will be because otherwise you cant see the published button
         if (user.role === "manager" || user.role === "superuser") {
-            if (points !== undefined) updateDetails.points = points;
             if (published !== undefined) updateDetails.published = published;
         }
 
@@ -164,184 +246,113 @@ const handleSubmit = async () => {
         
         if (err) {
             setError(err);
-            console.error("Error updating event details::", err);
+            console.error("Error publishing event:", err);
             return;
         } 
 
+        setPublished(published);
+
         setError(""); 
-};
+    };
 
-const handleRemoveOrganizer = async (organizerId) => {
-    try {
-        const [response, err] = await fetchServer(`events/${id}/organizers/${organizerId}`, {
-            method: "DELETE",
-            headers: new Headers({
-                Authorization: `Bearer ${token}`,
-            }),
-        });
+    const handleAddGuest = async (unusedId, utorid) => {
+        try {
+            console.log(nonAttendees);
+            // add utorid
+            const [response, err] = await fetchServer(`events/${id}/guests`, {
+                method: "POST",
+                headers: new Headers({
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                }),
+                body: JSON.stringify({ utorid }),
+            });
 
-        if (err) {
+            if (err) {
+                setError(err);
+                console.error(`Error adding guest with UTORID ${utorid}:`, err);
+                return;
+            }
+
+            const newGuest = await response.json();
+            // destructure and add new guest
+            setGuests((prevGuests) => [...prevGuests, newGuest]); 
+            console.log(`Guest with UTORID ${utorid} added successfully.`);
+        } catch (err) {
             setError(err);
-            console.error(`Error removing organizer with ID ${organizerId}:`, err);
-            return;
+            console.error("Error:", err);
         }
+    };
 
-        // remove organizer from state as well to trigger refresh
-        setOrganizers((prevOrganizers) =>
-            prevOrganizers.filter((organizer) => organizer.id !== organizerId)
-        );
+    const handleAddOrganizer = async (unusedId, utorid) => {
+        try {
+            console.log(nonAttendees);
+            // add utorid
+            const [response, err] = await fetchServer(`events/${id}/organizers`, {
+                method: "POST",
+                headers: new Headers({
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                }),
+                body: JSON.stringify({ utorid }),
+            });
 
-        console.log(`Organizer with ID ${organizerId} removed successfully.`);
-    } catch (err) {
-        setError(err);
-        console.error("Error:", err);
-    }
-};
+            if (err) {
+                setError(err);
+                console.error(`Error adding organizer with UTORID ${utorid}:`, err);
+                return;
+            }
 
-const handleRemoveGuest = async (guestId) => {
-    try {
-        const [response, err] = await fetchServer(`events/${id}/guests/${guestId}`, {
-            method: "DELETE",
-            headers: new Headers({
-                Authorization: `Bearer ${token}`,
-            }),
-        });
-
-        if (err) {
+            const newOrganizer = await response.json();
+            // destructure and add new guest
+            setOrganizers((prevOrganizers) => [...prevOrganizers, newOrganizer]); 
+            console.log(`Organizer with UTORID ${utorid} added successfully.`);
+        } catch (err) {
             setError(err);
-            console.error(`Error removing guest with ID ${guestId}:`, err);
-            return;
+            console.error("Error:", err);
         }
+    };
 
-        // remove organizer from state as well to trigger refresh
-        setOrganizers((prevGuests) =>
-            prevGuests.filter((guest) => guest.id !== guestId)
-        );
 
-        console.log(`Guest with ID ${guestId} removed successfully.`);
-    } catch (err) {
-        setError(err);
-        console.error("Error:", err);
-    }
-};
+    const handleDelete = async () => {
+        try {
+            const [response, err] = await fetchServer(`events/${id}`, {
+                method: "DELETE",
+                headers: new Headers({
+                    Authorization: `Bearer ${token}`,
+                }),
+            });
 
-const handleTogglePublished = async (published) => {
-    
-    let updateDetails = {};
-    // they will be because otherwise you cant see the published button
-    if (user.role === "manager" || user.role === "superuser") {
-        if (published !== undefined) updateDetails.published = published;
-    }
+            if (err) {
+                setError(err);
+                console.error(`Error deleting event`, err);
+                return;
+            }
 
-    console.log("Updated details being sent:", updateDetails);
-    // patch to events/:eventId
-    const [response, err] = await fetchServer(`events/${id}`, {
-        method: "PATCH",
-        headers: new Headers({
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-        }),
-        body: JSON.stringify(updateDetails)
-    })
-    
-    if (err) {
-        setError(err);
-        console.error("Error publishing event:", err);
-        return;
-    } 
-
-    setPublished(published);
-
-    setError(""); 
-};
-
-const handleAddGuest = async (unusedId, utorid) => {
-    try {
-        console.log(nonAttendees);
-        // add utorid
-        const [response, err] = await fetchServer(`events/${id}/guests`, {
-            method: "POST",
-            headers: new Headers({
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-            }),
-            body: JSON.stringify({ utorid }),
-        });
-
-        if (err) {
+            console.log(`Event deleted successfully.`);
+            navigate('/events');
+        } catch (err) {
             setError(err);
-            console.error(`Error adding guest with UTORID ${utorid}:`, err);
-            return;
+            console.error("Error:", err);
         }
+    };
 
-        const newGuest = await response.json();
-        // destructure and add new guest
-        setGuests((prevGuests) => [...prevGuests, newGuest]); 
-        console.log(`Guest with UTORID ${utorid} added successfully.`);
-    } catch (err) {
-        setError(err);
-        console.error("Error:", err);
-    }
-};
-
-const handleAddOrganizer = async (unusedId, utorid) => {
-    try {
-        console.log(nonAttendees);
-        // add utorid
-        const [response, err] = await fetchServer(`events/${id}/organizers`, {
-            method: "POST",
-            headers: new Headers({
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-            }),
-            body: JSON.stringify({ utorid }),
-        });
-
-        if (err) {
-            setError(err);
-            console.error(`Error adding organizer with UTORID ${utorid}:`, err);
-            return;
-        }
-
-        const newOrganizer = await response.json();
-        // destructure and add new guest
-        setOrganizers((prevOrganizers) => [...prevOrganizers, newOrganizer]); 
-        console.log(`Organizer with UTORID ${utorid} added successfully.`);
-    } catch (err) {
-        setError(err);
-        console.error("Error:", err);
-    }
-};
-
-
-const handleDelete = async () => {
-    try {
-        const [response, err] = await fetchServer(`events/${id}`, {
-            method: "DELETE",
-            headers: new Headers({
-                Authorization: `Bearer ${token}`,
-            }),
-        });
-
-        if (err) {
-            setError(err);
-            console.error(`Error deleting event`, err);
-            return;
-        }
-
-        console.log(`Event deleted successfully.`);
-        navigate('/events');
-    } catch (err) {
-        setError(err);
-        console.error("Error:", err);
-    }
-};
-
-// layout inspired by prev project https://github.com/emily-su-dev/Sinker/blob/main/src/app/components/InfoBox.tsx
-// Grid setup inspired by https://mui.com/material-ui/react-Grid/
-return <>
+    const header = <Stack direction='row'>
+        <Typography variant='body1' className='body-header' id='body-header-link' onClick={() => navigate('/events')}>
+            Events
+        </Typography>
+        <Typography variant='body2' className='body-header'>
+            /
+        </Typography>
+        <Typography variant='body1' className='body-header'>
+            {id}
+        </Typography>
+    </Stack>;
+    // layout inspired by prev project https://github.com/emily-su-dev/Sinker/blob/main/src/app/components/InfoBox.tsx
+    // Grid setup inspired by https://mui.com/material-ui/react-Grid/
+    return <>
+        {header}
         <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <h1>Event {id}</h1>
             {(permission && (user.role === "manager" || user.role === "superuser")) &&
                 <Button
                     variant="contained"

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { useUserContext } from '../../contexts/UserContext.jsx';
 import { fetchServer } from '../../utils/utils.jsx';
 import { useParams } from 'react-router-dom';
-import { Alert } from '@mui/material'; 
+import { Alert, Typography, Stack } from '@mui/material'; 
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import ErrorIcon from '@mui/icons-material/Error';
 import VerifiedOutlinedIcon from '@mui/icons-material/VerifiedOutlined';
@@ -17,219 +17,231 @@ import { DialogGeneral, FilterBody } from '../../components/DialogGeneral/Dialog
 
 export default function Transaction() {
 
-const { user, token } = useUserContext();
+    const { user, token } = useUserContext();
 
-const id = parseInt(useParams().id, 10);
-const navigate = useNavigate();
+    const id = parseInt(useParams().id, 10);
+    const navigate = useNavigate();
 
-const [utorid, setUtorid] = useState(""); 
-const [type, setType] = useState(""); 
-const [spent, setSpent] = useState(0); 
-const [amount, setAmount] = useState(0); 
-const [suspicious, setSuspicious] = useState(false); 
-const [processed, setProcessed] = useState(false); 
-const [remark, setRemark] = useState(""); 
-const [createdBy, setCreatedBy] = useState(""); 
-const [relatedId, setRelatedId] = useState(""); 
+    const [utorid, setUtorid] = useState(""); 
+    const [type, setType] = useState(""); 
+    const [spent, setSpent] = useState(0); 
+    const [amount, setAmount] = useState(0); 
+    const [suspicious, setSuspicious] = useState(false); 
+    const [processed, setProcessed] = useState(false); 
+    const [remark, setRemark] = useState(""); 
+    const [createdBy, setCreatedBy] = useState(""); 
+    const [relatedId, setRelatedId] = useState(""); 
 
-// error tracking
-const [error, setError] = useState("");
-const [permission, setPermission] = useState(false);
+    // error tracking
+    const [error, setError] = useState("");
+    const [permission, setPermission] = useState(false);
 
-// QR code display
-const [qrOpen, setQrOpen] = useState(false);
-const closeQr = () => setQrOpen(false);
-const DialogQR = <Dialog open={qrOpen} onClose={closeQr} className='dialog-qr'>
-    <Box sx={{padding: '45px'}}>
-        <QRCode value={{id: user.id, transaction: id}} size='large' />
-    </Box>
-</Dialog>;
+    // QR code display
+    const [qrOpen, setQrOpen] = useState(false);
+    const closeQr = () => setQrOpen(false);
+    const DialogQR = <Dialog open={qrOpen} onClose={closeQr} className='dialog-qr'>
+        <Box sx={{padding: '45px'}}>
+            <QRCode value={{id: user.id, transaction: id}} size='large' />
+        </Box>
+    </Dialog>;
 
 
-// adjustment dialog display
-const [adjustmentDialogOpen, setAdjustmentDialogOpen] = useState(false);
-const adjustmentFields = {
-    amount: ['Amount', 'number', true], 
-    remark: ['Remark', 'text'], 
-    promotionIds: ['Promotion IDs', 'ids'],
-};
-
-// get event details for given id
-useEffect(() => {
-    // wrap in async to use await
-    const getTransactionDetails = async () => {
-        let transactionDetails;
-
-        // fetch from transactions/:transactionId
-        const [response, err] = await fetchServer(`transactions/${id}`, {
-            method: "GET",
-            headers: new Headers({
-                Authorization: `Bearer ${token}`
-            })
-        })
-        if (err) {
-            setError("You do not have permission to view this transaction.");
-            console.error("Error fetching transaction details:", err);
-            return;
-        }
-
-        transactionDetails = await response.json();
-
-        // set permision for viewing this transaction
-        // in api a2 doesnt specify that createdBy or utorid can view
-        const hasPermission = user.role === "manager" || user.role === "superuser";
-
-        if (!hasPermission) {
-            setError("You do not have permission to view this transaction.");
-            console.error("Permission denied: User cannot edit this transaction.");
-            return;
-        }
-
-        setUtorid(transactionDetails.utorid || "");
-        setType(transactionDetails.type || "");
-        setSpent(transactionDetails.spent !== undefined ? transactionDetails.spent : 0);
-        setAmount(transactionDetails.amount !== undefined ? transactionDetails.amount : 0);
-        setSuspicious(transactionDetails.suspicious || false);
-        setProcessed(transactionDetails.processed || false);
-        setRemark(transactionDetails.remark || "");
-        setCreatedBy(transactionDetails.createdBy || "");
-        setRelatedId(transactionDetails.relatedId || "");
-
-        console.log("Transaction details:", transactionDetails);
-
-        setPermission(true);
+    // adjustment dialog display
+    const [adjustmentDialogOpen, setAdjustmentDialogOpen] = useState(false);
+    const adjustmentFields = {
+        amount: ['Amount', 'number', true], 
+        remark: ['Remark', 'text'], 
+        promotionIds: ['Promotion IDs', 'ids'],
     };
 
-    // call func
-    getTransactionDetails();
-}, [id])
+    // get event details for given id
+    useEffect(() => {
+        // wrap in async to use await
+        const getTransactionDetails = async () => {
+            let transactionDetails;
 
+            // fetch from transactions/:transactionId
+            const [response, err] = await fetchServer(`transactions/${id}`, {
+                method: "GET",
+                headers: new Headers({
+                    Authorization: `Bearer ${token}`
+                })
+            })
+            if (err) {
+                setError("You do not have permission to view this transaction.");
+                console.error("Error fetching transaction details:", err);
+                return;
+            }
 
-const handleToggleSuspicious = async (suspicious) => {
-    
-    let updateDetails = {};
-    // they will be because otherwise you cant see the published button
-    if (user.role === "manager" || user.role === "superuser") {
-        if (suspicious !== undefined) updateDetails.suspicious = suspicious;
-    }
+            transactionDetails = await response.json();
 
-    console.log("Updated details being sent:", updateDetails);
-    // patch to events/:eventId
-    const [response, err] = await fetchServer(`transactions/${id}/suspicious`, {
-        method: "PATCH",
-        headers: new Headers({
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-        }),
-        body: JSON.stringify(updateDetails)
-    })
-    
-    if (err) {
-        setError(err);
-        console.error("Error marking transaction suspicious:", err);
-        return;
-    } 
+            // set permision for viewing this transaction
+            // in api a2 doesnt specify that createdBy or utorid can view
+            const hasPermission = user.role === "manager" || user.role === "superuser";
 
-    setSuspicious(suspicious);
+            if (!hasPermission) {
+                setError("You do not have permission to view this transaction.");
+                console.error("Permission denied: User cannot edit this transaction.");
+                return;
+            }
 
-    setError(""); 
-};
+            setUtorid(transactionDetails.utorid || "");
+            setType(transactionDetails.type || "");
+            setSpent(transactionDetails.spent !== undefined ? transactionDetails.spent : 0);
+            setAmount(transactionDetails.amount !== undefined ? transactionDetails.amount : 0);
+            setSuspicious(transactionDetails.suspicious || false);
+            setProcessed(transactionDetails.processed || false);
+            setRemark(transactionDetails.remark || "");
+            setCreatedBy(transactionDetails.createdBy || "");
+            setRelatedId(transactionDetails.relatedId || "");
 
+            console.log("Transaction details:", transactionDetails);
 
-const handleToggleProcessed = async (processed) => {
-    
-    let updateDetails = {};
-    // they will be because otherwise you cant see the published button
-    if (user.role === "manager" || user.role === "superuser") {
-        if (processed !== undefined) updateDetails.processed = processed;
-    }
-
-    console.log("Updated details being sent:", updateDetails);
-    // patch to events/:eventId
-    const [response, err] = await fetchServer(`transactions/${id}/processed`, {
-        method: "PATCH",
-        headers: new Headers({
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-        }),
-        body: JSON.stringify(updateDetails)
-    })
-    
-    if (err) {
-        setError(err);
-        console.error("Error marking transaction processed:", err);
-        return;
-    } 
-
-    setProcessed(processed);
-
-    setError(""); 
-};
-
-const handleQRCode = () => {
-    setQrOpen(true); 
-};
-
-const handleCreateAdjustment = async (formData) => {
-    try {
-        // preset data for utorid, type, and transactions 
-        const adjustmentDetails = {
-            ...formData,
-            amount: parseInt(formData.amount, 10),
-            relatedId: id, 
-            utorid: utorid,
-            type: "adjustment",
+            setPermission(true);
         };
 
-        // from sidebar
-        if ('promotionIds' in adjustmentDetails) {
-            adjustmentDetails['promotionIds'] = adjustmentDetails['promotionIds']
-                                    .replace(/\s+/g, '')
-                                    .split(',')
-                                    .map(x => parseInt(x, 10))
-                                    .filter(x => !isNaN(x));
+        // call func
+        getTransactionDetails();
+    }, [id])
+
+
+    const handleToggleSuspicious = async (suspicious) => {
+        
+        let updateDetails = {};
+        // they will be because otherwise you cant see the published button
+        if (user.role === "manager" || user.role === "superuser") {
+            if (suspicious !== undefined) updateDetails.suspicious = suspicious;
         }
 
-        const [response, err] = await fetchServer(`transactions`, {
-            method: "POST",
+        console.log("Updated details being sent:", updateDetails);
+        // patch to events/:eventId
+        const [response, err] = await fetchServer(`transactions/${id}/suspicious`, {
+            method: "PATCH",
             headers: new Headers({
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${token}`
             }),
-            body: JSON.stringify(adjustmentDetails),
-        });
-
+            body: JSON.stringify(updateDetails)
+        })
+        
         if (err) {
-            console.error("Error creating adjustment:", err);
-            return `Error: ${err.message}`;
+            setError(err);
+            console.error("Error marking transaction suspicious:", err);
+            return;
+        } 
+
+        setSuspicious(suspicious);
+
+        setError(""); 
+    };
+
+
+    const handleToggleProcessed = async (processed) => {
+        
+        let updateDetails = {};
+        // they will be because otherwise you cant see the published button
+        if (user.role === "manager" || user.role === "superuser") {
+            if (processed !== undefined) updateDetails.processed = processed;
         }
 
-        console.log("Adjustment created successfully:", await response.json());
-        return;
-    } catch (err) {
-        console.error("Error:", err);
-        return "Failed to create adjustment.";
-    }
-};
+        console.log("Updated details being sent:", updateDetails);
+        // patch to events/:eventId
+        const [response, err] = await fetchServer(`transactions/${id}/processed`, {
+            method: "PATCH",
+            headers: new Headers({
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
+            }),
+            body: JSON.stringify(updateDetails)
+        })
+        
+        if (err) {
+            setError(err);
+            console.error("Error marking transaction processed:", err);
+            return;
+        } 
 
-const AdjustmentDialog = <DialogGeneral
-        title="Create Adjustment"
-        submitTitle="Submit"
-        open={adjustmentDialogOpen}
-        setOpen={setAdjustmentDialogOpen}
-        submitFunc={handleCreateAdjustment}
-        dialogStyle={{ width: "450px" }}
-    >
-    <FilterBody fields={adjustmentFields} />
-</DialogGeneral>
+        setProcessed(processed);
 
-// layout inspired by prev project https://github.com/emily-su-dev/Sinker/blob/main/src/app/components/InfoBox.tsx
-// Grid setup inspired by https://mui.com/material-ui/react-Grid/
-return <>
+        setError(""); 
+    };
+
+    const handleQRCode = () => {
+        setQrOpen(true); 
+    };
+
+    const handleCreateAdjustment = async (formData) => {
+        try {
+            // preset data for utorid, type, and transactions 
+            const adjustmentDetails = {
+                ...formData,
+                amount: parseInt(formData.amount, 10),
+                relatedId: id, 
+                utorid: utorid,
+                type: "adjustment",
+            };
+
+            // from sidebar
+            if ('promotionIds' in adjustmentDetails) {
+                adjustmentDetails['promotionIds'] = adjustmentDetails['promotionIds']
+                                        .replace(/\s+/g, '')
+                                        .split(',')
+                                        .map(x => parseInt(x, 10))
+                                        .filter(x => !isNaN(x));
+            }
+
+            const [response, err] = await fetchServer(`transactions`, {
+                method: "POST",
+                headers: new Headers({
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                }),
+                body: JSON.stringify(adjustmentDetails),
+            });
+
+            if (err) {
+                console.error("Error creating adjustment:", err);
+                return `Error: ${err.message}`;
+            }
+
+            console.log("Adjustment created successfully:", await response.json());
+            return;
+        } catch (err) {
+            console.error("Error:", err);
+            return "Failed to create adjustment.";
+        }
+    };
+
+    const AdjustmentDialog = <DialogGeneral
+            title="Create Adjustment"
+            submitTitle="Submit"
+            open={adjustmentDialogOpen}
+            setOpen={setAdjustmentDialogOpen}
+            submitFunc={handleCreateAdjustment}
+            dialogStyle={{ width: "450px" }}
+        >
+        <FilterBody fields={adjustmentFields} />
+    </DialogGeneral>
+
+    const header = <Stack direction='row'>
+        <Typography variant='body1' className='body-header' id='body-header-link' onClick={() => navigate('/transactions')}>
+            Transactions
+        </Typography>
+        <Typography variant='body2' className='body-header'>
+            /
+        </Typography>
+        <Typography variant='body1' className='body-header'>
+            {id}
+        </Typography>
+    </Stack>;
+
+    // layout inspired by prev project https://github.com/emily-su-dev/Sinker/blob/main/src/app/components/InfoBox.tsx
+    // Grid setup inspired by https://mui.com/material-ui/react-Grid/
+    return <>
+        {header}
         {DialogQR}
         {AdjustmentDialog}
         <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <h1>Transaction {id}</h1>
             <div style={{ display: "flex", gap: "1rem" }}>
                 {(permission && (user.role === "cashier" || user.role === "manager" || user.role === "superuser")) &&
                     <Button
