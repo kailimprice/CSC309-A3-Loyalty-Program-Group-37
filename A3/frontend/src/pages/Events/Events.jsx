@@ -21,7 +21,7 @@ export default function Events() {
     const [data, setData] = useState([]);
     const [page, setPage] = useState(0);
     const [numPages, setNumPages] = useState(0);
-    const {viewAs, updateDisplay} = useUserContext();
+    const {user, viewAs, updateDisplay} = useUserContext();
     const [searchParams, setSearchParams] = useSearchParams();
     const token = localStorage.getItem('token');
     const location = useLocation();
@@ -29,12 +29,12 @@ export default function Events() {
     // Fetch all events
     async function getEvents(token) {
         let params = location.search;
-        console.log(params);
+        if (viewAs != user.role)
+            params = `${params}${params.length == 0 ? '?' : '&'}viewAsRole=${viewAs}`;
         let [response, error] = await fetchServer(`events${params}`, {
             method: 'GET',
             headers: new Headers({'Authorization': `Bearer ${token}`})
         });
-        // json['viewAsRole'] = viewAs;
         if (error) {
             setPage(0);
             setNumPages(0);
@@ -42,7 +42,6 @@ export default function Events() {
             return console.log(error);
         }
         response = await response.json();
-        console.log(response);
         const {results, count} = response;
         for (let i = 0; i < results.length; i++) {
             results[i].numGuests = results[i].guests.length;

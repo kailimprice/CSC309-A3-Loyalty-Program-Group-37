@@ -110,6 +110,8 @@ function permLevel(levelNeeded) {
             if (!hasPerms(role, levelNeeded))
                 return res.status(403).json({'error': `bad viewing permission level ${role}`});
             req.user.role = role;
+            delete req.body['viewAsRole'];
+            delete req.query['viewAsRole'];
             return next();
         }
 
