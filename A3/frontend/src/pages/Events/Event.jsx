@@ -384,6 +384,43 @@ export default function Event() {
         }
     }
 
+    async function handleRSVP() {
+        try {
+            let response, error;
+            if (currEvent.userIsGuest) {
+                [response, error] = await fetchServer(`events/${id}/guests/me`, {
+                    method: 'DELETE',
+                    headers: new Headers({
+                        Authorization: `Bearer ${token}`,
+                    })
+                })
+                setCurrEvent(prevEvent => ({
+                    ...prevEvent,
+                    userIsGuest: false,
+                    numGuests: (prevEvent.numGuests || 0) - 1
+                }))
+            } else {
+                [response, error] = await fetchServer(`events/${id}/guests/me`, {
+                    method: 'POST',
+                    headers: new Headers({
+                        Authorization: `Bearer ${token}`,
+                    }),
+                })
+                setCurrEvent(prevEvent => ({
+                    ...prevEvent,
+                    userIsGuest: true,
+                    numGuests: (prevEvent.numGuests || 0) + 1
+                }))
+            }
+            if (error) {
+                setError(error);
+                return
+            } 
+        } catch (error) {
+            setError(error)
+        }
+    }
+
     // layout inspired by prev project https://github.com/emily-su-dev/Sinker/blob/main/src/app/components/InfoBox.tsx
     // Grid setup inspired by https://mui.com/material-ui/react-Grid/
     return <>
@@ -429,9 +466,9 @@ export default function Event() {
             </>
             :
             currEvent.userIsGuest ?
-            <ButtonInput title='Leave Event' variant='contained' click={() => {return}} icon={<RemoveCircleOutlineIcon />}/>
+            <ButtonInput title='Leave Event' variant='contained' click={handleRSVP} icon={<RemoveCircleOutlineIcon />}/>
             :
-            <ButtonInput title='Join Event' variant='contained' click={() => {return}} icon={<AddCircleOutlineIcon />}/>}
+            <ButtonInput title='Join Event' variant='contained' click={handleRSVP} icon={<AddCircleOutlineIcon />}/>}
         </ButtonInputRow>
         {(hasPermission && openAwardTable) && 
         <>
