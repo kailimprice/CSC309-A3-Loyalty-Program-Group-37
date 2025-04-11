@@ -544,8 +544,6 @@ async function seed() {
           id: transactionId,
           amount: redemptionAmount,
           utorid,
-          // cashier
-          relatedId: createdUsers[0].id,
         },
       });
 

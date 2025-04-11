@@ -1,7 +1,7 @@
 import { Button, Grid, Dialog, Box } from '@mui/material';
 import { useState, useEffect } from 'react'
 import { useUserContext } from '../../contexts/UserContext.jsx';
-import { fetchServer } from '../../utils/utils.jsx';
+import { fetchServer, hasPerms } from '../../utils/utils.jsx';
 import { useParams } from 'react-router-dom';
 import { Alert } from '@mui/material'; 
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
@@ -18,7 +18,7 @@ import { SpecificHeader, TextInput, NumberInput,
 
 export default function Transaction() {
 
-    const { user, token } = useUserContext();
+    const { user, token, viewAs } = useUserContext();
 
     const id = parseInt(useParams().id, 10);
     const navigate = useNavigate();
@@ -27,9 +27,13 @@ export default function Transaction() {
 
     // error tracking
     const [error, setError] = useState("");
-    const [hasPermission, setHasPermission] = useState(false);
+
+    // different permission for a manager/superuser, owner, and cashier
+    const isManager = hasPerms(viewAs, 'manager');
+    const hasPermission = isManager;
     const [isOwner, setIsOwner] = useState(false);
-    const [canProcess, setCanProcess] = useState(false);
+    const isCashier = hasPerms(viewAs, 'cashier');
+    const canProcess = isCashier && currTransaction.type === "redemption";
 
     // QR code display
     const [qrOpen, setQrOpen] = useState(false);
@@ -49,66 +53,56 @@ export default function Transaction() {
         promotionIds: ['Promotion IDs', 'ids'],
     };
 
-    // get event details for given id
-    useEffect(() => {
-        // wrap in async to use await
-        const getTransactionDetails = async () => {
-            let transactionDetails;
+    async function getTransactionDetails() {
+        let transactionDetails;
 
-            // fetch from transactions/:transactionId
-            const [response1, err1] = await fetchServer(`transactions/${id}`, {
+        // fetch from transactions/:transactionId
+        const [response1, err1] = await fetchServer(`transactions/${id}`, {
+            method: "GET",
+            headers: new Headers({
+                Authorization: `Bearer ${token}`
+            })
+        })
+
+        let err2;
+        // they dont have clearance, need to search users personal transactions
+        if (err1) {
+            let [response2, err2] = await fetchServer(`users/me/transactions/`, {
                 method: "GET",
                 headers: new Headers({
                     Authorization: `Bearer ${token}`
                 })
             })
 
-            let err2;
-            // they dont have clearance, need to search users personal transactions
-            if (err1) {
-                let [response2, err2] = await fetchServer(`users/me/transactions/`, {
-                    method: "GET",
-                    headers: new Headers({
-                        Authorization: `Bearer ${token}`
-                    })
-                })
-
-                if (!err2) {
-                    const { results: transactions } = await response2.json();
-                    // get matching transaction if exists
-                    transactionDetails = transactions.find((transaction) => transaction.id === id); 
-                    if (transactionDetails) {
-                        setIsOwner(true);
-                        setCurrTransaction(() => ({
-                            ...transactionDetails,
-                            utorid: user.utorid,
-                        })); 
-                    } 
-                }
-            // no error so set transaction
-            } else {
-                transactionDetails = await response1.json();
-                setCurrTransaction(transactionDetails);
+            if (!err2) {
+                const { results: transactions } = await response2.json();
+                // get matching transaction if exists
+                transactionDetails = transactions.find((transaction) => transaction.id === id); 
+                if (transactionDetails) {
+                    setIsOwner(true);
+                    setCurrTransaction(() => ({
+                        ...transactionDetails,
+                        utorid: user.utorid,
+                    })); 
+                } 
             }
-            
-            if (err1 && err2) {
-                setError("You do not have permission to view this transaction.");
-                console.error("Error fetching transaction details:", err2);
-                return;
-            }
+        // no error so set transaction
+        } else {
+            transactionDetails = await response1.json();
+            setCurrTransaction(transactionDetails);
+        }
+        
+        if (err1 && err2) {
+            setError("You do not have permission to view this transaction.");
+            console.error("Error fetching transaction details:", err2);
+            return;
+        }
 
-            // set permision for viewing this transaction
-            // in api a2 doesnt specify that createdBy or utorid can view
-            const permissionGranted = user.role === "manager" || user.role === "superuser";
-            setHasPermission(permissionGranted);
+        console.log("Transaction details:", transactionDetails);
+    };
 
-            const processGranted = (user.role === "cashier" && transactionDetails.type === "redemption");
-            setCanProcess(processGranted);
-
-            console.log("Transaction details:", transactionDetails);
-        };
-
-        // call func
+    // get event details for given id
+    useEffect(() => {
         getTransactionDetails();
     }, [id])
 
@@ -137,6 +131,7 @@ export default function Transaction() {
         }));
 
         setError(""); 
+        getTransactionDetails();
     };
 
 
@@ -163,6 +158,7 @@ export default function Transaction() {
         }));
 
         setError(""); 
+        getTransactionDetails();
     };
 
     const handleQRCode = () => {
@@ -202,7 +198,8 @@ export default function Transaction() {
                 console.error("Error creating adjustment:", err);
                 return `Error: ${err.message}`;
             }
-
+            
+            getTransactionDetails();
             console.log("Adjustment created successfully:", await response.json());
             return;
         } catch (err) {
@@ -264,13 +261,14 @@ export default function Transaction() {
                 {((hasPermission || canProcess) && currTransaction.type === "redemption") && 
                 <>
                     <Button variant='outlined' color="primary"
-                        startIcon={currTransaction.processed ? <VerifiedIcon /> : <VerifiedOutlinedIcon/>}
+                        startIcon={currTransaction.relatedId !== null ? <VerifiedIcon /> : <VerifiedOutlinedIcon />}
                         sx={{ 
-                            backgroundColor: currTransaction.processed ? "#4467C4" : "white",
-                            color: currTransaction.processed ? "white" : "#4467C4",}}
+                            backgroundColor: currTransaction.relatedId !== null ? "#1876d2" : "white",
+                            color: currTransaction.relatedId !== null ? "white" : "#1876d2",}}
                         onClick={() => handleToggleProcessed(true)}
+                        disabled={currTransaction.relatedId !== null}
                     >
-                        {currTransaction.processed ? "Processed" : "Unprocessed"}
+                        {currTransaction.relatedId !== null ? "Processed" : "Unprocessed"}
                     </Button>
                 </>}
                 {(hasPermission && currTransaction.type === "purchase") && 
@@ -282,8 +280,8 @@ export default function Transaction() {
                 <Button variant='outlined' color="primary"
                         startIcon={currTransaction.suspicious ? <ErrorIcon /> : <ErrorOutlineIcon/>}
                         sx={{ 
-                            backgroundColor: currTransaction.suspicious ? "#4467C4" : "white",
-                            color: currTransaction.suspicious ? "white" : "#4467C4",}}
+                            backgroundColor: currTransaction.suspicious ? "#1876d2" : "white",
+                            color: currTransaction.suspicious ? "white" : "#1876d2",}}
                         onClick={() => handleToggleSuspicious(!currTransaction.suspicious)}
                     >
                         {currTransaction.suspicious ? "Suspicious" : "Mark Suspicious"}
