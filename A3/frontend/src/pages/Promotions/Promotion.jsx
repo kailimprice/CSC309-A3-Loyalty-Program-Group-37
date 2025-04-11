@@ -8,7 +8,8 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useNavigate } from 'react-router-dom';
 import { SpecificHeader, TextInput, NumberInput, DateTimeInput,
-    ButtonInput, ButtonInputRow, } from '../../components/Form/Form.jsx';
+    ButtonInput, ButtonInputRow,
+    ChoiceInput, } from '../../components/Form/Form.jsx';
 
 export default function Promotion() {
 
@@ -113,6 +114,7 @@ export default function Promotion() {
         }));
 
         setError(""); 
+        setChanges({});
     };
     
     async function preSubmit() {
@@ -157,7 +159,8 @@ export default function Promotion() {
             <NumberInput editable={false} field='ID' value={id} />
             <TextInput editable={hasPermission} field='Name' value={currPromotion.name} changeFunc={makeChange('name')} />
             <TextInput editable={hasPermission} field='Description' value={currPromotion.description} changeFunc={makeChange('description')} />
-            <TextInput editable={hasPermission} field='Type' value={currPromotion.type} changeFunc={makeChange('type')} />
+            
+            <ChoiceInput editable={hasPermission} field='Type' value={currPromotion.type} choices={['automatic', 'one-time']} changeFunc={makeChange('type')} />
             {(hasPermission && currPromotion.startTime) && <DateTimeInput editable={hasPermission} field='Start Time' value={currPromotion.startTime} changeFunc={makeChange('startTime')} />}
             <DateTimeInput editable={hasPermission} field='End Time' value={currPromotion.endTime} changeFunc={makeChange('endTime')} />
             {(currPromotion.minSpending || hasPermission) && <NumberInput editable={hasPermission} field='Minimum Spent' value={currPromotion.minSpending} changeFunc={makeChange('minSpending')}/>}
