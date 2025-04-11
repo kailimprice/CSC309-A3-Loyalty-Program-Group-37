@@ -251,8 +251,10 @@ export default function Transaction() {
                         value={currTransaction.relatedId}  />}
                 {currTransaction.type && <TextInput editable={false} field='Type' value={currTransaction.type} />}
                 {currTransaction.remark && <TextInput editable={false} field='Remark' value={currTransaction.remark} />}
-                {currTransaction.spent && <NumberInput editable={false} field='Spent' value={currTransaction.spent} />}
-                {currTransaction.amount && <NumberInput editable={false} field='Amount' value={currTransaction.amount} />}
+                {currTransaction.spent && <NumberInput editable={false} field='Spent' value={`$${currTransaction.spent}`} />}
+                {currTransaction.amount && <NumberInput editable={false} field='Points' value={currTransaction.amount} />}
+                {currTransaction.awarded && <NumberInput editable={false} field='Points' value={currTransaction.awarded} />}
+                {currTransaction.sent && <NumberInput editable={false} field='Points' value={currTransaction.sent} />}
             </>}
         </Grid>
         {(hasPermission || isOwner || canProcess) &&
