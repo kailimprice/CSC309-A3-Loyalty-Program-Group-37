@@ -7,6 +7,7 @@ import ButtonTag from '../Button/ButtonTag';
 import Tag from '../Button/Tag';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import './Table.css'
+import { TextField} from "@mui/material";
 
 function parseDate(string) {
     if (!string)
@@ -134,6 +135,16 @@ export default function Table({columns, data, page, numPages, buttons, selection
                 } else {
                     cellContent = <Tag value={value} type={`tag-${value.toLowerCase()}`} options={format}/>;
                 }
+            } else if (format === "number" && editable) {
+                // textAlign: https://mui.com/material-ui/react-text-field/?srsltid=AfmBOoq6Xh1ICgV3yZl_6qNaqCTj7lwHdOf-vFg44nROl-HE5AajsYJd#customization
+                cellContent = <TextField fullWidth name={colName} variant="outlined" value={value} type="number" 
+                                // need to pass id in
+                                onChange={(event) => changeFunc(event, data[i].utorid)}
+                                sx={{
+                                    '& .MuiInputBase-input': {
+                                        textAlign: 'right',
+                                    },
+                                }}/>
             } else {
                 cellContent = <Typography variant='body1' sx={{color: 'rgb(80, 80, 80)', textAlign: alignment[colName]}}>
                     {format == 'date' && parseDate(value)}

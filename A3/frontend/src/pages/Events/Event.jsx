@@ -19,6 +19,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { useNavigate } from 'react-router-dom';
 import { SpecificHeader, TextInput, DateInput, NumberInput, BooleanInput, ChoiceInput,
     ButtonInput, ButtonInputRow, UsersInput } from '../../components/Form/Form.jsx';
+import AwardPointsTable from '../../components/AwardPointsTable/AwardPointsTable.jsx';
 
 export default function Event() {
 
@@ -50,6 +51,13 @@ export default function Event() {
                     value = event.target.value;
                 }    
             }
+
+            // convert tp int
+            const integerFields = ['points', 'capacity']; 
+            if (integerFields.includes(key)) {
+                value = parseInt(value, 10) || 0;
+            }
+
             const newChanges = {...changes};
             if (currEvent[key] == value) {
                 delete newChanges[key];
@@ -84,6 +92,15 @@ export default function Event() {
 
         setHasPermission(user.role === "manager" || user.role === "superuser" || isOrganizer);
 
+        // if they dont have permission and they got this far it means the event is published
+        // published isnt returned for an average user
+        if (!hasPermission) {
+            setCurrEvent((prevEvent) => ({
+                ...prevEvent,
+                published: true,
+            }));
+            setNonAttendees([user.utorid]);
+        }
         console.log("currEvent:", currEvent)
         setError("");
     };
@@ -130,7 +147,13 @@ export default function Event() {
 
 
     async function handleSubmit(json) {
-            let updateDetails = json;
+        let updateDetails = json;
+        const keys = Object.keys(updateDetails);
+        const nonSubmitData = keys.every(
+            (key) => key === "organizers" || key === "guests" || key === "published"
+        );
+
+        if (!nonSubmitData) {
 
             console.log("Updated details being sent:", updateDetails);
             // patch to events/:eventId
@@ -148,8 +171,14 @@ export default function Event() {
                 console.error("Error updating event details::", err);
                 return;
             } 
+        }
 
-            setError(""); 
+        setCurrEvent((prevEvent) => ({
+            ...prevEvent,
+            updateDetails
+        }));
+
+        setError(""); 
     };
     async function preSubmit() {
         await handleSubmit(changes);
@@ -171,7 +200,11 @@ export default function Event() {
             }
 
             // remove organizer from state as well to trigger refresh
-            makeChange("organizers")(currEvent.organizers.filter((organizer) => organizer.id !== organizerId));
+            const updatedOrganizers = currEvent.organizers.filter((organizer) => organizer.id !== organizerId);
+            setChanges((prevChanges) => ({
+                ...prevChanges,
+                organizers: updatedOrganizers,
+            }));
 
             console.log(`Organizer with ID ${organizerId} removed successfully.`);
         } catch (err) {
@@ -244,6 +277,32 @@ export default function Event() {
 
     async function handleAddGuest(unusedId, utorid) {
         try {
+            if (!hasPermission) {
+                const [response, err] = await fetchServer(`events/${id}/guests/me`, {
+                    method: "POST",
+                    headers: new Headers({
+                        Authorization: `Bearer ${token}`,
+                    }),
+                });
+    
+                if (err) {
+                    setError(err);
+                    console.error(`Error adding guest with UTORID ${utorid}:`, err);
+                    return;
+                }
+    
+                const newGuest = await response.json();
+                // destructure and add new guest
+                setChanges((prevChanges) => ({
+                    ...prevChanges,
+                    guests: newGuest,
+                }));
+    
+                console.log(`Guest with UTORID ${utorid} added successfully.`);
+                fetchNonAttendees();
+                return;
+            }
+
             // add utorid
             const [response, err] = await fetchServer(`events/${id}/guests`, {
                 method: "POST",
@@ -382,6 +441,10 @@ export default function Event() {
                 <ButtonInput title='Delete' variant='outlined' click={handleDelete} icon={<DeleteIcon />}  disabled={user.role !== "manager" && user.role !== "superuser"}/>
             </>}
         </ButtonInputRow>
+        {hasPermission && 
+        <>
+            <AwardPointsTable currEvent={currEvent} token={token} setError={setError} />
+        </>}
         </>}
     </>
 }
