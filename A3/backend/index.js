@@ -1104,7 +1104,8 @@ async function adjustmentTransaction(req, res, data1) {
     req.body['related'] = req.body['relatedId'];
     const validation2 = {user: [null, x => {return {connect: {utorid: x}}}],
                         related: [null, x => {return {connect: {id: x}}}],
-                        amount: x => !isNaN(parseFloat(x, 10)), promotionIds: Array.isArray};
+                        amount: x => !isNaN(parseFloat(x, 10)),
+                        promotionIds: Array.isArray};
     const e2 = objectAddStrict(validation2, req.body, data2, res);
     if (e2) return e2;
 
@@ -1116,23 +1117,18 @@ async function adjustmentTransaction(req, res, data1) {
         if (promotionIds.length == 0) {
             delete data2['promotionIds'];
         } else {
-            const [bonus, e3] = await checkApplyPromotions(promotionIds, utorid, res, data2['spent']);
+            const [bonus, e3] = await checkApplyPromotions(promotionIds, utorid, res, data2['amount']);
             if (e3) return e3;
             data2['amount'] += bonus;
             data2['promotionIds'] = {connect: promotionIds.map(x => {return {id: x}})};
         }
     }
-    let {amount} = req.body;
-    if (typeof(amount) == 'string')
-        amount = parseInt(amount, 10);
-    if (typeof(amount) != 'number' || isNaN(amount))
-        return res.status(400).json('error', `typeof(amount)=${typeof(amount)}, amount=${amount}`);
 
     // Create/apply purchase
     const p1 = await prisma.transaction.create({data: data1});
     data2['transaction'] = {connect: {id: p1.id}};
     const p2 = await prisma.transactionAdjustment.create({data: data2, include: {promotionIds: true}});
-    await prisma.user.update({where: {utorid: utorid}, data: {points: {increment: amount}}});
+    await prisma.user.update({where: {utorid: utorid}, data: {points: {increment: data2['amount']}}});
     if (p2['promotionIds'])
         p2['promotionIds'] = p2['promotionIds'].map(x => x.id);
 
