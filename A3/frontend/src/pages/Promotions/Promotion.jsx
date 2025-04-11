@@ -160,7 +160,7 @@ export default function Promotion() {
             <TextInput editable={hasPermission} field='Type' value={currPromotion.type} changeFunc={makeChange('type')} />
             {(hasPermission && currPromotion.startTime) && <DateTimeInput editable={hasPermission} field='Start Time' value={currPromotion.startTime} changeFunc={makeChange('startTime')} />}
             <DateTimeInput editable={hasPermission} field='End Time' value={currPromotion.endTime} changeFunc={makeChange('endTime')} />
-            {(currPromotion.minSpending || hasPermission) && <NumberInput editable={hasPermission} field='Minimum Spending Value' value={currPromotion.minSpending} changeFunc={makeChange('minSpending')}/>}
+            {(currPromotion.minSpending || hasPermission) && <NumberInput editable={hasPermission} field='Minimum Spent' value={currPromotion.minSpending} changeFunc={makeChange('minSpending')}/>}
             {(currPromotion.rate || hasPermission) && <NumberInput editable={hasPermission} field='Rate' value={currPromotion.rate} changeFunc={makeChange('rate')}/>}
             {(currPromotion.points || hasPermission) && <NumberInput editable={hasPermission} field='Points' value={currPromotion.points} changeFunc={makeChange('points')}/>}
         </Grid>

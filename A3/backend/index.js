@@ -542,12 +542,20 @@ app.get('/files', permLevel('regular'), async (req, res) => {
         }
     });
 });
+async function getUsedPromotions(utorid) {
+    const filter = {OR: [
+        {purchases: {some: {utorid: utorid}}},
+        {adjustments: {some: {utorid: utorid}}}
+    ]};
+    const promotions = await prisma.promotion.findMany({where: filter});
+    return promotions;
+}
 app.get('/users/me', permLevel('regular'), async (req, res) => {
     console.log(req.utorid);
     const [result, error] = await findUnique(prisma.user, {utorid: req.utorid}, res, null, {password: true});
     if (error) return error;
 
-    result['promotions'] = []; // TODO
+    result['promotions'] = await getUsedPromotions(req.utorid);
     return res.status(200).json(result);
 });
 app.patch('/users/me', permLevel('regular'), upload.single('avatar'), async (req, res) => {
@@ -604,7 +612,7 @@ app.get('/users/:userId', permLevel('cashier'), async (req, res) => {
         console.log(`400, no find id=${userId}`);
         return res.status(400).json({'error': `400, no find id=${userId}`});
     }
-    result['promotions'] = []; // TODO
+    result['promotions'] = await getUsedPromotions(result.utorid); // TODO
     return res.status(200).json(result);
 });
 
@@ -1651,6 +1659,7 @@ app.get('/promotions', permLevel('regular'), async (req, res) => {
     } else if (req.user.role == 'regular') {
         filter['startTime'] = {lte: now};
         filter['endTime'] = {gte: now};
+        
         // TODO FILTER to promotions not used by the user
     }
 

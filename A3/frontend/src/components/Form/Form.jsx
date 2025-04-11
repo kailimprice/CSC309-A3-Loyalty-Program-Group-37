@@ -11,8 +11,11 @@ import dayjs from 'dayjs';
 import { useEffect, useState } from "react";
 import { validatePassword } from "../../utils/utils";
 import ButtonTag from '../Button/ButtonTag.jsx'; // Ensure ButtonTag is imported
+import Tag from "../Button/Tag.jsx";
 
-
+function GreyItalic(text) {
+    return <Typography variant='body1' sx={{fontStyle: 'italic', color: 'grey'}}>{text}</Typography>;
+}
 function ReadOnly(text) {
     return <Typography variant='body1' sx={{display: 'flex', alignItems: 'center', height: '33px', lineHeight: '1'}}>{text}</Typography>;
 }
@@ -134,10 +137,10 @@ export function FileInput({editable, name, field, value, changeFunc}) {
                     Upload File
                     <input type="file" name={name} hidden accept='image/*' onChange={handleInput} />
                 </Button>
-                {value && <Typography variant='body1' sx={{fontStyle: 'italic', color: 'grey'}}>File uploaded</Typography>}
+                {value && GreyItalic('File uploaded')}
             </Stack>}
             {!editable && value && ReadOnly(value)}
-            {!editable && !value && <Typography variant='body1' sx={{fontStyle: 'italic', color: 'grey'}}>No file uploaded</Typography>}
+            {!editable && !value && GreyItalic('No file uploaded')}
         </Grid>
     </>
 }
@@ -168,6 +171,20 @@ export function ChoiceInput({editable, name, field, value, choices, changeFunc})
             ReadOnly(value ? value[0].toUpperCase() + value.slice(1) : 'N/A')}
         </Grid>
     </>
+}
+export function ReadOnlyLinkInput({field, values, links}) {
+    const navigate = useNavigate();
+    return <>
+    {GridHeader(field)}
+    <Grid size={{ xs: 7, sm: 7, md: 9 }}>
+        {values.length == 0 ?
+        GreyItalic('None') :
+        values.map((x, i) => {
+            const click = links[i] ? () => navigate(links[i]) : () => {return};
+            return <Tag key={i} value={`ID# ${x}`} options={[]} type='tag-promotion' click={click}/>;
+        })}
+    </Grid>
+</>
 }
 export function ButtonInputRow({children}) {
     return <Stack direction='row' gap={1} sx={{margin: '10px 0px'}}>

@@ -10,7 +10,8 @@ import { useUserContext } from '../../contexts/UserContext.jsx';
 import { fetchServer, hasPerms, validatePassword } from '../../utils/utils.jsx';
 import { useParams } from 'react-router-dom';
 import { SpecificHeader, TextInput, DateInput, FileInput, NumberInput, BooleanInput, ChoiceInput,
-         ButtonInput, ButtonInputRow, PasswordInput } from '../../components/Form/Form.jsx';
+         ButtonInput, ButtonInputRow, PasswordInput, 
+         ReadOnlyLinkInput} from '../../components/Form/Form.jsx';
 import { DialogGeneral } from '../../components/DialogGeneral/DialogGeneral.jsx';
 
 export default function User() {
@@ -45,7 +46,6 @@ export default function User() {
             } else {
                 newChanges[key] = value;
             }
-            console.log(newChanges);
             setChanges(newChanges);
         }
     }
@@ -84,7 +84,6 @@ export default function User() {
         getUserDetails();
     }
     async function handleSubmitPassword() {
-        console.log("All changes:", changes);
         const e1 = validatePassword(changes['old']);
         if (e1)
             return setError('Error in password.');
@@ -193,7 +192,9 @@ export default function User() {
             <PasswordInput editable={false} field='New Password' value='' changeFunc={makeChange('new')}/>}
             
             {/* TODO promotions used */}
-            <TextInput editable={false} field='Promotions' value='TODO'/>
+            <ReadOnlyLinkInput field='Promotions' values={currUser.promotions ? currUser.promotions.map(x => x.id) : []} 
+                                links={currUser.promotions ? currUser.promotions.map(x => `/promotions/${x.id}`) : []}/>
+            {/* <TextInput editable={false} field='Promotions' value='TODO'/> */}
         </Grid>
         <ButtonInputRow>
             <ButtonInput title='Update' variant='contained' click={preSubmit} icon={<EditIcon />} disabled={!file && Object.keys(changes).length == 0}/>
