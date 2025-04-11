@@ -236,8 +236,8 @@ export default function Transaction() {
             </Grid>}  
             {(hasPermission || isOwner || canProcess) &&
             <>
-                {currTransaction.utorid && <TextInput editable={false} field='Utorid' value={currTransaction.utorid} />}
-                {currTransaction.createdBy && <TextInput editable={false} field='CreatedBy' value={currTransaction.createdBy} />}
+                {currTransaction.utorid && <TextInput editable={false} field='UTORid' value={currTransaction.utorid} />}
+                {currTransaction.createdBy && <TextInput editable={false} field='Created By' value={currTransaction.createdBy} />}
                 {currTransaction.relatedId && <TextInput editable={false} 
                     field={currTransaction.type === "adjustment"
                             ? "Related Transaction"
@@ -252,9 +252,9 @@ export default function Transaction() {
                 {currTransaction.type && <TextInput editable={false} field='Type' value={currTransaction.type} />}
                 {currTransaction.remark && <TextInput editable={false} field='Remark' value={currTransaction.remark} />}
                 {currTransaction.spent && <NumberInput editable={false} field='Spent' value={`$${currTransaction.spent}`} />}
-                {currTransaction.amount && <NumberInput editable={false} field='Points' value={currTransaction.amount} />}
-                {currTransaction.awarded && <NumberInput editable={false} field='Points' value={currTransaction.awarded} />}
-                {currTransaction.sent && <NumberInput editable={false} field='Points' value={currTransaction.sent} />}
+                {currTransaction.amount && <NumberInput editable={false} field='Points Earned' value={currTransaction.amount} />}
+                {currTransaction.awarded && <NumberInput editable={false} field='Points Awarded' value={currTransaction.awarded} />}
+                {currTransaction.sent && <NumberInput editable={false} field='Points Sent' value={currTransaction.sent} />}
             </>}
         </Grid>
         {(hasPermission || isOwner || canProcess) &&
