@@ -33,3 +33,10 @@ export function validatePassword(password) {
         return 'Password must contain a special character';
     return false;
 }
+
+export function queryRemoveLimit(params) {
+    if (params.length == 0)
+        return '';
+    const split = params.slice(1).split('&');
+    return `?${split.filter(x => !x.startsWith('limit=')).join('&')}`;
+}

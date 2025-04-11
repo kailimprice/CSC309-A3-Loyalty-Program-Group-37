@@ -1633,8 +1633,9 @@ app.get('/promotions', permLevel('regular'), async (req, res) => {
     const [query, e1] = queryAllow(variables, req, res);
     if (e1) return e1;
 
+    const varFilter = ['name', 'type', 'orderBy', 'order'];
     const filter = {};
-    objectAddLax(variablesFilter, query, filter);
+    objectAddLax(varFilter, query, filter);
 
     // Manager filters
     const now = new Date();

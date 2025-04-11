@@ -12,7 +12,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import {Stack, Button, Dialog} from '@mui/material';
 import {DialogGeneral, FilterBody} from '../../components/DialogGeneral/DialogGeneral.jsx';
 import {useUserContext} from '../../contexts/UserContext';
-import {fetchServer, hasPerms} from "../../utils/utils";
+import {fetchServer, hasPerms, queryRemoveLimit} from "../../utils/utils";
 import NotFound from "../NotFound/NotFound.jsx"
 import {useSearchParams, useLocation, useNavigate} from 'react-router-dom';
 
@@ -31,7 +31,7 @@ export default function Events() {
 
     // Fetch all events
     async function getEvents(token) {
-        let params = location.search;
+        let params = queryRemoveLimit(location.search);
         if (viewAs != user.role)
             params = `${params}${params.length == 0 ? '?' : '&'}viewAsRole=${viewAs}`;
         let [response, error] = await fetchServer(`events${params}`, {
@@ -49,13 +49,20 @@ export default function Events() {
         for (let i = 0; i < results.length; i++) {
             results[i].numGuests = results[i].guests.length;
         }
-        if (count == 0)
-            setPage(0);
-        else if (!searchParams.get('page'))
-            setPage(1);
-        else
-            setPage(parseInt(searchParams.get('page'), 10));
-        setNumPages(Math.ceil(count / resultsPerPage));
+        let pCount = Math.ceil(count / resultsPerPage);
+        let p;
+        if (count == 0) {
+            p = 0;
+        } else if (!searchParams.get('page')) {
+            p = 1;
+        } else if (searchParams.get('page') > pCount) {
+            p = 0;
+            pCount = 0;
+        } else {
+            p = parseInt(searchParams.get('page'), 10);
+        }
+        setPage(p);
+        setNumPages(pCount);
         setData(results);
     }
     useEffect(() => {
