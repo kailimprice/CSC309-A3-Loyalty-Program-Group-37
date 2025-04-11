@@ -84,7 +84,7 @@ export default function Promotion() {
     // get promotion details for given id
     useEffect(() => {
         getPromotionDetails();
-    }, [id])
+    }, [id, hasPermission])
 
 
     async function handleSubmit(json) {

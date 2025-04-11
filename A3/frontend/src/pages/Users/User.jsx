@@ -67,7 +67,7 @@ export default function User() {
     };
     useEffect(() => {
         getUserDetails();
-    }, [id]);
+    }, [id, managerPerms]);
 
     // Action buttons
     async function handleVerifyUser() {

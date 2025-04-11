@@ -94,7 +94,7 @@ export default function Event() {
     // get event details for given id
     useEffect(() => {
         getEventDetails();
-    }, [id])
+    }, [id, hasPermission])
 
     async function fetchNonAttendees() {
         if (hasPermission) {

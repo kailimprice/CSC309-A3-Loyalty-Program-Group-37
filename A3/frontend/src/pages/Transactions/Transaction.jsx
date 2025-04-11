@@ -105,7 +105,7 @@ export default function Transaction() {
     // get event details for given id
     useEffect(() => {
         getTransactionDetails();
-    }, [id])
+    }, [id, hasPermission])
 
 
     const handleToggleSuspicious = async (suspicious) => {
