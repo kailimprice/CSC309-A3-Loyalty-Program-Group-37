@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Table from "../../components/Table/Table.jsx";
-import { ButtonInputRow, ButtonInput } from "../../components/Form/Form.jsx";
+import { ButtonInputRow, ButtonInput, TextInput } from "../../components/Form/Form.jsx";
 import { fetchServer } from "../../utils/utils.jsx";
 
 export default function AwardPointsTable({ currEvent, token, setError }) {
@@ -14,6 +14,9 @@ export default function AwardPointsTable({ currEvent, token, setError }) {
         }, {})
     );
 
+    // state for awarding everyone points
+    const [pointsForAll, setPointsForAll] = useState(0);
+
     // handle points change for a specific guest
     const handlePointsChange = (event, utorid) => {
         const value = parseInt(event.target.value, 10) || 0; 
@@ -23,9 +26,34 @@ export default function AwardPointsTable({ currEvent, token, setError }) {
         }));
     };
 
+    // handle adding points to all guests
+    const handlePointsForAllChange = (event) => {
+        const value = parseInt(event.target.value, 10) || 0;
+        setPointsForAll(value);
+    };
+
     // submit points to the server
     const handleSubmitPoints = async () => {
         try {
+
+            if (pointsForAll > 0) {
+                const [response, err] = await fetchServer(`events/${currEvent.id}/transactions`, {
+                    method: "POST",
+                    headers: new Headers({
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    }),
+                    body: JSON.stringify({type: "event", "amount": pointsForAll}),
+                });
+    
+                if (err) {
+                    setError(err);
+                    console.error("Error awarding points for all:", err);
+                    return;
+                }
+                console.log("Points awarded successfully for all.");
+            }
+
             const updateDetails = Object.entries(awardedPoints).map(([utorid, points]) => ({
                 type: "event",
                 utorid: utorid,
@@ -90,7 +118,8 @@ export default function AwardPointsTable({ currEvent, token, setError }) {
                 setSelection={() => {}}
             />
             <ButtonInputRow>
-                <ButtonInput title="Submit Points" variant="contained" click={handleSubmitPoints} disabled={Object.values(awardedPoints).every((points) => points === 0)} />
+                <TextInput editable={true} field="Award Points to All" value={pointsForAll} changeFunc={handlePointsForAllChange}/>
+                <ButtonInput title="Submit Points" variant="contained" click={handleSubmitPoints} disabled={(Object.values(awardedPoints).every((points) => points === 0)) && (pointsForAll === 0)} />
             </ButtonInputRow>
         </>
     );
