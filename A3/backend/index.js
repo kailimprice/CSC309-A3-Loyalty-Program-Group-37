@@ -1045,6 +1045,9 @@ async function purchaseTransaction(req, res, data1) {
     const e1 = bodyRequire(['utorid', 'spent'], req, res);
     if (e1) return e1;
 
+    const [user, err] = await findUnique(prisma.user, {utorid: req.body['utorid']}, res);
+    if (err) return err;
+
     // Construct fields
     const {utorid} = req.body;
     const data2 = {};
