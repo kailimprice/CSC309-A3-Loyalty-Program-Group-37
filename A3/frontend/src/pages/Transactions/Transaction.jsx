@@ -14,8 +14,8 @@ import { useNavigate } from 'react-router-dom';
 import QRCode from 'react-qr-code';
 import { DialogGeneral, FilterBody } from '../../components/DialogGeneral/DialogGeneral.jsx';
 import { SpecificHeader, TextInput, NumberInput,
-    ButtonInput, ButtonInputRow,
-    ChoiceInput, } from '../../components/Form/Form.jsx';
+    ButtonInput, ButtonInputRow, ReadOnlyLinkInput,
+    ChoiceInput } from '../../components/Form/Form.jsx';
 
 export default function Transaction() {
 
@@ -105,7 +105,7 @@ export default function Transaction() {
     // get event details for given id
     useEffect(() => {
         getTransactionDetails();
-    }, [id])
+    }, [id, hasPermission])
 
 
     const handleToggleSuspicious = async (suspicious) => {
@@ -253,7 +253,8 @@ export default function Transaction() {
                 {currTransaction.amount && <NumberInput editable={false} field='Points Earned' value={currTransaction.amount} />}
                 {currTransaction.awarded && <NumberInput editable={false} field='Points Awarded' value={currTransaction.awarded} />}
                 {currTransaction.sent && <NumberInput editable={false} field='Points Sent' value={currTransaction.sent} />}
-            </>}
+                {currTransaction.promotionIds && <ReadOnlyLinkInput field='Promotions' values={currTransaction.promotionIds ? currTransaction.promotionIds.map(x => x.id) : []} links={currTransaction.promotionIds ? currTransaction.promotionIds.map(x => `/promotions/${x.id}`) : []}/>}
+                </>}
         </Grid>
         {(hasPermission || isOwner || canProcess) &&
             <>

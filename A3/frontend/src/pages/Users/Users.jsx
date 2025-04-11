@@ -140,7 +140,7 @@ export default function Users() {
         birthday: ['Birthday', 'date'],
         role: ['Role', roles, rolesSettable, changeRole, true],
         points: ['Points', 'number'],
-        createdAt: ['Created', 'date'],
+        createdAt: ['Account Created', 'date'],
         lastLogin: ['Last Login', 'date'],
         verified: ['Verified', 'boolean', null, changeVerified, true],
         suspicious: ['Suspicious', 'boolean', null, changeSuspicious, true]
