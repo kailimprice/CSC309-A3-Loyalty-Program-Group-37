@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs from 'dayjs';
 import { useEffect, useState } from "react";
 import { validatePassword } from "../../utils/utils";
@@ -99,6 +100,19 @@ export function DateInput({editable, name, field, value, changeFunc}) {
                 <DatePicker defaultValue={parsed} name={name} onChange={changeFunc} renderInput={(params) => <TextField {...params}/>}/>
             </LocalizationProvider> :
             ReadOnly(parsed.format('YYYY/MM/DD'))}
+        </Grid>
+    </>;
+} 
+export function DateTimeInput({editable, name, field, value, changeFunc}) {
+    const parsed = dayjs(value);
+    return <>
+        {GridHeader(field)}
+        <Grid size={{ xs: 7, sm: 7, md: 9 }}>
+            {editable ? 
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DateTimePicker defaultValue={parsed} name={name} onChange={changeFunc} renderInput={(params) => <TextField {...params}/>}/>
+            </LocalizationProvider> :
+            ReadOnly(parsed.format('YYYY/MM/DD HH:mm'))}
         </Grid>
     </>;
 } 

@@ -2,23 +2,19 @@
 //View/edit: name, email, birthday, avatar
 //Functionality: ability to reset password
 
-import { TextField, Button, Grid, Checkbox, Typography, Stack } from '@mui/material';
+import { Button, Grid, } from '@mui/material';
 import { useState, useEffect } from 'react'
 import { useUserContext } from '../../contexts/UserContext.jsx';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { fetchServer } from '../../utils/utils.jsx';
 import { useParams } from 'react-router-dom';
-import dayjs from 'dayjs';
 import { Alert } from '@mui/material'; 
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useNavigate } from 'react-router-dom';
-import { SpecificHeader, TextInput, DateInput, NumberInput, BooleanInput, ChoiceInput,
-    ButtonInput, ButtonInputRow, UsersInput } from '../../components/Form/Form.jsx';
+import { SpecificHeader, TextInput, NumberInput,
+    ButtonInput, ButtonInputRow, UsersInput, DateTimeInput } from '../../components/Form/Form.jsx';
 import AwardPointsTable from '../../components/AwardPointsTable/AwardPointsTable.jsx';
 
 export default function Event() {
@@ -408,8 +404,8 @@ export default function Event() {
             <TextInput editable={hasPermission} field='Name' value={currEvent.name} changeFunc={makeChange('name')} />
             <TextInput editable={hasPermission} field='Description' value={currEvent.description} changeFunc={makeChange('description')} />
             <TextInput editable={hasPermission} field='Location' value={currEvent.location} changeFunc={makeChange('location')} />
-            <DateInput editable={hasPermission} field='Start Time' value={currEvent.startTime} changeFunc={makeChange('startTime')} />
-            <DateInput editable={hasPermission} field='End Time' value={currEvent.endTime} changeFunc={makeChange('endTime')} />
+            <DateTimeInput editable={hasPermission} field='Start Time' value={currEvent.startTime} changeFunc={makeChange('startTime')} />
+            <DateTimeInput editable={hasPermission} field='End Time' value={currEvent.endTime} changeFunc={makeChange('endTime')} />
             <NumberInput editable={hasPermission} field='Capacity' value={currEvent.capacity} changeFunc={makeChange('capacity')}/>
             <UsersInput editable={hasPermission} field="Organizers" users={currEvent.organizers} choices={nonAttendees} handleRemoveUser={handleRemoveOrganizer} handleAddUser={handleAddOrganizer} currentUser={user}/>
             <NumberInput editable={hasPermission} field='Number of Guests' value={currEvent.numGuests} changeFunc={makeChange('numGuests')}/>
