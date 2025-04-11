@@ -248,7 +248,7 @@ export default function Transaction() {
                             : currTransaction.type === "event"
                             ? "Event"
                             : "Related To"} 
-                        value={currTransaction.utorid}  />}
+                        value={currTransaction.relatedId}  />}
                 {currTransaction.type && <TextInput editable={false} field='Type' value={currTransaction.type} />}
                 {currTransaction.remark && <TextInput editable={false} field='Remark' value={currTransaction.remark} />}
                 {currTransaction.spent && <NumberInput editable={false} field='Spent' value={currTransaction.spent} />}
