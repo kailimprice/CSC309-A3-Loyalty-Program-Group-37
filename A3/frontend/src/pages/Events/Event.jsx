@@ -134,6 +134,12 @@ export default function Event() {
 
     async function handleSubmit(json) {
         let updateDetails = json;
+        console.log("update", updateDetails);
+        if ('pointsRemain' in updateDetails) {
+            updateDetails.points = (parseInt(updateDetails.pointsRemain, 10) || 0) + (currEvent.pointsAwarded || 0);
+            delete updateDetails.pointsRemain;
+        }
+
         const keys = Object.keys(updateDetails);
         const nonSubmitData = keys.every(
             (key) => key === "organizers" || key === "guests" || key === "published"
@@ -461,9 +467,8 @@ export default function Event() {
                         changeFunc={makeChange('numGuests')}/>}    
 
             {hasPermission && <>
-                <NumberInput editable={user.role === "manager" || user.role === "superuser"} field='Total Points' value={currEvent.pointsAwarded + currEvent.pointsRemain} changeFunc={makeChange('points')}/>
                 <NumberInput editable={false} field='Points Awarded' value={currEvent.pointsAwarded} />
-                <NumberInput editable={false} field='Points Remaining' value={currEvent.pointsRemain}/>
+                <NumberInput editable={(user.role === "manager" || user.role === "superuser")} field='Points Remaining' value={currEvent.pointsRemain} changeFunc={makeChange('pointsRemain')}/>
                 <BooleanInput editable={false} field='Published' value={currEvent.published} />
             </>}
         </Grid>
