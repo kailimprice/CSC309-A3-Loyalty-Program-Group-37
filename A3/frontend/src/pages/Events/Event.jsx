@@ -176,8 +176,10 @@ export default function Event() {
 
         setError(""); 
     };
+    
     async function preSubmit() {
         await handleSubmit(changes);
+        getEventDetails();
     };
 
     async function handleRemoveOrganizer(organizerId) {
