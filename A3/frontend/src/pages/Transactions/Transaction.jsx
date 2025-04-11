@@ -198,7 +198,7 @@ export default function Transaction() {
                 console.error("Error creating adjustment:", err);
                 return `Error: ${err.message}`;
             }
-            
+
             getTransactionDetails();
             console.log("Adjustment created successfully:", await response.json());
             return;
@@ -275,7 +275,7 @@ export default function Transaction() {
                 <>
                     <ButtonInput title='Make Adjustment' variant='contained' click={() => setAdjustmentDialogOpen(true)} icon={<EditSharpIcon />} />
                 </>}
-                {hasPermission &&
+                {(hasPermission && (currTransaction.type === "purchase" || currTransaction.type === "adjustment")) &&
                 <>
                 <Button variant='outlined' color="primary"
                         startIcon={currTransaction.suspicious ? <ErrorIcon /> : <ErrorOutlineIcon/>}
