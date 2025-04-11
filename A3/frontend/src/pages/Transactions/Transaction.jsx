@@ -29,6 +29,7 @@ export default function Transaction() {
     const [error, setError] = useState("");
     const [hasPermission, setHasPermission] = useState(false);
     const [isOwner, setIsOwner] = useState(false);
+    const [canProcess, setCanProcess] = useState(false);
 
     // QR code display
     const [qrOpen, setQrOpen] = useState(false);
@@ -76,7 +77,6 @@ export default function Transaction() {
                     const { results: transactions } = await response2.json();
                     // get matching transaction if exists
                     transactionDetails = transactions.find((transaction) => transaction.id === id); 
-
                     if (transactionDetails) {
                         setIsOwner(true);
                         setCurrTransaction(() => ({
@@ -99,10 +99,11 @@ export default function Transaction() {
 
             // set permision for viewing this transaction
             // in api a2 doesnt specify that createdBy or utorid can view
-            console.log(user.role);
-            console.log(transactionDetails);
             const permissionGranted = user.role === "manager" || user.role === "superuser";
             setHasPermission(permissionGranted);
+
+            const processGranted = (user.role === "cashier" && transactionDetails.type === "redemption");
+            setCanProcess(processGranted);
 
             console.log("Transaction details:", transactionDetails);
         };
@@ -233,7 +234,7 @@ export default function Transaction() {
                 {/* alerts: https://mui.com/material-ui/react-alert/?srsltid=AfmBOoou_o4_8K8hszRKhrNwGHIQi0AiFRewwf3tT0chGeQsevtOFnp2 */}
                     <Alert severity="error" sx={{marginBottom: '5px'}}>{typeof error === 'string' ? error : error.message || String(error)}</Alert>
             </Grid>}  
-            {(hasPermission || isOwner) &&
+            {(hasPermission || isOwner || canProcess) &&
             <>
                 {currTransaction.utorid && <TextInput editable={false} field='Utorid' value={currTransaction.utorid} />}
                 {currTransaction.createdBy && <TextInput editable={false} field='CreatedBy' value={currTransaction.createdBy} />}
@@ -254,11 +255,11 @@ export default function Transaction() {
                 {currTransaction.amount && <NumberInput editable={false} field='Amount' value={currTransaction.amount} />}
             </>}
         </Grid>
-        {(hasPermission || isOwner) &&
+        {(hasPermission || isOwner || canProcess) &&
             <>
                 <ButtonInputRow>
                 <ButtonInput title='Scan QR Code' variant='contained' click={() => handleQRCode()} icon={<QrCode2Icon />} />
-                {(hasPermission && currTransaction.type === "redemption") && 
+                {((hasPermission || canProcess) && currTransaction.type === "redemption") && 
                 <>
                     <Button variant='outlined' color="primary"
                         startIcon={currTransaction.processed ? <VerifiedIcon /> : <VerifiedOutlinedIcon/>}
