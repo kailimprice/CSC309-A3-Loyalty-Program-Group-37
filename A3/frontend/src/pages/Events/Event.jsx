@@ -136,7 +136,7 @@ export default function Event() {
         let updateDetails = json;
         console.log("update", updateDetails);
         if ('pointsRemain' in updateDetails) {
-            updateDetails.points = (parseInt(updateDetails.pointsRemain, 10) || 0) + (currEvent.pointsAwarded || 0);
+            updateDetails.points = (parseInt(updateDetails.pointsRemain, 10) || 0) + parseInt((currEvent.pointsAwarded, 10) || 0);
             delete updateDetails.pointsRemain;
         }
 
