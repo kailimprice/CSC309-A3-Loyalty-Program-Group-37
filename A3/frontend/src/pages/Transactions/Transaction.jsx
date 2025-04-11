@@ -175,7 +175,7 @@ export default function Transaction() {
                 ...formData,
                 amount: parseInt(formData.amount, 10),
                 relatedId: id, 
-                utorid: utorid,
+                utorid: currTransaction.utorid,
                 type: "adjustment",
             };
 
