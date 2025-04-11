@@ -1,7 +1,7 @@
-import { Button, Grid, Dialog, Box } from '@mui/material';
+import { Grid,  } from '@mui/material';
 import { useState, useEffect } from 'react'
 import { useUserContext } from '../../contexts/UserContext.jsx';
-import { fetchServer } from '../../utils/utils.jsx';
+import { fetchServer, hasPerms } from '../../utils/utils.jsx';
 import { useParams } from 'react-router-dom';
 import { Alert } from '@mui/material'; 
 import EditIcon from '@mui/icons-material/Edit';
@@ -13,7 +13,7 @@ import { SpecificHeader, TextInput, NumberInput, DateTimeInput,
 
 export default function Promotion() {
 
-    const { user, token } = useUserContext();
+    const { user, token, viewAs } = useUserContext();
 
     const id = parseInt(useParams().id, 10);
     const navigate = useNavigate();
@@ -23,7 +23,11 @@ export default function Promotion() {
 
     // error tracking
     const [error, setError] = useState("");
-    const [hasPermission, setHasPermission] = useState(false);
+
+    // perms
+    const isManager = hasPerms(viewAs, 'manager');
+    const hasPermission = isManager;
+    const [isActive, setIsActive] = useState(true);
     
     function makeChange(key) {
         return (event) => {
@@ -67,16 +71,12 @@ export default function Promotion() {
         })
         // this will only error if the promotion does not exist or has not started yet
         if (err) {
+            setIsActive(false);
             return setError("You do not have permission to view this promotion.");
         }
 
         promotionDetails = await response.json();
         setCurrPromotion(promotionDetails);
-
-        // set permision for viewing this promotion
-        // in api a2 doesnt specify that createdBy or utorid can view
-        const permissionGranted = user.role === "manager" || user.role === "superuser";
-        setHasPermission(permissionGranted);
 
         console.log("Promotion details:", promotionDetails);
     };
@@ -155,24 +155,30 @@ export default function Promotion() {
                 {/* alerts: https://mui.com/material-ui/react-alert/?srsltid=AfmBOoou_o4_8K8hszRKhrNwGHIQi0AiFRewwf3tT0chGeQsevtOFnp2 */}
                     <Alert severity="error" sx={{marginBottom: '5px'}}>{typeof error === 'string' ? error : error.message || String(error)}</Alert>
             </Grid>}  
-            
-            <NumberInput editable={false} field='ID' value={id} />
-            <TextInput editable={hasPermission} field='Name' value={currPromotion.name} changeFunc={makeChange('name')} />
-            <TextInput editable={hasPermission} field='Description' value={currPromotion.description} changeFunc={makeChange('description')} />
-            
-            <ChoiceInput editable={hasPermission} field='Type' value={currPromotion.type} choices={['automatic', 'one-time']} changeFunc={makeChange('type')} />
-            {(hasPermission && currPromotion.startTime) && <DateTimeInput editable={hasPermission} field='Start Time' value={currPromotion.startTime} changeFunc={makeChange('startTime')} />}
-            <DateTimeInput editable={hasPermission} field='End Time' value={currPromotion.endTime} changeFunc={makeChange('endTime')} />
-            {(currPromotion.minSpending || hasPermission) && <NumberInput editable={hasPermission} field='Minimum Spent' value={currPromotion.minSpending} changeFunc={makeChange('minSpending')}/>}
-            {(currPromotion.rate || hasPermission) && <NumberInput editable={hasPermission} field='Rate' value={currPromotion.rate} changeFunc={makeChange('rate')}/>}
-            {(currPromotion.points || hasPermission) && <NumberInput editable={hasPermission} field='Points' value={currPromotion.points} changeFunc={makeChange('points')}/>}
-        </Grid>
 
+            {isActive && 
+            <>
+                <NumberInput editable={false} field='ID' value={id} />
+                <TextInput editable={hasPermission} field='Name' value={currPromotion.name} changeFunc={makeChange('name')} />
+                <TextInput editable={hasPermission} field='Description' value={currPromotion.description} changeFunc={makeChange('description')} />
+                
+                <ChoiceInput editable={hasPermission} field='Type' value={currPromotion.type} choices={['automatic', 'one-time']} changeFunc={makeChange('type')} />
+                {(hasPermission && currPromotion.startTime) && <DateTimeInput editable={hasPermission} field='Start Time' value={currPromotion.startTime} changeFunc={makeChange('startTime')} />}
+                <DateTimeInput editable={hasPermission} field='End Time' value={currPromotion.endTime} changeFunc={makeChange('endTime')} />
+                {(currPromotion.minSpending || hasPermission) && <NumberInput editable={hasPermission} field='Minimum Spent' value={`$${currPromotion.minSpending}`} changeFunc={makeChange('minSpending')}/>}
+                {(currPromotion.rate || hasPermission) && <NumberInput editable={hasPermission} field='Rate' value={`${currPromotion.rate}x`} changeFunc={makeChange('rate')}/>}
+                {(currPromotion.points || hasPermission) && <NumberInput editable={hasPermission} field='Points' value={`$${currPromotion.points}`} changeFunc={makeChange('points')}/>}
+            </>}
+        </Grid>
+        
+        {isActive &&
+        <>
         <ButtonInputRow>
             {hasPermission && <>
                 <ButtonInput title='Update' variant='contained' click={preSubmit} icon={<EditIcon />} disabled={Object.keys(changes).length == 0}/>
                 <ButtonInput title='Delete' variant='outlined' click={handleDelete} icon={<DeleteIcon />}/>
             </>}
         </ButtonInputRow>
+        </>}
     </>
 }
