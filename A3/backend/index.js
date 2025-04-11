@@ -1122,12 +1122,17 @@ async function adjustmentTransaction(req, res, data1) {
             data2['promotionIds'] = {connect: promotionIds.map(x => {return {id: x}})};
         }
     }
+    let {amount} = req.body;
+    if (typeof(amount) == 'string')
+        amount = parseInt(amount, 10);
+    if (typeof(amount) != 'number' || isNaN(amount))
+        return res.status(400).json('error', `typeof(amount)=${typeof(amount)}, amount=${amount}`);
 
     // Create/apply purchase
     const p1 = await prisma.transaction.create({data: data1});
     data2['transaction'] = {connect: {id: p1.id}};
     const p2 = await prisma.transactionAdjustment.create({data: data2, include: {promotionIds: true}});
-    await prisma.user.update({where: {utorid: utorid}, data: {points: {increment: req.body['amount']}}});
+    await prisma.user.update({where: {utorid: utorid}, data: {points: {increment: amount}}});
     if (p2['promotionIds'])
         p2['promotionIds'] = p2['promotionIds'].map(x => x.id);
 
