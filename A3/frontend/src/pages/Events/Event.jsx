@@ -28,6 +28,7 @@ export default function Event() {
     const isManager = hasPerms(viewAs, 'manager');
     const hasPermission = isManager || isOrganizer;
     const [changes, setChanges] = useState({});
+    const [openAwardTable, setOpenAwardTable] = useState(false);
 
     // for nav
     const navigate = useNavigate();
@@ -80,6 +81,13 @@ export default function Event() {
         console.log(eventDetails);
         setCurrEvent(eventDetails);
         setIsOrganizer(eventDetails.organizers.some((x) => x.id === user.id));
+        if (!hasPermission) {
+            setCurrEvent((prevEvent) => ({
+                ...prevEvent,
+                published: true,
+            }));
+            setNonAttendees([user.utorid]);
+        }
         setError("");
     };
 
@@ -371,7 +379,9 @@ export default function Event() {
         }
     };
     async function handleAwardPoints() {
-        console.log("TODO");
+        if (currEvent.guests.length > 0) {
+            setOpenAwardTable(true);
+        }
     }
 
     // layout inspired by prev project https://github.com/emily-su-dev/Sinker/blob/main/src/app/components/InfoBox.tsx
@@ -423,9 +433,9 @@ export default function Event() {
             :
             <ButtonInput title='Join Event' variant='contained' click={() => {return}} icon={<AddCircleOutlineIcon />}/>}
         </ButtonInputRow>
-        {/* {hasPermission && 
+        {(hasPermission && openAwardTable) && 
         <>
             <AwardPointsTable currEvent={currEvent} token={token} setError={setError} />
-        </>} */}
+        </>}
     </>
 }
