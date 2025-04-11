@@ -4,3 +4,57 @@
 
 # 1. All the packages you need to install
 # 2. How to configure various servers (e.g., Nginx, Apache, etc)
+
+# Packages Installed
+
+# Frontend Packages
+# vite
+# react
+# react-dom
+# react-router-dom
+# @mui/material
+# @mui/icons-material
+# @mui/lab
+# @mui/joy
+# @mui/x-date-pickers
+# date-fns
+# dayjs
+# react-qr-code
+
+# Backend Packages
+# bcrypt
+# cors
+# express
+# jsonwebtoken
+# multer
+# sqlite3
+# prisma
+# @prisma/client
+# uuid
+# zod
+
+# Setup
+
+# Global Setup
+# npm install -g vite
+
+# Frontend Setup
+# Run these commands in an integrated terminal for the frontend folder
+# cd frontend
+# npm install
+# npm run dev
+
+# Backend Setup
+# Run these commands in an integrated terminal for the backend folder
+# cd backend
+# npm install
+# npx prisma generate
+# npx prisma migrate dev --name init
+# node index.js 3000
+
+# Website deployment instructions
+# Run this command in an integrated terminal for the frontend folder
+# npm run build
+
+# (include deployment instructions here)
+# (Need to outline the environment)
