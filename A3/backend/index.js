@@ -1045,6 +1045,9 @@ async function purchaseTransaction(req, res, data1) {
     const e1 = bodyRequire(['utorid', 'spent'], req, res);
     if (e1) return e1;
 
+    const [user, err] = await findUnique(prisma.user, {utorid: req.body['utorid']}, res);
+    if (err) return err;
+
     // Construct fields
     const {utorid} = req.body;
     const data2 = {};
@@ -1101,7 +1104,8 @@ async function adjustmentTransaction(req, res, data1) {
     req.body['related'] = req.body['relatedId'];
     const validation2 = {user: [null, x => {return {connect: {utorid: x}}}],
                         related: [null, x => {return {connect: {id: x}}}],
-                        amount: x => !isNaN(parseFloat(x, 10)), promotionIds: Array.isArray};
+                        amount: x => !isNaN(parseFloat(x, 10)),
+                        promotionIds: Array.isArray};
     const e2 = objectAddStrict(validation2, req.body, data2, res);
     if (e2) return e2;
 
@@ -1113,7 +1117,7 @@ async function adjustmentTransaction(req, res, data1) {
         if (promotionIds.length == 0) {
             delete data2['promotionIds'];
         } else {
-            const [bonus, e3] = await checkApplyPromotions(promotionIds, utorid, res, data2['spent']);
+            const [bonus, e3] = await checkApplyPromotions(promotionIds, utorid, res, data2['amount']);
             if (e3) return e3;
             data2['amount'] += bonus;
             data2['promotionIds'] = {connect: promotionIds.map(x => {return {id: x}})};
@@ -1124,7 +1128,7 @@ async function adjustmentTransaction(req, res, data1) {
     const p1 = await prisma.transaction.create({data: data1});
     data2['transaction'] = {connect: {id: p1.id}};
     const p2 = await prisma.transactionAdjustment.create({data: data2, include: {promotionIds: true}});
-    await prisma.user.update({where: {utorid: utorid}, data: {points: {increment: req.body['amount']}}});
+    await prisma.user.update({where: {utorid: utorid}, data: {points: {increment: data2['amount']}}});
     if (p2['promotionIds'])
         p2['promotionIds'] = p2['promotionIds'].map(x => x.id);
 
