@@ -38,6 +38,10 @@ export default function ButtonTag({value, options, changeFunc, type, id}) {
         );
     }
 
+    // mapping this to an array if its not because its having rendering problems when calling on anything not an array
+    options = Array.isArray(options) ? options : [];
+
+
     if (options.length == 0) {
         return <span className={`no-select tag ${type}`} aria-describedby={buttonId} style={{borderRadius: '50px'}}>
             <Typography variant='body2' className={`no-select ${type}-text`} sx={{display: 'inline'}}>

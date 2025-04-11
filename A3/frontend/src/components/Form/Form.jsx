@@ -9,6 +9,8 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
 import { useEffect, useState } from "react";
 import { validatePassword } from "../../utils/utils";
+import ButtonTag from '../Button/ButtonTag.jsx'; // Ensure ButtonTag is imported
+
 
 function ReadOnly(text) {
     return <Typography variant='body1' sx={{display: 'flex', alignItems: 'center', height: '33px', lineHeight: '1'}}>{text}</Typography>;
@@ -162,4 +164,24 @@ export function ButtonInput({variant, title, click, icon, disabled}) {
     return <Button variant={variant} color="primary" onClick={click} startIcon={icon} disabled={disabled}>
         {title}
     </Button>
+}
+export function UsersInput({ editable, field, users, choices, handleRemoveUser, handleAddUser, currentUser }) {
+    return <>
+        {GridHeader(field)}
+        <Grid size={{ xs: 7, sm: 7, md: 9 }}>
+            <div style={{ gap: "0.3rem", display: "flex" }}>
+                {users?.map((user) => (
+                    <ButtonTag key={user.id} value={user.utorid} type={`tag-${user.role}`} id={user.id}
+                        // only deletable if editable or current user is the current user
+                        options={editable || user.id === currentUser.id ? "deletable" : undefined}
+                        // if current user is the target user they can delete themselves
+                        changeFunc={(unusedId, utorid) => (user.id === currentUser.id || editable) ? handleRemoveUser(unusedId, utorid) : undefined} />
+                    ))}
+                    {/* if user has permission or they are not already in users  */}
+                {(editable || !users?.some((user) => user.id === currentUser.id)) && (
+                    <ButtonTag key={1000} value={"+"} options={choices} changeFunc={(unusedId, utorid) => handleAddUser(unusedId, utorid)} type="tag-add" id={1000} />
+                )}
+            </div>
+        </Grid>
+    </>;
 }
