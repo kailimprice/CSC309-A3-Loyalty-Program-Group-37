@@ -2,7 +2,7 @@
  * Initialize database for A3.
  * To run:
  *   cd backend
- *   npm run seed OR node prisma/seed.js
+ *   npm run seed 
  */
 
 "use strict";
@@ -132,28 +132,101 @@ const usersData = [
     verified: true,
     suspicious: false,
   },
+  {
+    utorid: "stevew10",
+    name: "Steve Wood",
+    email: "steve.wood@mail.utoronto.ca",
+    role: "cashier",
+    password: "Stevew10!",
+    birthday: new Date("1999-02-24"),
+    points: 1350,
+    lastLogin: new Date("2025-04-07T18:00:00Z"),
+    verified: true,
+    suspicious: false,
+  },
+  {
+    utorid: "amysmi11",
+    name: "Amy Smith",
+    email: "amy.smith@mail.utoronto.ca",
+    role: "regular",
+    password: "Amysmi11!",
+    birthday: new Date("2004-10-20"),
+    points: 200,
+    lastLogin: new Date("2025-04-07T18:00:00Z"),
+    verified: true,
+    suspicious: false,
+  },
+  {
+    utorid: "chloes12",
+    name: "Chloe Stone",
+    email: "chloe.stone@mail.utoronto.ca",
+    role: "superuser",
+    password: "Chloes12!",
+    birthday: new Date("2000-01-01"),
+    points: 2100,
+    lastLogin: new Date("2025-04-07T18:00:00Z"),
+    verified: true,
+    suspicious: false,
+  },
 ];
 
 
 // def mock promotion data
 const promotions = [
   {
-    name: "Free Timbit Friday",
-    description: "Redeem points for coffee + Timbit at Bahen",
-    type: "bonus",
+    name: "Ice Cream Promotion",
+    description: "1.5x points for buying ice cream from the CSSU",
+    type: "one-time",
     startTime: new Date("2025-04-05"),
     endTime: new Date("2025-05-05"),
-    points: 150,
+    rate: 1.5,
   },
   {
     name: "Coding Marathon Boost",
-    description: "1.5x points for all purchases during Exams",
-    type: "multiplier",
+    description: "1.5x points for all purchases during exams",
+    type: "automatic",
     startTime: new Date("2025-04-01"),
     endTime: new Date("2025-04-30"),
     rate: 1.5,
   },
+  {
+    name: "Textbook Cashback",
+    description: "$10 back when you spend at least $50 on textbooks",
+    type: "one-time",
+    startTime: new Date("2025-04-25"),
+    endTime: new Date("2025-05-10"),
+    minSpending: 50,
+    points: 10,
+  },
+  {
+    name: "Finals Fuel-Up",
+    description: "1.25x points when you spend $30+ on food during finals week",
+    type: "automatic",
+    startTime: new Date("2025-04-20"),
+    endTime: new Date("2025-05-05"),
+    minSpending: 30,
+    rate: 1.25,
+  },
+  {
+    name: "Early Bird Supply Saver",
+    description: "Get $7 off when spending $35+ on school supplies",
+    type: "one-time",
+    startTime: new Date("2025-04-10"),
+    endTime: new Date("2025-04-18"),
+    minSpending: 35,
+    points: 7,
+  },
+  {
+    name: "Caffeine Boost Bonus",
+    description: "1.2x points for coffee purchases over $15 at campus cafés",
+    type: "automatic",
+    startTime: new Date("2025-04-22"),
+    endTime: new Date("2025-05-15"),
+    minSpending: 15,
+    rate: 1.2,
+  },
 ];
+
 
 // def mock event data
 const events = [
@@ -177,7 +250,48 @@ const events = [
     pointsRemain: 600,
     published: true,
   },
+  {
+    name: "Intro to AI Workshop",
+    description: "Hands-on session with basic AI models and prompt engineering",
+    location: "BA 1230",
+    startTime: new Date("2025-04-15T18:00:00"),
+    endTime: new Date("2025-04-15T20:30:00"),
+    capacity: 100,
+    pointsRemain: 500,
+    published: true,
+  },
+  {
+    name: "Code & Chat: Project Night",
+    description: "Bring your side project or homework and vibe with snacks & music",
+    location: "BA 2250",
+    startTime: new Date("2025-04-13T17:00:00"),
+    endTime: new Date("2025-04-13T21:00:00"),
+    capacity: 120,
+    pointsRemain: 400,
+    published: true,
+  },
+  {
+    name: "CSSU x UofT Startups Mixer",
+    description: "Meet CS students and startup founders in a casual networking night",
+    location: "MY 190",
+    startTime: new Date("2025-04-23T18:00:00"),
+    endTime: new Date("2025-04-23T21:00:00"),
+    capacity: 200,
+    pointsRemain: 800,
+    published: false,
+  },
+  {
+    name: "Career Panel: Life After CS",
+    description: "Hear from recent grads working in industry, startups, and academia",
+    location: "BA 3000",
+    startTime: new Date("2025-04-24T16:00:00"),
+    endTime: new Date("2025-04-24T18:00:00"),
+    capacity: 150,
+    pointsRemain: 700,
+    published: false,
+  },
 ];
+
 
 // def mock transaction types
 const types = ["purchase", "adjustment", "redemption", "transfer", "event"];
@@ -210,33 +324,34 @@ async function seed() {
   }
 
   // create promotions
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all
   const [promo1, promo2] = await Promise.all(
     promotions.map((promotion) => prisma.promotion.create({ data: promotion }))
   );
 
   // create events
-  const [event1, event2] = await Promise.all([
-    prisma.event.create({
-      data: {
-        ...events[0],
-        // amy patel organizing
-        organizers: { connect: [{ id: createdUsers[1].id }] },
-        guests: {
-          connect: [{ id: createdUsers[3].id }, { id: createdUsers[5].id }],
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all
+  const createdEvents = await Promise.all(
+    events.map((event, index) =>
+      prisma.event.create({
+        data: {
+          ...event,
+          organizers: {
+            // iter through users using length and index
+            connect: [{ id: createdUsers[(index % createdUsers.length)]?.id }],
+          },
+          guests: {
+            connect: [
+              // iter through users using length and index
+              { id: createdUsers[(index + 2) % createdUsers.length]?.id },
+              { id: createdUsers[(index + 4) % createdUsers.length]?.id },
+            ],
+          },
         },
-      },
-    }),
-    prisma.event.create({
-      data: {
-        ...events[1],
-        // daniel lee organizing
-        organizers: { connect: [{ id: createdUsers[2].id }] },
-        guests: {
-          connect: [{ id: createdUsers[4].id }, { id: createdUsers[6].id }],
-        },
-      },
-    }),
-  ]);
+      })
+    )
+  );
+
 
   // create transactions
   for (let i = 0; i < 30; i++) {
@@ -286,27 +401,24 @@ async function seed() {
 
     // if transaction is an adjustment create another adjustment transaction
     if (transactionType === "adjustment") {
-      // only apply adjustment to first half of purchases
-      if (purchaseTransactions.length <= Math.floor(purchaseTransactions.length / 2)) {
-        // get  latest purchase transaction for adjustment
-        const relatedPurchase = purchaseTransactions[purchaseTransactions.length - 1];
-        // get curr adjustment amt w index
-        const amount = adjustmentAmounts[adjustmentIndex % adjustmentAmounts.length]; 
+      // get  latest purchase transaction for adjustment
+      const relatedPurchase = purchaseTransactions[purchaseTransactions.length - 1];
+      // get curr adjustment amt w index
+      const amount = adjustmentAmounts[adjustmentIndex % adjustmentAmounts.length]; 
 
-        await prisma.transactionAdjustment.create({
-          data: {
-            id: transactionId,
-            amount,
-            utorid,
-            // related purchase ID
-            relatedId: relatedPurchase.transactionId,
-            promotionIds: { connect: [{ id: promo1.id }] }
-          }
-        });
+      await prisma.transactionAdjustment.create({
+        data: {
+          id: transactionId,
+          amount,
+          utorid,
+          // related purchase ID
+          relatedId: relatedPurchase.transactionId,
+          promotionIds: { connect: [{ id: promo1.id }] }
+        }
+      });
 
-        // inc adjument
-        adjustmentIndex++; 
-      }
+      // inc adjument
+      adjustmentIndex++; 
     }
 
     // if transaction is a redemption create another redemption transaction
@@ -353,7 +465,8 @@ async function seed() {
           id: transactionId,
           awarded: 40,
           recipient: utorid,
-          relatedId: i % 2 === 0 ? event1.id : event2.id,
+          // iter through event array
+          relatedId: createdEvents[i % createdEvents.length].id,
         },
       });
     }
