@@ -209,7 +209,7 @@ export function UsersInput({ editable, field, users, choices, handleRemoveUser, 
                         changeFunc={(unusedId, utorid) => (user.id === currentUser.id || editable) ? handleRemoveUser(unusedId, utorid) : undefined} />
                     ))}
                     {/* if user has permission or they are not already in users  */}
-                {(editable || !users?.some((user) => user.id === currentUser.id)) && (
+                {editable && (
                     <ButtonTag key={1000} value={"+"} options={choices} changeFunc={(unusedId, utorid) => handleAddUser(unusedId, utorid)} type="tag-add" id={1000} />
                 )}
             </div>
