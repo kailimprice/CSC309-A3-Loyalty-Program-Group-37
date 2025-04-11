@@ -116,6 +116,7 @@ export default function AwardPointsTable({ currEvent, token, setError }) {
                 numPages={1}
                 selection={null}
                 setSelection={() => {}}
+                providedBaseUrl={"/users"}
             />
             <ButtonInputRow>
                 <TextInput editable={true} field="Award Points to All" value={pointsForAll} changeFunc={handlePointsForAllChange}/>

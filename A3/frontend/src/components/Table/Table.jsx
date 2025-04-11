@@ -19,7 +19,7 @@ function parseDate(string) {
     return `${year}/${month}/${day}`;
 }
 
-export default function Table({columns, data, page, numPages, buttons, selection, setSelection}) {
+export default function Table({columns, data, page, numPages, buttons, selection, setSelection, providedBaseUrl}) {
     const location = useLocation();
     const [sortBy, setSortBy] = useState(new URLSearchParams(location.search).get('orderBy'));
     const [sortDirection, setSortDirection] = useState(new URLSearchParams(location.search).get('order'));
@@ -85,9 +85,10 @@ export default function Table({columns, data, page, numPages, buttons, selection
     function doubleClick(id) {
         return (event) => {
             if (!Array.from(event.target.classList).includes('no-select')) {
-                navigate(`./${id}`);
+                const url = providedBaseUrl ? `${providedBaseUrl}/${id}` : `./${id}`;
+                navigate(url);
             }
-        }
+        };
     }
     const rows = [];
     for (let i = 0; i < data.length; i++) {
