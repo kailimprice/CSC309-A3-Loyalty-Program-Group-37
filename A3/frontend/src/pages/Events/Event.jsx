@@ -5,31 +5,32 @@
 import { Button, Grid, } from '@mui/material';
 import { useState, useEffect } from 'react'
 import { useUserContext } from '../../contexts/UserContext.jsx';
-import { fetchServer } from '../../utils/utils.jsx';
+import { fetchServer, hasPerms } from '../../utils/utils.jsx';
 import { useParams } from 'react-router-dom';
 import { Alert } from '@mui/material'; 
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useNavigate } from 'react-router-dom';
-import { SpecificHeader, TextInput, NumberInput,
+import { SpecificHeader, TextInput, NumberInput, BooleanInput,
     ButtonInput, ButtonInputRow, UsersInput, DateTimeInput } from '../../components/Form/Form.jsx';
 import AwardPointsTable from '../../components/AwardPointsTable/AwardPointsTable.jsx';
 
 export default function Event() {
-
     const id = parseInt(useParams().id, 10);
-
-    const { user, token } = useUserContext();
+    const { user, token, viewAs } = useUserContext();
     const [currEvent, setCurrEvent] = useState({});
     const [error, setError] = useState("");
-    const [hasPermission, setHasPermission] = useState(false);
+    const [isOrganizer, setIsOrganizer] = useState(false);
+    const isManager = hasPerms(viewAs, 'manager');
+    const hasPermission = isManager || isOrganizer;
     const [changes, setChanges] = useState({});
 
     // for nav
     const navigate = useNavigate();
-    const baseUrl = `events/${id}`;
 
     // store non-attendees for dropdown
     const [nonAttendees, setNonAttendees] = useState([]);
@@ -66,38 +67,19 @@ export default function Event() {
     }
 
     async function getEventDetails() {
-        // fetch from events/:eventId
-        const [response, err] = await fetchServer(`events/${id}`, {
+        const params = viewAs == user.role ? '' : `?viewAsRole=${viewAs}`;
+        const [response, err] = await fetchServer(`events/${id}${params}`, {
             method: "GET",
             headers: new Headers({
                 Authorization: `Bearer ${token}`
             })
         })
-        if (err) {
-            return setError("You do not have permission to view this event.");
-        }
-        console.log(token);
-
+        if (err)
+            return setError(err);
         const eventDetails = await response.json();
+        console.log(eventDetails);
         setCurrEvent(eventDetails);
-
-        // check if user has permission
-        const isOrganizer = eventDetails.organizers.some(
-            (organizer) => organizer.id === user.id
-        );
-
-        setHasPermission(user.role === "manager" || user.role === "superuser" || isOrganizer);
-
-        // if they dont have permission and they got this far it means the event is published
-        // published isnt returned for an average user
-        if (!hasPermission) {
-            setCurrEvent((prevEvent) => ({
-                ...prevEvent,
-                published: true,
-            }));
-            setNonAttendees([user.utorid]);
-        }
-        console.log("currEvent:", currEvent)
+        setIsOrganizer(eventDetails.organizers.some((x) => x.id === user.id));
         setError("");
     };
 
@@ -388,6 +370,9 @@ export default function Event() {
             console.error("Error:", err);
         }
     };
+    async function handleAwardPoints() {
+        console.log("TODO");
+    }
 
     // layout inspired by prev project https://github.com/emily-su-dev/Sinker/blob/main/src/app/components/InfoBox.tsx
     // Grid setup inspired by https://mui.com/material-ui/react-Grid/
@@ -399,8 +384,6 @@ export default function Event() {
                 {/* alerts: https://mui.com/material-ui/react-alert/?srsltid=AfmBOoou_o4_8K8hszRKhrNwGHIQi0AiFRewwf3tT0chGeQsevtOFnp2 */}
                     <Alert severity="error" sx={{marginBottom: '5px'}}>{typeof error === 'string' ? error : error.message || String(error)}</Alert>
             </Grid>}  
-            {(currEvent.published || hasPermission) &&
-            <>
             
             <NumberInput editable={false} field='ID' value={id} />
             <TextInput editable={hasPermission} field='Name' value={currEvent.name} changeFunc={makeChange('name')} />
@@ -410,39 +393,39 @@ export default function Event() {
             <DateTimeInput editable={hasPermission} field='End Time' value={currEvent.endTime} changeFunc={makeChange('endTime')} />
             <NumberInput editable={hasPermission} field='Capacity' value={currEvent.capacity} changeFunc={makeChange('capacity')}/>
             <UsersInput editable={hasPermission} field="Organizers" users={currEvent.organizers} choices={nonAttendees} handleRemoveUser={handleRemoveOrganizer} handleAddUser={handleAddOrganizer} currentUser={user}/>
-            <NumberInput editable={hasPermission} field='Number of Guests' value={currEvent.numGuests} changeFunc={makeChange('numGuests')}/>
-            <UsersInput editable={hasPermission} field="Guests" users={currEvent.guests} choices={nonAttendees} handleRemoveUser={handleRemoveGuest} handleAddUser={handleAddGuest} currentUser={user}/>
+            
+            {hasPermission ?
+            <UsersInput editable={hasPermission} field="Guests" users={currEvent.guests} choices={nonAttendees}
+                        handleRemoveUser={handleRemoveGuest} handleAddUser={handleAddGuest} currentUser={user}/>
+            :
+            <NumberInput editable={hasPermission} field='Guests' value={currEvent.numGuests}
+                        changeFunc={makeChange('numGuests')}/>}    
 
-            {hasPermission && 
-            <>
+            {hasPermission && <>
                 <NumberInput editable={user.role === "manager" || user.role === "superuser"} field='Total Points' value={currEvent.pointsAwarded + currEvent.pointsRemain} changeFunc={makeChange('points')}/>
                 <NumberInput editable={false} field='Points Awarded' value={currEvent.pointsAwarded} />
                 <NumberInput editable={false} field='Points Remaining' value={currEvent.pointsRemain}/>
+                <BooleanInput editable={false} field='Published' value={currEvent.published} />
             </>}
-        </>}
-    </Grid>
-        {(currEvent.published || hasPermission) &&
-        <>
+        </Grid>
+
         <ButtonInputRow>
-            <ButtonInput title='Update' variant='contained' click={preSubmit} icon={<EditIcon />} disabled={Object.keys(changes).length == 0}/>
-            {hasPermission && 
-            <>
-                <Button variant='outlined' color="primary"
-                    startIcon={currEvent.published ? <VisibilityIcon /> : <VisibilityOffIcon/>}
-                    sx={{ 
-                        backgroundColor: currEvent.published ? "#4467C4" : "white",
-                        color: currEvent.published ? "white" : "#4467C4",}}
-                    onClick={() => handleTogglePublished(true)}
-                >
-                    {currEvent.published ? "Published" : "Unpublished"}
-                </Button>
-                <ButtonInput title='Delete' variant='outlined' click={handleDelete} icon={<DeleteIcon />}  disabled={user.role !== "manager" && user.role !== "superuser"}/>
-            </>}
+            {hasPermission ? <>
+                <ButtonInput title='Update' variant='contained' click={preSubmit} icon={<EditIcon />} disabled={Object.keys(changes).length == 0}/>
+                <ButtonInput title='Award Points' variant='outlined' click={handleAwardPoints} icon={<EmojiEventsIcon />} disabled={!currEvent.published || currEvent.pointsRemain == 0}/>
+                <ButtonInput title='Publish Event' variant='outlined' click={() => handleTogglePublished(true)}
+                            icon={<VisibilityIcon />} disabled={currEvent.published} />
+                <ButtonInput title='Delete' variant='outlined' click={handleDelete} icon={<DeleteIcon />}/>
+            </>
+            :
+            currEvent.userIsGuest ?
+            <ButtonInput title='Leave Event' variant='contained' click={() => {return}} icon={<RemoveCircleOutlineIcon />}/>
+            :
+            <ButtonInput title='Join Event' variant='contained' click={() => {return}} icon={<AddCircleOutlineIcon />}/>}
         </ButtonInputRow>
-        {hasPermission && 
+        {/* {hasPermission && 
         <>
             <AwardPointsTable currEvent={currEvent} token={token} setError={setError} />
-        </>}
-        </>}
+        </>} */}
     </>
 }
