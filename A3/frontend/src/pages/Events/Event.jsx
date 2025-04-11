@@ -38,7 +38,6 @@ export default function Event() {
     const [nonAttendees, setNonAttendees] = useState([]);
 
     function makeChange(key) {
-        console.log(key);
         return (event) => {
             let value;
             if (typeof(event) == 'string') {
@@ -71,8 +70,9 @@ export default function Event() {
             })
         })
         if (err) {
-            return setError(err);
+            return setError("You do not have permission to view this event.");
         }
+        console.log(token);
 
         const eventDetails = await response.json();
         setCurrEvent(eventDetails);
@@ -244,7 +244,6 @@ export default function Event() {
 
     async function handleAddGuest(unusedId, utorid) {
         try {
-            console.log(nonAttendees);
             // add utorid
             const [response, err] = await fetchServer(`events/${id}/guests`, {
                 method: "POST",
@@ -278,7 +277,6 @@ export default function Event() {
 
     async function handleAddOrganizer(unusedId, utorid) {
         try {
-            console.log(nonAttendees);
             // add utorid
             const [response, err] = await fetchServer(`events/${id}/organizers`, {
                 method: "POST",
@@ -337,13 +335,15 @@ export default function Event() {
     // layout inspired by prev project https://github.com/emily-su-dev/Sinker/blob/main/src/app/components/InfoBox.tsx
     // Grid setup inspired by https://mui.com/material-ui/react-Grid/
     return <>
-        <SpecificHeader display='Events' baseUrl='/events' id={id} />    
+        <SpecificHeader display='Events' baseUrl='/events' id={id} />  
         <Grid container spacing={0} alignItems={'center'}>
             {error && 
             <Grid size={12}>
                 {/* alerts: https://mui.com/material-ui/react-alert/?srsltid=AfmBOoou_o4_8K8hszRKhrNwGHIQi0AiFRewwf3tT0chGeQsevtOFnp2 */}
                     <Alert severity="error" sx={{marginBottom: '5px'}}>{typeof error === 'string' ? error : error.message || String(error)}</Alert>
-            </Grid>}
+            </Grid>}  
+            {(currEvent.published || hasPermission) &&
+            <>
             
             <NumberInput editable={false} field='ID' value={id} />
             <TextInput editable={hasPermission} field='Name' value={currEvent.name} changeFunc={makeChange('name')} />
@@ -358,15 +358,30 @@ export default function Event() {
 
             {hasPermission && 
             <>
-                <p></p>
-            
+                <NumberInput editable={user.role === "manager" || user.role === "superuser"} field='Total Points' value={currEvent.pointsAwarded + currEvent.pointsRemain} changeFunc={makeChange('points')}/>
+                <NumberInput editable={false} field='Points Awarded' value={currEvent.pointsAwarded} />
+                <NumberInput editable={false} field='Points Remaining' value={currEvent.pointsRemain}/>
             </>}
-        </Grid>
+        </>}
+    </Grid>
+        {(currEvent.published || hasPermission) &&
+        <>
         <ButtonInputRow>
             <ButtonInput title='Update' variant='contained' click={preSubmit} icon={<EditIcon />} disabled={Object.keys(changes).length == 0}/>
-            {hasPermission &&
-            <ButtonInput title='Delete' variant='outlined' click={handleDelete} icon={<DeleteIcon />}  disabled={user.role !== "manager" || user.role !== "superuser"}/>}
+            {hasPermission && 
+            <>
+                <Button variant='outlined' color="primary"
+                    startIcon={currEvent.published ? <VisibilityIcon /> : <VisibilityOffIcon/>}
+                    sx={{ 
+                        backgroundColor: currEvent.published ? "#4467C4" : "white",
+                        color: currEvent.published ? "white" : "#4467C4",}}
+                    onClick={() => handleTogglePublished(true)}
+                >
+                    {currEvent.published ? "Published" : "Unpublished"}
+                </Button>
+                <ButtonInput title='Delete' variant='outlined' click={handleDelete} icon={<DeleteIcon />}  disabled={user.role !== "manager" && user.role !== "superuser"}/>
+            </>}
         </ButtonInputRow>
-
+        </>}
     </>
 }
