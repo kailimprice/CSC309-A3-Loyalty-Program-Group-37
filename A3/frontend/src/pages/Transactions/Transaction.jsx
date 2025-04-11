@@ -14,7 +14,8 @@ import { useNavigate } from 'react-router-dom';
 import QRCode from 'react-qr-code';
 import { DialogGeneral, FilterBody } from '../../components/DialogGeneral/DialogGeneral.jsx';
 import { SpecificHeader, TextInput, NumberInput,
-    ButtonInput, ButtonInputRow, } from '../../components/Form/Form.jsx';
+    ButtonInput, ButtonInputRow,
+    ChoiceInput, } from '../../components/Form/Form.jsx';
 
 export default function Transaction() {
 
@@ -234,21 +235,21 @@ export default function Transaction() {
             {(hasPermission || isOwner || canProcess) &&
             <>
                 {currTransaction.utorid && <TextInput editable={false} field='UTORid' value={currTransaction.utorid} />}
-                {currTransaction.createdBy && <TextInput editable={false} field='Created By' value={currTransaction.createdBy} />}
+                {currTransaction.createdBy && <TextInput editable={false} field='Creator' value={currTransaction.createdBy} />}
                 {currTransaction.relatedId && <TextInput editable={false} 
                     field={currTransaction.type === "adjustment"
                             ? "Related Transaction"
                             : currTransaction.type === "redemption"
-                            ? "Processed By"
+                            ? "Processor"
                             : currTransaction.type === "transfer"
-                            ? "Recipient"
+                            ? "Transferee"
                             : currTransaction.type === "event"
                             ? "Event"
                             : "Related To"} 
                         value={currTransaction.relatedId}  />}
-                {currTransaction.type && <TextInput editable={false} field='Type' value={currTransaction.type} />}
+                {currTransaction.type && <ChoiceInput editable={false} field='Type' value={currTransaction.type} choices={['purchase', 'adjustment', 'transfer', 'redemption', 'event']}/>}
                 {currTransaction.remark && <TextInput editable={false} field='Remark' value={currTransaction.remark} />}
-                {currTransaction.spent && <NumberInput editable={false} field='Spent' value={`$${currTransaction.spent}`} />}
+                {currTransaction.spent && <NumberInput editable={false} field='Amount Spent' value={`$${currTransaction.spent}`} />}
                 {currTransaction.amount && <NumberInput editable={false} field='Points Earned' value={currTransaction.amount} />}
                 {currTransaction.awarded && <NumberInput editable={false} field='Points Awarded' value={currTransaction.awarded} />}
                 {currTransaction.sent && <NumberInput editable={false} field='Points Sent' value={currTransaction.sent} />}
