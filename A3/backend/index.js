@@ -1207,9 +1207,11 @@ app.patch('/transactions/:transactionId/suspicious', permLevel('manager'), async
         if (transaction.type == 'purchase') {
             await prisma.transactionPurchase.update({where: {id: transactionId}, data: {suspicious: suspicious}});
             increment = transaction.earned * (-2 * suspicious + 1);
-        } else {
+        } else if (transaction.type == 'adjustment') {
             await prisma.transactionAdjustment.update({where: {id: transactionId}, data: {suspicious: suspicious}});
             increment = transaction.amount * (-2 * suspicious + 1);
+        } else {
+            return res.status(400).json({'error': `Bad transaction id=${transactionId} type ${transaction.type}`});
         }
         await prisma.user.update({where: {utorid: transaction.utorid}, data: {points: {increment: increment}}});
     }
