@@ -165,9 +165,9 @@ export default function Promotion() {
                 <ChoiceInput editable={hasPermission} field='Type' value={currPromotion.type} choices={['automatic', 'one-time']} changeFunc={makeChange('type')} />
                 {(hasPermission && currPromotion.startTime) && <DateTimeInput editable={hasPermission} field='Start Time' value={currPromotion.startTime} changeFunc={makeChange('startTime')} />}
                 <DateTimeInput editable={hasPermission} field='End Time' value={currPromotion.endTime} changeFunc={makeChange('endTime')} />
-                {(currPromotion.minSpending || hasPermission) && <NumberInput editable={hasPermission} field='Minimum Spent' value={`$${currPromotion.minSpending}`} changeFunc={makeChange('minSpending')}/>}
-                {(currPromotion.rate || hasPermission) && <NumberInput editable={hasPermission} field='Rate' value={`${currPromotion.rate}x`} changeFunc={makeChange('rate')}/>}
-                {(currPromotion.points || hasPermission) && <NumberInput editable={hasPermission} field='Points' value={`$${currPromotion.points}`} changeFunc={makeChange('points')}/>}
+                {(currPromotion.minSpending || hasPermission) && <NumberInput editable={hasPermission} field='Minimum Spent' value={hasPermission ? currPromotion.minSpending :`$${currPromotion.minSpending}`} changeFunc={makeChange('minSpending')}/>}
+                {(currPromotion.rate || hasPermission) && <NumberInput editable={hasPermission} field='Rate' value={hasPermission ? currPromotion.rate :`${currPromotion.rate}x`} changeFunc={makeChange('rate')}/>}
+                {(currPromotion.points || hasPermission) && <NumberInput editable={hasPermission} field='Points' value={hasPermission ? currPromotion.points :`$${currPromotion.points}`} changeFunc={makeChange('points')}/>}
             </>}
         </Grid>
         
