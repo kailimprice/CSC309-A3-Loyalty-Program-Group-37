@@ -746,7 +746,7 @@ function postProcessGetTransaction(include, result) {
         delete result[x];
     });
 }
-app.get('/transactions', permLevel('manager'), async (req, res) => {
+app.get('/transactions', permLevel('cashier'), async (req, res) => {
     const variables = ['utorid', 'name', 'createdBy', 'suspicious', 'promotionId', 'type', 'relatedId', 'amount', 'operator', 'page', 'limit', 'orderBy', 'order'];
     const [query, e1] = queryAllow(variables, req, res);
     if (e1) return e1;
@@ -894,7 +894,7 @@ function sanitizeTransactions(results) {
     }
 }
 
-app.get('/transactions/:transactionId', permLevel('manager'), async (req, res) => {
+app.get('/transactions/:transactionId', permLevel('cashier'), async (req, res) => {
     const [transactionId, e1] = getParamIndex('transactionId', req, res);
     if (e1) return e1;
     
@@ -1232,7 +1232,7 @@ app.get('/events', permLevel('regular'), async (req, res) => {
     
     const filter = {};
     const varTransforms = {name: null, location: null};
-    if (hasPerms(req.user.role, 'manager')) {
+    if (hasPerms(req.user.role, 'cashier')) {
         varTransforms['published'] = x => (x == 'true') ? true : false;
     } else {
         filter['published'] = true;
@@ -1312,6 +1312,7 @@ app.get('/events/:eventId', permLevel('regular'), async (req, res) => {
     const isManagerOrganizer = hasPerms(req.user.role, 'manager') || event.organizers.find(x => x.utorid == req.utorid);
     if (isManagerOrganizer) {
         console.log(`200, found eventId=${eventId}`);
+        event['numGuests'] = event['guests'].length;
         return res.status(200).json(event);
     }
     const omit = {pointsRemain: true, pointsAwarded: true, published: true};
@@ -1319,6 +1320,7 @@ app.get('/events/:eventId', permLevel('regular'), async (req, res) => {
     if (e2) return e2;
 
     result['numGuests'] = result['guests'].length;
+    result['userIsGuest'] = !!result['guests'].find(x => x.id == req.user.id);
     delete result['guests'];
     console.log(`200, found eventId=${eventId}`);
     return res.status(200).json(result);
