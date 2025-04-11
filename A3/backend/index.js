@@ -1306,12 +1306,13 @@ app.get('/events/:eventId', permLevel('regular'), async (req, res) => {
     if (e1) return e1;
 
     const include = {organizers: true, guests: true};
-    if (hasPerms(req.user.role, 'manager')) {
-        const [result, e2] = await findUnique(prisma.event, {id: eventId}, res, include);
-        if (e2) return e2;
-
+    const [event, e3] = await findUnique(prisma.event, {id: eventId}, res, include);
+    if (e3) return [null, e3];
+    
+    const isManagerOrganizer = hasPerms(req.user.role, 'manager') || event.organizers.find(x => x.utorid == req.utorid);
+    if (isManagerOrganizer) {
         console.log(`200, found eventId=${eventId}`);
-        return res.status(200).json(result);
+        return res.status(200).json(event);
     }
     const omit = {pointsRemain: true, pointsAwarded: true, published: true};
     const [result, e2] = await findUnique(prisma.event, {id: eventId, published: true}, res, include, omit);
