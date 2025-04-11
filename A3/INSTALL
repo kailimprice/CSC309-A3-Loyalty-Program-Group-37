@@ -24,6 +24,7 @@
 # Backend Packages
 # bcrypt
 # cors
+# dotenv
 # express
 # jsonwebtoken
 # multer
