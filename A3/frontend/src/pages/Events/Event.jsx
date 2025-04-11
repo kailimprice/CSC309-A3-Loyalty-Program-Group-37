@@ -164,6 +164,7 @@ export default function Event() {
             updateDetails
         }));
 
+        setChanges({});
         setError(""); 
     };
     
@@ -194,6 +195,8 @@ export default function Event() {
                 organizers: updatedOrganizers,
             }));
 
+            getEventDetails();
+
             console.log(`Organizer with ID ${organizerId} removed successfully.`);
         } catch (err) {
             setError(err);
@@ -222,6 +225,8 @@ export default function Event() {
                 ...prevChanges,
                 guests: updatedGuests,
             }));
+
+            getEventDetails();
 
             console.log(`Guest with ID ${guestId} removed successfully.`);
         } catch (err) {
@@ -261,6 +266,7 @@ export default function Event() {
         }));
 
         setError(""); 
+        getEventDetails();
     };
 
     async function handleAddGuest(unusedId, utorid) {
@@ -314,6 +320,7 @@ export default function Event() {
                 ...prevChanges,
                 guests: updatedGuests,
             }));
+            getEventDetails();
 
             console.log(`Guest with UTORID ${utorid} added successfully.`);
         } catch (err) {
@@ -347,6 +354,8 @@ export default function Event() {
                 ...prevChanges,
                 organizers: updatedOrganizers,
             }));
+
+            getEventDetails();
 
             console.log(`Organizer with UTORID ${utorid} added successfully.`);
         } catch (err) {
@@ -382,6 +391,7 @@ export default function Event() {
         if (currEvent.guests.length > 0) {
             setOpenAwardTable(true);
         }
+        getEventDetails();
     }
 
     async function handleRSVP() {
@@ -416,6 +426,8 @@ export default function Event() {
                 setError(error);
                 return
             } 
+
+            getEventDetails();
         } catch (error) {
             setError(error)
         }
