@@ -13,6 +13,18 @@ const prisma = new PrismaClient();
 // def mock user data
 const usersData = [
   {
+    utorid: "clive123",
+    name: "Clive",
+    email: "clive.su@mail.utoronto.ca",
+    role: "superuser",
+    password: "SuperUser123!",
+    birthday: new Date("2000-01-01"),
+    points: 1050,
+    lastLogin: new Date("2025-04-08T12:30:00Z"),
+    verified: true,
+    suspicious: false,
+  },
+  {
     utorid: "leedani0",
     name: "Daniel Lee",
     email: "daniel.lee@mail.utoronto.ca",
