@@ -116,6 +116,7 @@ export default function User() {
             }
         } else {
             header['Content-Type'] = 'application/json';
+            body = JSON.stringify(json);
         }
         const [response, err] = await fetchServer(baseUrl, {
             method: "PATCH",

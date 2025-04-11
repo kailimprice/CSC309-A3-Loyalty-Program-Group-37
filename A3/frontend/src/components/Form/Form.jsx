@@ -155,18 +155,18 @@ export function ChoiceInput({editable, name, field, value, choices, changeFunc})
     editable &&= choices.includes(value);
     return <>
         {GridHeader(field)}
-        {editable && 
         <Grid size={{ xs: 7, sm: 7, md: 9 }}>
+            {editable && 
             <FormControl fullWidth>
                 <Select defaultValue={value} name={name} onChange={changeFunc}>
                     {choices.map((x, i) => {
                         return <MenuItem key={i} value={x}>{choicesDisplay[i]}</MenuItem>;
                     })}
                 </Select>
-            </FormControl>
-        </Grid>}
-        {!editable &&
-        ReadOnly(value ? value[0].toUpperCase() + value.slice(1) : 'N/A')}
+            </FormControl>}
+            {!editable &&
+            ReadOnly(value ? value[0].toUpperCase() + value.slice(1) : 'N/A')}
+        </Grid>
     </>
 }
 export function ButtonInputRow({children}) {
