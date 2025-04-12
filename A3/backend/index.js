@@ -32,7 +32,8 @@ const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173'
 app.use(cors({
     origin: FRONTEND_URL, 
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
 }));
 
 
