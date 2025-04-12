@@ -21,8 +21,6 @@ const port = (() => {
 const express = require("express");
 const app = express();
 
-app.use(express.json());
-
 // ADD YOUR WORK HERE
 const cors = require('cors');
 require('dotenv').config();
@@ -32,6 +30,8 @@ const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173'
 app.use(cors({
     origin: FRONTEND_URL
 }));
+
+app.use(express.json());
 
 
 const {PrismaClient} = require('@prisma/client');
