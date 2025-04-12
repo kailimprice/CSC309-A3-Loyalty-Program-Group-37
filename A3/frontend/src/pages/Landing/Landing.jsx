@@ -113,7 +113,7 @@ function DialogLanding({currDialog, setCurrDialog, currError, setCurrError,
     const resetPasswordRequest = async (json) => {
         const [response, e1] = await fetchServer('auth/resets', {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: new Headers({'Content-Type': 'application/json'}),
             body: JSON.stringify(json)
         });
         if (e1) return e1;
@@ -129,7 +129,7 @@ function DialogLanding({currDialog, setCurrDialog, currError, setCurrError,
             return;
         const [_response, e2] = await fetchServer(`auth/resets/${token}`, {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: new Headers({'Content-Type': 'application/json'}),
             body: JSON.stringify(j)
         });
         if (e2) return e2;
