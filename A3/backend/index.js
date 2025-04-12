@@ -4,12 +4,6 @@
 const express = require("express");
 const app = express();
 
-app.use((req, res, next) => {
-    const url = `${req.protocol}://${req.get('host')}`;
-    console.log(url);
-    next();
-})
-
 // ADD YOUR WORK HERE
 const cors = require('cors');
 require('dotenv').config();
