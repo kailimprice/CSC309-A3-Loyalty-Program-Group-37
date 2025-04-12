@@ -29,7 +29,11 @@ require('dotenv').config();
 
 // Set up cors to allow requests from your React frontend
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173'
-app.use(cors({origin: FRONTEND_URL, credentials: true}));
+app.use(cors({
+    origin: FRONTEND_URL, 
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 
 const {PrismaClient} = require('@prisma/client');
