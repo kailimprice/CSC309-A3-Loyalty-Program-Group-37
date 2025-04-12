@@ -1,6 +1,8 @@
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 
 export async function fetchServer(path, details, errors) {
+    console.log(details.headers)
+    console.log(`${JSON.stringify(details.headers)}`)
     const response = await fetch(`${BACKEND_URL}/${path}`, details);
     if (!response.ok) {
         if (errors && errors[response.status])

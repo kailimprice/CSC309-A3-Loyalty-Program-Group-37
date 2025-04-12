@@ -145,7 +145,7 @@ function DialogLanding({currDialog, setCurrDialog, currError, setCurrError,
         // Authenticate and store token
         const [response, e2] = await fetchServer(`auth/tokens`, {
             method: 'POST',
-            headers: new Headers({'Content-Type': 'application/json'}),
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(json)
         });
         if (e2) return e2;
@@ -155,7 +155,7 @@ function DialogLanding({currDialog, setCurrDialog, currError, setCurrError,
         // Fetch user information
         const [userInfo, e3] = await fetchServer('users/me', {
             method: 'GET',
-            headers: new Headers({'Authorization': `Bearer ${responseJson.token}`}),
+            headers: {'Authorization': `Bearer ${responseJson.token}`},
         });
         if (e3) return e3;
         responseJson = await userInfo.json();
