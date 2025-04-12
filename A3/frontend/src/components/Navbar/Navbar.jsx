@@ -40,7 +40,7 @@ const Navbar = () => {
     const closeQr = () => setQrOpen(false);
     const DialogQR = <Dialog open={qrOpen} onClose={closeQr} className='dialog-qr'>
         <Box sx={{padding: '45px'}}>
-            <QRCode value={{id: user.id, utorid: user.utorid}} size='large' />
+            <QRCode value={`id=${user.id}, utorid=${user.utorid}`} size='large' />
         </Box>
     </Dialog>;
 

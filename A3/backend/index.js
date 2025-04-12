@@ -21,21 +21,14 @@ const port = (() => {
 const express = require("express");
 const app = express();
 
-app.use(express.json());
-
 // ADD YOUR WORK HERE
 const cors = require('cors');
 require('dotenv').config();
 
 // Set up cors to allow requests from your React frontend
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173'
-app.use(cors({
-    origin: FRONTEND_URL, 
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true
-}));
-
+app.use(cors({ origin: FRONTEND_URL }));
+app.use(express.json());
 
 const {PrismaClient} = require('@prisma/client');
 const prisma = new PrismaClient();
@@ -1362,7 +1355,7 @@ app.patch('/events/:eventId', permLevel('regular'), async (req, res) => {
     if (e6) return e6;
 
     // Build data
-    req.body['pointsRemain'] = req.body['points'];
+    req.body['pointsRemain'] = (typeof(points) == 'string' ? parseInt(points, 10) : points) - event.pointsAwarded;
     const data = {};
     const validation = {name: null, description: null, location: null,
                         startTime: isIso8601, endTime: isIso8601, capacity: isCount(false),

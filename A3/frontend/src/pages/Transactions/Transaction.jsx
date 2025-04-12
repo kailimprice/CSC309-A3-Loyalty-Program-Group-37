@@ -41,7 +41,7 @@ export default function Transaction() {
     const closeQr = () => setQrOpen(false);
     const DialogQR = <Dialog open={qrOpen} onClose={closeQr} className='dialog-qr'>
         <Box sx={{padding: '45px'}}>
-            <QRCode value={{id: user.id, transaction: id}} size='large' />
+            <QRCode value={`user=${user.id}, transaction=${id}`} size='large' />
         </Box>
     </Dialog>;
 
@@ -195,10 +195,8 @@ export default function Transaction() {
                 body: JSON.stringify(adjustmentDetails),
             });
 
-            if (err) {
-                console.error("Error creating adjustment:", err);
-                return `Error: ${err.message}`;
-            }
+            if (err)
+                return err;
 
             getTransactionDetails();
             console.log("Adjustment created successfully:", await response.json());
