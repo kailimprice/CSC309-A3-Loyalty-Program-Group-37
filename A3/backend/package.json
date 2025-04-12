@@ -6,7 +6,7 @@
     "scripts": {
         "start": "node index.js",
         "createsuperuser": "node prisma/createsu.js",
-        "seed": "npx prisma migrate dev --name init; npx prisma migrate deploy; npx prisma generate; node prisma/seed.js",
+        "seed": "npx prisma migrate dev --name init && npx prisma migrate deploy && npx prisma generate && node prisma/seed.js",
         "clean": "rm -rf prisma/dev.db* node_modules package-lock.json prisma/migrations/"
     },
     "author": "CSC309 Student, Winter 2025",
