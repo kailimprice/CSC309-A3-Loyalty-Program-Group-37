@@ -6,7 +6,7 @@ Before running the project, make sure you have Node.js installed. You should be 
 
 To run the backend,
 
-1) Move into the `backend` directory from the command-line (with `cd ...` on Linux, `Set-Location ...` on Windows, etc.)
+1) Move into the `backend` directory from the command-line (with `cd ...` on Linux, `Set-Location ...` on Windows, etc., where `...` is the path of the `backend` directory)
 2) Run `npm install` to install necessary packages
 3) Run `npx prisma generate` to setup the prisma database (part 1)
 4) Run `npx prisma db push` to setup the prisma database (part 2)
@@ -20,10 +20,12 @@ To run the frontend,
 2) Run `npm install`
 3) Run `npx run dev`, which should print out a URL to go to.
 
+## Screenshots
+
 <p align="center">
-    <img width="200" src="assets/screenshot1.png" alt="Screenshot 1">
+    <img width="1000" src="assets/screenshot1.png" alt="Screenshot 1">
 </p>
 
 <p align="center">
-    <img width="200" src="assets/screenshot2.png" alt="Screenshot 2">
+    <img width="1000" src="assets/screenshot2.png" alt="Screenshot 2">
 </p>
